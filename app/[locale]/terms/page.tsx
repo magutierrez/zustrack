@@ -13,7 +13,7 @@ export default function TermsPage() {
 
       <div className="w-full max-w-3xl space-y-6">
         <div className="flex items-center justify-between">
-          <Link href="/login">
+          <Link href="/app/login">
             <Button variant="ghost" size="sm" className="gap-2">
               <ArrowLeft className="h-4 w-4" />
             </Button>
