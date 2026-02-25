@@ -14,6 +14,7 @@ npm run dev
 # → NODE_TLS_REJECT_UNAUTHORIZED=0 next dev -H 0.0.0.0 -p 3000 --experimental-https --turbo
 
 npm run build       # Production build
+npm run tsc         # Type-check only (no emit)
 npm run lint        # ESLint
 npm run format      # Prettier (write)
 ```
@@ -35,17 +36,31 @@ No test runner is configured. There is a `/testing` directory with test data fix
 | Path | Purpose |
 |------|---------|
 | `lib/types.ts` | All TypeScript interfaces — add new types here |
-| `lib/db.ts` | Dexie.js (IndexedDB) client-side database |
-| `lib/gpx-parser.ts` | GPX parsing, bearing calculation, point sampling |
+| `lib/db.ts` | Dexie.js (IndexedDB) client-side database (`saved_routes` table) |
+| `lib/gpx-parser.ts` | GPX parsing, bearing calculation, point sampling, polyline/TWKB decode |
 | `lib/weather-providers.ts` | Weather strategy pattern (`WeatherProvider` interface) |
-| `lib/utils.ts` | `cn()`, IBP index, Naismith rule, solar exposure |
+| `lib/utils.ts` | `cn()`, IBP index, Naismith rule, solar position/intensity, speed calc |
+| `lib/mud-risk.ts` | Mud risk scoring (surface + precipitation + evaporation + slope) |
+| `lib/snowshoe.ts` | Snow equipment recommendation (boots/snowshoes/crampons/mountaineering) |
+| `lib/viability-score.ts` | Go/Caution/Danger composite viability rating |
+| `lib/geometry.ts` | Geometric helpers (Haversine, slope, angle) |
 | `store/route-store.ts` | Zustand global store — all route/map/analysis state |
-| `hooks/use-route-analysis.ts` | Analysis orchestration hook (uses store setters) |
+| `hooks/use-route-analysis.ts` | Analysis orchestration (API calls, enrichment, store setters) |
+| `hooks/use-route-hazards.ts` | Hazard segment computation from `weatherPoints` |
+| `hooks/use-saved-routes.ts` | Dexie.js CRUD for saved routes |
+| `hooks/use-analysis-metrics.ts` | IBP, Naismith, hydration metrics |
 | `auth.ts` | NextAuth v5 config (Strava, Google, Facebook, Twitter) |
 | `proxy.ts` | Middleware: i18n locale detection + auth-guard redirects |
 | `components/route-map.tsx` | MapLibre GL map wrapper (dynamic import, SSR disabled) |
-| `app/api/weather/route.ts` | Weather endpoint |
-| `app/api/route-info/route.ts` | Terrain/infrastructure endpoint |
+| `components/route-advice.tsx` | Main analysis output panel |
+| `components/best-departure-finder.tsx` | Find optimal weather window UI |
+| `app/api/weather/route.ts` | Weather endpoint (Open-Meteo → WeatherAPI → Tomorrow.io) |
+| `app/api/weather/best-window/route.ts` | Best departure day finder (7-day scan) |
+| `app/api/route-info/route.ts` | Terrain/infrastructure endpoint (Overpass + Elevation + OpenCellID) |
+| `app/api/strava/activities/route.ts` | List user's Strava activities |
+| `app/api/strava/routes/route.ts` | List user's Strava routes |
+| `app/api/strava/gpx/route.ts` | Download GPX from Strava activity |
+| `app/api/wikiloc/route.ts` | Import route from Wikiloc |
 
 ### State Management
 
