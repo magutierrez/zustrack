@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { routing } from '@/i18n/routing';
@@ -6,6 +7,111 @@ import { notFound } from 'next/navigation';
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
+
+// ---------------------------------------------------------------------------
+// SEO metadata — per locale
+// ---------------------------------------------------------------------------
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://zustrack.com';
+
+const META = {
+  en: {
+    title: 'zustrack — Point-by-point weather for cyclists & hikers',
+    description:
+      'Upload your GPX or import from Strava. Get point-by-point weather forecast, elevation analysis, risk detection and mobile coverage for your cycling and hiking routes.',
+    keywords:
+      'gpx weather forecast, cycling route weather, hiking weather, route planner, gpx analyzer, strava weather import, outdoor forecast, trail conditions, wind forecast cycling',
+    ogLocale: 'en_US',
+  },
+  es: {
+    title: 'zustrack — Pronóstico del tiempo punto a punto para ciclistas y senderistas',
+    description:
+      'Sube tu ruta GPX o importa desde Strava. Pronóstico del tiempo punto a punto, perfil de elevación, análisis de terreno, detección de riesgos y cobertura móvil para ciclismo y senderismo.',
+    keywords:
+      'pronóstico ruta gpx, tiempo para ciclistas, meteorología senderismo, analizador gpx, planificación ruta, importar strava, forecast outdoor, condiciones trail, viento ciclismo',
+    ogLocale: 'es_ES',
+  },
+  ca: {
+    title: 'zustrack — Predicció meteorològica punt a punt per a ciclistes i senderistes',
+    description:
+      "Puja la teva ruta GPX o importa des de Strava. Predicció del temps punt a punt, perfil d'elevació, anàlisi del terreny, detecció de riscos i cobertura mòbil per a ciclisme i senderisme.",
+    keywords:
+      'predicció ruta gpx, temps ciclistes, meteorologia senderisme, analitzador gpx, planificació ruta, importar strava, forecast outdoor, condicions trail, vent ciclisme',
+    ogLocale: 'ca_ES',
+  },
+} satisfies Record<string, { title: string; description: string; keywords: string; ogLocale: string }>;
+
+type Locale = keyof typeof META;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const m = META[(locale as Locale) in META ? (locale as Locale) : 'en'];
+  const canonicalUrl = `${BASE_URL}/${locale}`;
+
+  const alternateLanguages = Object.fromEntries(
+    (Object.keys(META) as Locale[]).map((lang) => [lang, `${BASE_URL}/${lang}`]),
+  );
+
+  const alternateOgLocales = (Object.entries(META) as [Locale, (typeof META)[Locale]][])
+    .filter(([lang]) => lang !== locale)
+    .map(([, v]) => v.ogLocale);
+
+  return {
+    title: {
+      default: m.title,
+      template: '%s | zustrack',
+    },
+    description: m.description,
+    keywords: m.keywords,
+    alternates: {
+      canonical: canonicalUrl,
+      languages: {
+        ...alternateLanguages,
+        'x-default': `${BASE_URL}/en`,
+      },
+    },
+    openGraph: {
+      type: 'website',
+      url: canonicalUrl,
+      siteName: 'zustrack',
+      title: m.title,
+      description: m.description,
+      locale: m.ogLocale,
+      alternateLocale: alternateOgLocales,
+      images: [
+        {
+          url: '/og.png',
+          width: 1200,
+          height: 630,
+          alt: m.title,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: m.title,
+      description: m.description,
+      images: ['/og.png'],
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
 
 export default async function LocaleLayout({
   children,
