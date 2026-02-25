@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Play, Pause, Square } from 'lucide-react';
+import { Play, Pause, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Source, Layer } from 'react-map-gl/maplibre';
@@ -32,6 +32,8 @@ export function RoutePlayer({ points, onStop, map }: RoutePlayerProps) {
   const requestRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
   const lastUiUpdateRef = useRef<number>(0);
+  // Ref so the running rAF loop always reads the latest speed without re-creating callbacks
+  const speedRef = useRef(1);
 
   const updateMapCamera = useCallback(
     (fractionalIdx: number, forceUiUpdate = false) => {
@@ -60,7 +62,7 @@ export function RoutePlayer({ points, onStop, map }: RoutePlayerProps) {
       }
 
       // 3. Smooth Cinematic Bearing
-      const lookAheadPoints = Math.max(10, Math.floor(20 / speed));
+      const lookAheadPoints = Math.max(10, Math.floor(20 / speedRef.current));
       const targetIdx = Math.min(idx + lookAheadPoints, points.length - 1);
       const targetPoint = points[targetIdx];
       const targetBearing = calculateBearing(
@@ -94,7 +96,7 @@ export function RoutePlayer({ points, onStop, map }: RoutePlayerProps) {
         lastUiUpdateRef.current = now;
       }
     },
-    [map, points, speed],
+    [map, points],
   );
 
   const animate = useCallback(
@@ -102,7 +104,7 @@ export function RoutePlayer({ points, onStop, map }: RoutePlayerProps) {
       if (!lastTimeRef.current) lastTimeRef.current = time;
       const deltaTime = time - lastTimeRef.current;
 
-      const increment = (speed * deltaTime) / 300;
+      const increment = (speedRef.current * deltaTime) / 300;
       currentIndexRef.current += increment;
 
       if (currentIndexRef.current >= points.length - 1) {
@@ -117,7 +119,7 @@ export function RoutePlayer({ points, onStop, map }: RoutePlayerProps) {
       lastTimeRef.current = time;
       requestRef.current = requestAnimationFrame(animate);
     },
-    [points, speed, updateMapCamera],
+    [points, updateMapCamera],
   );
 
   const startPlayback = () => {
@@ -191,7 +193,7 @@ export function RoutePlayer({ points, onStop, map }: RoutePlayerProps) {
         />
       </Source>
 
-      <div className="animate-in fade-in slide-in-from-bottom-4 absolute bottom-20 left-1/2 z-20 w-[95%] max-w-lg -translate-x-1/2">
+      <div className="z-[160] animate-in fade-in slide-in-from-bottom-4 absolute bottom-10 lg:bottom-20 left-1/2 w-[95%] max-w-lg -translate-x-1/2">
         <div className="bg-background/95 border-border rounded-2xl border p-4 shadow-2xl backdrop-blur-md">
           <div className="mb-4 flex items-center justify-between px-1">
             <div className="flex items-center gap-2">
@@ -202,11 +204,21 @@ export function RoutePlayer({ points, onStop, map }: RoutePlayerProps) {
             </div>
 
             <div className="flex items-center gap-2">
-              <Select value={speed.toString()} onValueChange={(v) => setSpeed(parseFloat(v))}>
-                <SelectTrigger className="bg-secondary/50 h-7 w-20 border-none text-[10px] font-bold focus:ring-0">
+              <span className="text-muted-foreground text-[10px] font-bold tracking-widest uppercase">
+                {t('speed')}
+              </span>
+              <Select
+                value={speed.toString()}
+                onValueChange={(v) => {
+                  const s = parseFloat(v);
+                  speedRef.current = s;
+                  setSpeed(s);
+                }}
+              >
+                <SelectTrigger className="bg-secondary/50 h-7 w-16 border-none text-[10px] font-bold focus:ring-0">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="z-[165]">
                   <SelectItem value="1" className="cursor-pointer text-[10px] font-bold">
                     1x
                   </SelectItem>
@@ -221,6 +233,14 @@ export function RoutePlayer({ points, onStop, map }: RoutePlayerProps) {
                   </SelectItem>
                 </SelectContent>
               </Select>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="text-muted-foreground hover:text-destructive hover:bg-destructive/5 h-7 w-7 rounded-full"
+                onClick={stopPlayback}
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </div>
           </div>
 
@@ -245,14 +265,6 @@ export function RoutePlayer({ points, onStop, map }: RoutePlayerProps) {
                   <Pause className="h-5 w-5 fill-current" />
                 </Button>
               )}
-              <Button
-                size="icon"
-                variant="ghost"
-                className="text-muted-foreground hover:text-destructive hover:bg-destructive/5 h-9 w-9 rounded-full"
-                onClick={stopPlayback}
-              >
-                <Square className="h-4 w-4 fill-current" />
-              </Button>
             </div>
 
             <div className="flex-1 px-2">

@@ -66,7 +66,7 @@ export function RouteSummary() {
         </Label>
       </div>
 
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
         <div className="bg-secondary rounded-lg p-3 text-center">
           <p className="text-muted-foreground mb-1 text-[8px] font-black tracking-widest uppercase">
             {t('distance')}

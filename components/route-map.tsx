@@ -4,9 +4,12 @@ import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import type { Feature, FeatureCollection } from 'geojson';
 import { useTheme } from 'next-themes';
 import { useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import Map, { NavigationControl, MapRef } from 'react-map-gl/maplibre';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import { Maximize2, X } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 import { useMapLayers } from './route-map/use-map-layers';
 import { MapMarkers } from './route-map/map-markers';
@@ -22,14 +25,19 @@ import { RoutePlayer } from './route-map/route-player';
 import { MapOverlayControls } from './route-map/map-overlay-controls';
 import { useRouteStore } from '@/store/route-store';
 import { findClosestPointIndex, projectOntoSegment } from '@/lib/geometry';
+import { cn } from '@/lib/utils';
 
 interface RouteMapProps {
   onResetToFullRouteView?: (func: () => void) => void;
+  isMobileFullscreen?: boolean;
+  onToggleMobileFullscreen?: () => void;
 }
 
-export default function RouteMap({ onResetToFullRouteView }: RouteMapProps) {
+export default function RouteMap({ onResetToFullRouteView, isMobileFullscreen, onToggleMobileFullscreen }: RouteMapProps) {
   const { resolvedTheme } = useTheme();
   const locale = useLocale();
+  const tMap = useTranslations('HomePage');
+  const isMobile = useIsMobile();
   const mapRef = useRef<MapRef>(null);
   const lastMapHoverRef = useRef<number>(0);
 
@@ -410,7 +418,7 @@ export default function RouteMap({ onResetToFullRouteView }: RouteMapProps) {
   if (!mounted) return null;
 
   return (
-    <div className="border-border relative h-full w-full overflow-hidden border">
+    <div className={cn('border-border relative h-full w-full overflow-hidden border', isMobileFullscreen && 'mobile-fullscreen-map')}>
       <Map
         ref={mapRef}
         mapLib={maplibregl}
@@ -452,7 +460,7 @@ export default function RouteMap({ onResetToFullRouteView }: RouteMapProps) {
           nightPointIndex={nightPointIndex}
         />
 
-        {activePopupData && (
+        {activePopupData && !isMobile && (
           <MapPopup
             key={`popup-${activePopupData.index}-${activePopupData.point.lat}-${activePopupData.point.lon}`}
             popupInfo={activePopupData}
@@ -474,7 +482,35 @@ export default function RouteMap({ onResetToFullRouteView }: RouteMapProps) {
         onClearSelection={clearSelection}
       />
 
-      <LayerControl mapType={mapType} setMapType={setMapType} />
+      {/* Mobile: popup fixed at top */}
+      {activePopupData && isMobile && (
+        <MapPopup
+          key={`popup-mobile-${activePopupData.index}-${activePopupData.point.lat}-${activePopupData.point.lon}`}
+          popupInfo={activePopupData}
+          onClose={handleClosePopup}
+          mobileMode
+        />
+      )}
+
+      {/* Fullscreen toggle button — mobile only, hidden when popup active */}
+      {onToggleMobileFullscreen && !(isMobile && activePopupData) && (
+        <button
+          onClick={onToggleMobileFullscreen}
+          className="absolute top-3 right-3 z-20 rounded-lg border border-border bg-background/80 p-2 shadow-md backdrop-blur-sm lg:hidden"
+          aria-label={isMobileFullscreen ? tMap('collapseMap') : tMap('expandMap')}
+        >
+          {isMobileFullscreen ? (
+            <X className="h-4 w-4" />
+          ) : (
+            <Maximize2 className="h-4 w-4" />
+          )}
+        </button>
+      )}
+
+      {/* Layer selector — shifted below fullscreen button on mobile, hidden when popup active */}
+      {!(isMobile && activePopupData) && (
+        <LayerControl mapType={mapType} setMapType={setMapType} />
+      )}
 
       <style jsx global>{`
         .weather-popup .maplibregl-popup-content {
@@ -486,7 +522,7 @@ export default function RouteMap({ onResetToFullRouteView }: RouteMapProps) {
         }
       `}</style>
 
-      {weatherPoints && weatherPoints.length > 0 && <MapLegend />}
+      {weatherPoints && weatherPoints.length > 0 && !(isMobile && activePopupData) && <MapLegend />}
     </div>
   );
 }

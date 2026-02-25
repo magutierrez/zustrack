@@ -6,6 +6,54 @@ interface Point {
   lon: number;
 }
 
+// Fetch elevation for all points with Open-Meteo as primary and opentopodata.org as fallback.
+// opentopodata accepts max 100 locations per request, so long routes are chunked.
+async function fetchElevations(points: Point[]): Promise<number[]> {
+  // --- Primary: Open-Meteo ---
+  try {
+    const res = await fetch(
+      `https://api.open-meteo.com/v1/elevation?latitude=${points.map((p) => p.lat).join(',')}&longitude=${points.map((p) => p.lon).join(',')}`,
+    );
+
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data.elevation) && data.elevation.length === points.length) {
+        return data.elevation;
+      }
+    }
+  } catch {
+    // fall through to backup
+  }
+
+  // --- Fallback: opentopodata.org (SRTM30m, max 100 locations/request, 1 req/s) ---
+  const CHUNK = 100;
+  const result: number[] = [];
+
+  for (let i = 0; i < points.length; i += CHUNK) {
+    const slice = points.slice(i, i + CHUNK);
+    try {
+      const locations = slice.map((p) => `${p.lat},${p.lon}`).join('|');
+      const res = await fetch(`https://api.opentopodata.org/v1/srtm30m?locations=${locations}`);
+      if (res.ok) {
+        const data = await res.json();
+        const chunk: number[] = (data.results ?? []).map((r: any) => r.elevation ?? 0);
+        result.push(...chunk);
+      } else {
+        result.push(...slice.map(() => 0));
+      }
+    } catch {
+      result.push(...slice.map(() => 0));
+    }
+
+    // Respect the 1 req/s rate limit for subsequent chunks
+    if (i + CHUNK < points.length) {
+      await new Promise((r) => setTimeout(r, 1100));
+    }
+  }
+
+  return result;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { points }: { points: Point[] } = await request.json();
@@ -59,7 +107,10 @@ export async function POST(request: NextRequest) {
         })
       : [];
 
-    const [osmResponse, elevationResponse, ...cellResponses] = await Promise.all([
+    // Start elevation fetch in parallel with OSM + cell tower requests
+    const elevationPromise = fetchElevations(points);
+
+    const [osmResponse, ...cellResponses] = await Promise.all([
       fetch('https://overpass-api.de/api/interpreter', {
         method: 'POST',
         body: `data=${encodeURIComponent(overpassQuery)}`,
@@ -68,16 +119,10 @@ export async function POST(request: NextRequest) {
           'User-Agent': 'zustrackapp/1.0',
         },
       }),
-      fetch(
-        `https://api.open-meteo.com/v1/elevation?latitude=${points.map((p) => p.lat).join(',')}&longitude=${points.map((p) => p.lon).join(',')}`,
-      ),
       ...cellTowersPromises,
     ]);
 
     const osmData = osmResponse.ok ? await osmResponse.json() : { elements: [] };
-    const elevationResponseJson = elevationResponse.ok
-      ? await elevationResponse.json()
-      : { elevation: [] };
 
     // Merge all cell towers found across all sampled boxes
     const allCellTowers = cellResponses.flatMap((r: any) => r.cells || []);
@@ -87,7 +132,7 @@ export async function POST(request: NextRequest) {
     );
 
     const elements = osmData.elements || [];
-    const elevations = elevationResponseJson.elevation || [];
+    const elevations = await elevationPromise;
 
     const getDistSq = (p1: Point, p2: { lat: number; lon: number }) =>
       Math.sqrt(Math.pow(p1.lat - p2.lat, 2) + Math.pow(p1.lon - p2.lon, 2)) * 111.32; // Approx km

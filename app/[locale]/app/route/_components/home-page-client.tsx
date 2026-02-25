@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
@@ -21,6 +21,7 @@ import { AnalysisSkeleton } from '@/app/_components/analysis-skeleton';
 
 import { RouteSummary } from './route-summary';
 import { ElevationTerrainTabs } from './elevation-terrain-tabs';
+import { MobileElevationChart } from '@/components/mobile-elevation-chart';
 
 const RouteMap = dynamic(() => import('@/components/route-map'), {
   ssr: false,
@@ -60,6 +61,7 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
   const { handleAnalyze, handleReverseRoute, handleFindBestWindow } = useRouteAnalysis();
 
   const mapResetViewRef = useRef<(() => void) | null>(null);
+  const [isMobileFullscreen, setIsMobileFullscreen] = useState(false);
 
   const activityType = fetchedActivityType || initialActivityType;
 
@@ -172,12 +174,24 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
 
           <div
             className={cn(
-              'border-border relative h-[400px] w-full border-t lg:h-[calc(100vh-57px)] lg:w-[45%] lg:border-t-0 lg:border-l',
-              !gpxData && 'hidden lg:block',
+              'border-border relative w-full',
+              !isMobileFullscreen && 'h-[70vh] border-t lg:h-[calc(100vh-57px)] lg:w-[45%] lg:border-t-0 lg:border-l',
+              isMobileFullscreen && 'fixed inset-0 z-50 flex flex-col border-0 bg-background',
+              !gpxData && !isMobileFullscreen && 'hidden lg:block',
             )}
           >
-            <RouteLoadingOverlay isVisible={isRouteInfoLoading} />
-            <RouteMap onResetToFullRouteView={(func) => (mapResetViewRef.current = func)} />
+            {/* Map fills all space normally, or flex-1 when chart is below */}
+            <div className={cn('relative', isMobileFullscreen ? 'min-h-0 flex-1' : 'h-full w-full')}>
+              <RouteLoadingOverlay isVisible={isRouteInfoLoading} />
+              <RouteMap
+                onResetToFullRouteView={(func) => (mapResetViewRef.current = func)}
+                isMobileFullscreen={isMobileFullscreen}
+                onToggleMobileFullscreen={() => setIsMobileFullscreen((v) => !v)}
+              />
+            </div>
+
+            {/* Elevation chart below the map in fullscreen */}
+            {isMobileFullscreen && <MobileElevationChart />}
           </div>
         </main>
       </div>
