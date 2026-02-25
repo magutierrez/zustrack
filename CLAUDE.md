@@ -75,16 +75,19 @@ No test runner is configured. There is a `/testing` directory with test data fix
 
 ### Routing
 
-- App Router pages: `/login`, `/setup`, `/route`, `/terms`, `/privacy`
-- API routes under `/app/api/`
-- Middleware (`proxy.ts`) guards all routes except `/login`, `/terms`, `/privacy`, `/api/auth/*`
-- i18n via `next-intl` — locales: `en`, `es`, `ca`
+- All pages are locale-scoped under `app/[locale]/`: `/login`, `/setup`, `/route`, `/terms`, `/privacy`
+- API routes under `app/api/`: `weather`, `weather/best-window`, `route-info`, `strava/*`, `wikiloc`
+- Middleware (`proxy.ts`): i18n locale detection → auth guard (public: `/`, `/terms`, `/privacy`, `/app/login`)
+- i18n via `next-intl` v4 — locales: `en`, `es`, `ca` (configured in `i18n/routing.ts`)
 
 ## Development Rules
 
-- **Strict TypeScript**: No `any`. All new interfaces go in `lib/types.ts`.
-- **i18n is mandatory**: All user-facing strings must use `useTranslations()` (client) or server equivalents. Add keys to `messages/en.json`, `messages/es.json`, and `messages/ca.json`.
+- **Strict TypeScript**: No `any`. All new interfaces go in `lib/types.ts`. Run `npm run tsc` to validate.
+- **i18n is mandatory**: All user-facing strings must use `useTranslations()` (client) or `getTranslations()` (server). Add keys to `messages/en.json`, `messages/es.json`, and `messages/ca.json`.
 - **Styling**: Tailwind CSS v4 + Shadcn/UI. Use `cn()` from `lib/utils.ts` for class merging. Add new Shadcn components via `npx shadcn@latest add [component]`.
 - **Map components** must be dynamically imported with `ssr: false`.
-- **Weather providers**: Implement the `WeatherProvider` interface in `lib/weather-providers.ts` to add a new provider.
-- **Environment variables**: See `.env.example` for required keys (`AUTH_*`, `WEATHERAPI_API_KEY`, `TOMORROW_IO_API_KEY`, `NEXT_PUBLIC_MAPTILER_KEY`).
+- **No prop drilling**: Shared state goes in the Zustand store (`store/route-store.ts`). Components read from the store directly.
+- **Dexie.js (client-only)**: Never import `lib/db.ts` in Server Components or API routes.
+- **Weather providers**: Implement the `WeatherProvider` interface in `lib/weather-providers.ts` to add a new provider. Fallback chain: Open-Meteo → WeatherAPI → Tomorrow.io.
+- **Risk engines**: New domain-specific risk logic goes in `lib/<feature>.ts` and is called from `hooks/use-route-analysis.ts` during the enrichment pipeline.
+- **Environment variables**: See `.env.example` for required keys (`AUTH_*`, `WEATHERAPI_API_KEY`, `TOMORROW_IO_API_KEY`, `NEXT_PUBLIC_MAPTILER_KEY`, optional `OPENCELLID_API_KEY`).
