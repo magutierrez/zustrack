@@ -21,7 +21,7 @@ export function LayerControl({ mapType, setMapType }: LayerControlProps) {
   const t = useTranslations('RouteMap');
 
   return (
-    <div className="absolute top-3 right-3 z-10">
+    <div className="absolute top-14 right-3 z-10 lg:top-3">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="secondary" size="icon" className="h-10 w-10 shadow-md">

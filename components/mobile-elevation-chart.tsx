@@ -23,7 +23,7 @@ export function MobileElevationChart() {
   if (!chartData.length) return null;
 
   return (
-    <div className="bg-background/80 border-border absolute right-0 bottom-0 left-0 z-10 h-28 border-t backdrop-blur-sm">
+    <div className="bg-background/80 border-border text-primary absolute right-0 bottom-0 left-0 z-10 h-28 border-t backdrop-blur-sm">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart
           data={chartData}
@@ -31,12 +31,6 @@ export function MobileElevationChart() {
           onMouseLeave={handleMouseLeave}
           margin={{ top: 4, right: 8, left: 0, bottom: 0 }}
         >
-          <defs>
-            <linearGradient id="mobile-elevation-fill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
-              <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.02} />
-            </linearGradient>
-          </defs>
           <XAxis dataKey="distance" hide />
           <YAxis hide domain={['auto', 'auto']} />
           <Tooltip
@@ -76,17 +70,17 @@ export function MobileElevationChart() {
           <Area
             type="linear"
             dataKey="elevation"
-            stroke="hsl(var(--primary))"
+            stroke="currentColor"
             strokeWidth={1.5}
-            fillOpacity={1}
-            fill="url(#mobile-elevation-fill)"
+            fillOpacity={0}
+            fill="transparent"
             isAnimationActive={false}
             connectNulls
           />
           {selectedPoint && (
             <ReferenceLine
               x={selectedPoint.distanceFromStart}
-              stroke="hsl(var(--primary))"
+              stroke="currentColor"
               strokeWidth={1}
               strokeDasharray="4 4"
             />
