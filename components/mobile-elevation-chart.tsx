@@ -31,6 +31,12 @@ export function MobileElevationChart() {
           onMouseLeave={handleMouseLeave}
           margin={{ top: 4, right: 8, left: 0, bottom: 0 }}
         >
+          <defs>
+            <linearGradient id="mobile-elev-fill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="currentColor" stopOpacity={0.35} />
+              <stop offset="100%" stopColor="currentColor" stopOpacity={0.03} />
+            </linearGradient>
+          </defs>
           <XAxis dataKey="distance" hide />
           <YAxis hide domain={['auto', 'auto']} />
           <Tooltip
@@ -72,8 +78,8 @@ export function MobileElevationChart() {
             dataKey="elevation"
             stroke="currentColor"
             strokeWidth={1.5}
-            fillOpacity={0}
-            fill="transparent"
+            fillOpacity={1}
+            fill="url(#mobile-elev-fill)"
             isAnimationActive={false}
             connectNulls
           />
