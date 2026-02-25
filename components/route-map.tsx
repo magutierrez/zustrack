@@ -520,9 +520,6 @@ export default function RouteMap({ onResetToFullRouteView, isMobileFullscreen, o
           border-radius: 8px !important;
           padding: 8px 12px !important;
         }
-        .mobile-fullscreen-map .maplibregl-ctrl-bottom-right {
-          bottom: 7.5rem !important;
-        }
       `}</style>
 
       {weatherPoints && weatherPoints.length > 0 && !(isMobile && activePopupData) && <MapLegend />}

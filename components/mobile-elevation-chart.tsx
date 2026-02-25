@@ -23,7 +23,7 @@ export function MobileElevationChart() {
   if (!chartData.length) return null;
 
   return (
-    <div className="bg-background/80 border-border text-primary absolute right-0 bottom-0 left-0 z-10 h-28 border-t backdrop-blur-sm">
+    <div className="bg-background border-border text-primary h-28 w-full shrink-0 border-t">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart
           data={chartData}

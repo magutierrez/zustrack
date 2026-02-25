@@ -174,19 +174,23 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
 
           <div
             className={cn(
-              'border-border relative h-[70vh] w-full border-t lg:h-[calc(100vh-57px)] lg:w-[45%] lg:border-t-0 lg:border-l',
-              isMobileFullscreen && 'fixed inset-0 z-50 h-auto w-auto border-0 bg-background',
+              'border-border relative w-full',
+              !isMobileFullscreen && 'h-[70vh] border-t lg:h-[calc(100vh-57px)] lg:w-[45%] lg:border-t-0 lg:border-l',
+              isMobileFullscreen && 'fixed inset-0 z-50 flex flex-col border-0 bg-background',
               !gpxData && !isMobileFullscreen && 'hidden lg:block',
             )}
           >
-            <RouteLoadingOverlay isVisible={isRouteInfoLoading} />
-            <RouteMap
-              onResetToFullRouteView={(func) => (mapResetViewRef.current = func)}
-              isMobileFullscreen={isMobileFullscreen}
-              onToggleMobileFullscreen={() => setIsMobileFullscreen((v) => !v)}
-            />
+            {/* Map fills all space normally, or flex-1 when chart is below */}
+            <div className={cn('relative', isMobileFullscreen ? 'min-h-0 flex-1' : 'h-full w-full')}>
+              <RouteLoadingOverlay isVisible={isRouteInfoLoading} />
+              <RouteMap
+                onResetToFullRouteView={(func) => (mapResetViewRef.current = func)}
+                isMobileFullscreen={isMobileFullscreen}
+                onToggleMobileFullscreen={() => setIsMobileFullscreen((v) => !v)}
+              />
+            </div>
 
-            {/* Mini chart overlay — only in fullscreen */}
+            {/* Elevation chart below the map in fullscreen */}
             {isMobileFullscreen && <MobileElevationChart />}
           </div>
         </main>
