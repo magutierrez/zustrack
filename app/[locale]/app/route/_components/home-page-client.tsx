@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
@@ -10,6 +10,7 @@ import { useRouteAnalysis } from '@/hooks/use-route-analysis';
 import { useRouteStore } from '@/store/route-store';
 import { getRouteFromDb } from '@/lib/db';
 import { cn } from '@/lib/utils';
+import { Maximize2, X } from 'lucide-react';
 import { Session } from 'next-auth';
 
 import { Header } from '@/app/_components/header';
@@ -21,6 +22,7 @@ import { AnalysisSkeleton } from '@/app/_components/analysis-skeleton';
 
 import { RouteSummary } from './route-summary';
 import { ElevationTerrainTabs } from './elevation-terrain-tabs';
+import { MobileElevationChart } from '@/components/mobile-elevation-chart';
 
 const RouteMap = dynamic(() => import('@/components/route-map'), {
   ssr: false,
@@ -60,6 +62,7 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
   const { handleAnalyze, handleReverseRoute, handleFindBestWindow } = useRouteAnalysis();
 
   const mapResetViewRef = useRef<(() => void) | null>(null);
+  const [isMobileFullscreen, setIsMobileFullscreen] = useState(false);
 
   const activityType = fetchedActivityType || initialActivityType;
 
@@ -173,11 +176,28 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
           <div
             className={cn(
               'border-border relative h-[400px] w-full border-t lg:h-[calc(100vh-57px)] lg:w-[45%] lg:border-t-0 lg:border-l',
-              !gpxData && 'hidden lg:block',
+              isMobileFullscreen && 'fixed inset-0 z-50 h-auto w-auto border-0 bg-background',
+              !gpxData && !isMobileFullscreen && 'hidden lg:block',
             )}
           >
             <RouteLoadingOverlay isVisible={isRouteInfoLoading} />
             <RouteMap onResetToFullRouteView={(func) => (mapResetViewRef.current = func)} />
+
+            {/* Expand / Collapse button — mobile only */}
+            <button
+              onClick={() => setIsMobileFullscreen((v) => !v)}
+              className="absolute top-3 right-3 z-20 rounded-lg border border-border bg-background/80 p-2 shadow-md backdrop-blur-sm lg:hidden"
+              aria-label={isMobileFullscreen ? tHomePage('collapseMap') : tHomePage('expandMap')}
+            >
+              {isMobileFullscreen ? (
+                <X className="h-4 w-4" />
+              ) : (
+                <Maximize2 className="h-4 w-4" />
+              )}
+            </button>
+
+            {/* Mini chart overlay — only in fullscreen */}
+            {isMobileFullscreen && <MobileElevationChart />}
           </div>
         </main>
       </div>

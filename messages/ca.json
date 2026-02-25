@@ -6,6 +6,8 @@
     "analyzeFirst": "Analitza la ruta per veure tots els detalls",
     "clickAnalyze": "Fes clic a 'Analitzar ruta' per veure el pronòstic meteorològic, riscos i esforç per trams",
     "uploadFirst": "Puja un arxiu GPX per començar",
+    "expandMap": "Mapa a pantalla completa",
+    "collapseMap": "Tancar",
     "errors": {
       "insufficientPoints": "L'arxiu GPX no conté suficients punts.",
       "readError": "Error en llegir l'arxiu GPX. Verifica el format.",

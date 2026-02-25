@@ -6,6 +6,8 @@
     "analyzeFirst": "Analyze the route to see all details",
     "clickAnalyze": "Click 'Analyze route' to see weather forecast, risks, and effort by segments",
     "uploadFirst": "Upload a GPX file to start",
+    "expandMap": "Full screen map",
+    "collapseMap": "Close",
     "errors": {
       "insufficientPoints": "The GPX file does not contain enough points.",
       "readError": "Error reading GPX file. Check the format.",
