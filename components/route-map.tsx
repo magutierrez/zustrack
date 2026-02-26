@@ -27,6 +27,36 @@ import { useRouteStore } from '@/store/route-store';
 import { findClosestPointIndex, projectOntoSegment } from '@/lib/geometry';
 import { cn } from '@/lib/utils';
 
+/**
+ * Draws a chevron onto a canvas and registers it as an SDF image named
+ * 'route-arrow'. SDF allows MapLibre to colourise the icon via `icon-color`
+ * without needing a glyphs/font endpoint — works on all map styles.
+ * Must be called on initial load and again after every style swap.
+ */
+function addArrowImage(map: maplibregl.Map) {
+  const size = 30;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d')!;
+
+  ctx.clearRect(0, 0, size, size);
+  ctx.strokeStyle = 'white';
+  ctx.lineWidth = size * 0.2;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  // Chevron pointing right — MapLibre rotates it to follow the line
+  ctx.beginPath();
+  ctx.moveTo(size * 0.25, size * 0.2);
+  ctx.lineTo(size * 0.72, size * 0.5);
+  ctx.lineTo(size * 0.25, size * 0.8);
+  ctx.stroke();
+
+  const imageData = ctx.getImageData(0, 0, size, size);
+  if (map.hasImage('route-arrow')) map.removeImage('route-arrow');
+  map.addImage('route-arrow', imageData, { sdf: true });
+}
+
 interface RouteMapProps {
   onResetToFullRouteView?: (func: () => void) => void;
   isMobileFullscreen?: boolean;
@@ -172,10 +202,15 @@ export default function RouteMap({ onResetToFullRouteView, isMobileFullscreen, o
 
   const onMapLoad = useCallback(
     (event: any) => {
+      const map: maplibregl.Map = event.target;
+      addArrowImage(map);
       syncTerrain();
-      applyMapLanguage(event.target);
-      event.target.on('styledata', syncTerrain);
-      event.target.on('style.load', () => applyMapLanguage(event.target));
+      applyMapLanguage(map);
+      map.on('styledata', syncTerrain);
+      map.on('style.load', () => {
+        addArrowImage(map);
+        applyMapLanguage(map);
+      });
       resetToFullRouteView();
     },
     [syncTerrain, applyMapLanguage, resetToFullRouteView],
