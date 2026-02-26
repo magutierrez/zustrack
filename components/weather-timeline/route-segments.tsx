@@ -11,7 +11,6 @@ export function RouteSegments() {
   const hasMeaningfulData = (data: { name: string; percent: number; color: string }[]) => {
     return data.length > 0 && !(data.length === 1 && data[0].name === 'unknown');
   };
-  console.log(pathBreakdown);
 
   const SegmentBar = ({
     title,
