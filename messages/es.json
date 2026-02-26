@@ -67,7 +67,9 @@
     "tabGPX": "GPX",
     "tabSaved": "Guardadas",
     "tabWikiloc": "Wikiloc",
-    "tabStrava": "Strava"
+    "tabStrava": "Strava",
+    "wikilocImported": "Ruta importada",
+    "wikilocPoints": "{count} puntos"
   },
   "Hazards": {
     "title": "Tramos Críticos",
