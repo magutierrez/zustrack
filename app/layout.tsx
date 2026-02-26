@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter, Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google';
-import { connection } from 'next/server';
 import { getLocale } from 'next-intl/server';
 
 import { ThemeProvider } from '@/components/theme-provider';
@@ -42,7 +41,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  await connection();
   const locale = await getLocale();
 
   return (
