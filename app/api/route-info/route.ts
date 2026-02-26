@@ -6,6 +6,8 @@ interface Point {
   lon: number;
 }
 
+export const runtime = 'edge';
+
 export async function POST(request: NextRequest) {
   try {
     const { points }: { points: Point[] } = await request.json();
