@@ -65,6 +65,10 @@ export async function GET(request: NextRequest) {
           const points = geometry.coordinates.map((coordinates) => ({
             lat: coordinates[1],
             lon: coordinates[0],
+            // coordinates[2] is elevation (metres) when the TWKB geometry is 3D
+            ...(coordinates.length > 2 && coordinates[2] !== undefined
+              ? { ele: coordinates[2] }
+              : {}),
           }));
 
           if (points.length > 0) {

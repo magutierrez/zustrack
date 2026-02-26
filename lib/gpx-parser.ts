@@ -260,9 +260,12 @@ export function decodeWikilocGeom(encoded: string): Point[] {
   return points;
 }
 
-export function pointsToGPX(points: { lat: number; lon: number }[], name: string): string {
+export function pointsToGPX(points: { lat: number; lon: number; ele?: number }[], name: string): string {
   const gpxPoints = points
-    .map((p) => `      <trkpt lat="${p.lat}" lon="${p.lon}"></trkpt>`)
+    .map((p) => {
+      const eleTag = p.ele !== undefined ? `\n        <ele>${p.ele.toFixed(1)}</ele>` : '';
+      return `      <trkpt lat="${p.lat}" lon="${p.lon}">${eleTag}\n      </trkpt>`;
+    })
     .join('\n');
 
   return `<?xml version="1.0" encoding="UTF-8"?>
