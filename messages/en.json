@@ -67,9 +67,7 @@
     "tabGPX": "GPX",
     "tabSaved": "Saved",
     "tabWikiloc": "Wikiloc",
-    "tabStrava": "Strava",
-    "wikilocImported": "Route imported",
-    "wikilocPoints": "{count} waypoints"
+    "tabStrava": "Strava"
   },
   "Hazards": {
     "title": "Critical Segments",

@@ -67,9 +67,7 @@
     "tabGPX": "GPX",
     "tabSaved": "Guardades",
     "tabWikiloc": "Wikiloc",
-    "tabStrava": "Strava",
-    "wikilocImported": "Ruta importada",
-    "wikilocPoints": "{count} punts"
+    "tabStrava": "Strava"
   },
   "Hazards": {
     "title": "Trams Crítics",
