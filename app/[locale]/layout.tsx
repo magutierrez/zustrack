@@ -3,6 +3,8 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { routing } from '@/i18n/routing';
 import { notFound } from 'next/navigation';
+import { cacheLife, cacheTag } from 'next/cache';
+import { connection } from 'next/server';
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -48,7 +50,10 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
+  'use cache';
   const { locale } = await params;
+  cacheTag(`layout-metadata-${locale}`);
+  cacheLife('weeks');
   const m = META[(locale as Locale) in META ? (locale as Locale) : 'en'];
   const canonicalUrl = `${BASE_URL}/${locale}`;
 
@@ -151,6 +156,7 @@ export default async function LocaleLayout({
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
 }) {
+  await connection();
   const { locale } = await params;
 
   if (!routing.locales.includes(locale as (typeof routing.locales)[number])) {
