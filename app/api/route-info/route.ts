@@ -6,56 +6,6 @@ interface Point {
   lon: number;
 }
 
-export const runtime = 'edge';
-
-// Fetch elevation for all points with Open-Meteo as primary and opentopodata.org as fallback.
-// opentopodata accepts max 100 locations per request, so long routes are chunked.
-async function fetchElevations(points: Point[]): Promise<number[]> {
-  // --- Primary: Open-Meteo ---
-  try {
-    const res = await fetch(
-      `https://api.open-meteo.com/v1/elevation?latitude=${points.map((p) => p.lat).join(',')}&longitude=${points.map((p) => p.lon).join(',')}`,
-    );
-
-    if (res.ok) {
-      const data = await res.json();
-      if (Array.isArray(data.elevation) && data.elevation.length === points.length) {
-        return data.elevation;
-      }
-    }
-  } catch {
-    // fall through to backup
-  }
-
-  // --- Fallback: opentopodata.org (SRTM30m, max 100 locations/request, 1 req/s) ---
-  const CHUNK = 100;
-  const result: number[] = [];
-
-  for (let i = 0; i < points.length; i += CHUNK) {
-    const slice = points.slice(i, i + CHUNK);
-    try {
-      const locations = slice.map((p) => `${p.lat},${p.lon}`).join('|');
-      const res = await fetch(`https://api.opentopodata.org/v1/srtm30m?locations=${locations}`);
-      if (res.ok) {
-        const data = await res.json();
-        const chunk: number[] = (data.results ?? []).map((r: any) => r.elevation ?? 0);
-        result.push(...chunk);
-      } else {
-        result.push(...slice.map(() => 0));
-      }
-    } catch {
-      result.push(...slice.map(() => 0));
-    }
-
-    // Respect the 1 req/s rate limit for subsequent chunks
-    if (i + CHUNK < points.length) {
-      await new Promise((r) => setTimeout(r, 1100));
-    }
-  }
-
-  return result;
-}
-
 export async function POST(request: NextRequest) {
   try {
     const { points }: { points: Point[] } = await request.json();
@@ -73,28 +23,87 @@ export async function POST(request: NextRequest) {
     const maxLon = Math.max(...lons) + 0.02;
     const bbox = `${minLat},${minLon},${maxLat},${maxLon}`;
 
-    // 2. Optimized Overpass Query: One bbox call instead of many arounds
-    const overpassQuery = `[out:json][timeout:30];
-      (
-        way["highway"](${bbox});
-        node["place"~"village|town|hamlet"](${bbox});
-        way["highway"~"primary|secondary|tertiary"](${bbox});
-        node["amenity"="drinking_water"](${bbox});
-        node["natural"="spring"](${bbox});
-        node["man_made"="water_tap"](${bbox});
-        node["tourism"~"alpine_hut|wilderness_hut"](${bbox});
-        way["tourism"~"alpine_hut|wilderness_hut"](${bbox});
-      );
-      out center;`;
+    // 2. Fetch OSM Data with Fallback
+    const fetchOsmData = async () => {
+      const overpassQuery = `[out:json][timeout:30];
+        (
+          way["highway"](${bbox});
+          node["place"~"village|town|hamlet"](${bbox});
+          way["highway"~"primary|secondary|tertiary"](${bbox});
+          node["amenity"="drinking_water"](${bbox});
+          node["natural"="spring"](${bbox});
+          node["man_made"="water_tap"](${bbox});
+          node["tourism"~"alpine_hut|wilderness_hut"](${bbox});
+          way["tourism"~"alpine_hut|wilderness_hut"](${bbox});
+        );
+        out center;`;
+
+      try {
+        const response = await fetch('https://overpass-api.de/api/interpreter', {
+          method: 'POST',
+          body: `data=${encodeURIComponent(overpassQuery)}`,
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'User-Agent': 'zustrackapp/1.0',
+          },
+        });
+
+        if (response.ok) return await response.json();
+        throw new Error(`Overpass failed with status: ${response.status}`);
+      } catch (error) {
+        console.error('Overpass API failed, trying Ohsome API fallback:', error);
+
+        // Ohsome Fallback
+        const ohsomeFilter =
+          '(type:way and highway=*) or (type:node and place in (village, town, hamlet)) or (type:node and (amenity=drinking_water or natural=spring or man_made=water_tap)) or (tourism in (alpine_hut, wilderness_hut))';
+        const ohsomeBbox = `${minLon},${minLat},${maxLon},${maxLat}`;
+        const ohsomeUrl = `https://api.ohsome.org/v1/elements/centroid?bboxes=${ohsomeBbox}&filter=${encodeURIComponent(ohsomeFilter)}&properties=tags`;
+
+        try {
+          const response = await fetch(ohsomeUrl, {
+            headers: { 'User-Agent': 'zustrackapp/1.0' },
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            return {
+              elements: (data.features || []).map((f: any) => {
+                // Extract tags from properties (Ohsome flattens them)
+                const tags: any = f.properties.tags || {};
+                if (Object.keys(tags).length === 0) {
+                  Object.entries(f.properties).forEach(([k, v]) => {
+                    if (!k.startsWith('@') && k !== 'tags') {
+                      tags[k] = v;
+                    }
+                  });
+                }
+
+                return {
+                  type: f.properties['@osmId']?.includes('way') ? 'way' : 'node',
+                  center: {
+                    lat: f.geometry.coordinates[1],
+                    lon: f.geometry.coordinates[0],
+                  },
+                  lat: f.geometry.coordinates[1],
+                  lon: f.geometry.coordinates[0],
+                  tags,
+                };
+              }),
+            };
+          }
+        } catch (ohsomeError) {
+          console.error('Ohsome API fallback also failed:', ohsomeError);
+        }
+      }
+      return { elements: [] };
+    };
 
     // 3. OpenCellID Sampling: Query small areas around strategic points to stay within 4M sq.m limit
-    // We sample up to 8 points along the route to get a representative tower map
     const samplingInterval = Math.max(2, Math.floor(points.length / 8));
     const sampledPoints = points.filter((_, i) => i % samplingInterval === 0);
 
     const cellTowersPromises = process.env.OPENCELLID_API_KEY
       ? sampledPoints.map((p) => {
-          // ~1.8km x 1.8km box = ~3.24M sq.m (Safe under 4M limit)
           const b = {
             minLat: p.lat - 0.008,
             maxLat: p.lat + 0.008,
@@ -109,37 +118,29 @@ export async function POST(request: NextRequest) {
         })
       : [];
 
-    // Start elevation fetch in parallel with OSM + cell tower requests
-    const elevationPromise = fetchElevations(points);
-
-    const [osmResponse, ...cellResponses] = await Promise.all([
-      fetch('https://overpass-api.de/api/interpreter', {
-        method: 'POST',
-        body: `data=${encodeURIComponent(overpassQuery)}`,
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'User-Agent': 'zustrackapp/1.0',
-        },
-      }),
+    const [osmData, elevationResponse, ...cellResponses] = await Promise.all([
+      fetchOsmData(),
+      fetch(
+        `https://api.open-meteo.com/v1/elevation?latitude=${points.map((p) => p.lat).join(',')}&longitude=${points.map((p) => p.lon).join(',')}`,
+      ),
       ...cellTowersPromises,
     ]);
 
-    const osmData = osmResponse.ok ? await osmResponse.json() : { elements: [] };
+    const elevationResponseJson = elevationResponse.ok
+      ? await elevationResponse.json()
+      : { elevation: [] };
 
-    // Merge all cell towers found across all sampled boxes
     const allCellTowers = cellResponses.flatMap((r: any) => r.cells || []);
-    // Remove duplicates by tower ID if available, otherwise by location
     const cellTowers = Array.from(
       new Map(allCellTowers.map((c: any) => [`${c.lat},${c.lon}`, c])).values(),
     );
 
     const elements = osmData.elements || [];
-    const elevations = await elevationPromise;
+    const elevations = elevationResponseJson.elevation || [];
 
     const getDistSq = (p1: Point, p2: { lat: number; lon: number }) =>
-      Math.sqrt(Math.pow(p1.lat - p2.lat, 2) + Math.pow(p1.lon - p2.lon, 2)) * 111.32; // Approx km
+      Math.sqrt(Math.pow(p1.lat - p2.lat, 2) + Math.pow(p1.lon - p2.lon, 2)) * 111.32;
 
-    // Pre-filter elements by category to speed up the loop
     const highwayElements = elements.filter((el: any) => el.tags?.highway);
     const escapeElements = elements.filter(
       (el: any) =>
@@ -162,7 +163,6 @@ export async function POST(request: NextRequest) {
       let nearbyInfraCount = 0;
       let minCellDist = Infinity;
 
-      // 1. Match Highways (within 100m)
       for (const element of highwayElements) {
         if (!element.center) continue;
         const dist = getDistSq(p, element.center);
@@ -170,19 +170,17 @@ export async function POST(request: NextRequest) {
           minWayDist = dist;
           closestWay = element;
         }
-        if (dist < 3) nearbyInfraCount++; // Coverage proxy
+        if (dist < 3) nearbyInfraCount++;
       }
 
-      // 2. Cell Tower Proximity (OpenCellID)
       if (cellTowers.length > 0) {
         for (const cell of cellTowers) {
           const dist = getDistSq(p, { lat: cell.lat, lon: cell.lon });
           if (dist < minCellDist) minCellDist = dist;
-          if (minCellDist < 1) break; // Optimization: close enough
+          if (minCellDist < 1) break;
         }
       }
 
-      // 3. Match Escape Points (within 2.5km)
       for (const element of escapeElements) {
         const center = element.center || { lat: element.lat, lon: element.lon };
         const dist = getDistSq(p, center);
@@ -195,7 +193,6 @@ export async function POST(request: NextRequest) {
       const tags = closestWay?.tags || {};
       const escapeTags = closestEscape?.tags || {};
 
-      // 4. Extract water sources (within 1.5km)
       const waterSources: any[] = waterElements
         .map((el: any) => {
           const center = el.center || { lat: el.lat, lon: el.lon };
@@ -214,8 +211,6 @@ export async function POST(request: NextRequest) {
         })
         .filter(Boolean);
 
-      // Coverage logic: only report real values when we have actual tower data.
-      // If no API key or no towers were returned, mark as 'unknown' (data unavailable).
       let coverage: 'none' | 'low' | 'full' | 'unknown' = 'unknown';
       if (process.env.OPENCELLID_API_KEY && cellTowers.length > 0) {
         coverage = 'full';
@@ -236,7 +231,13 @@ export async function POST(request: NextRequest) {
           ? {
               lat: closestEscape.center?.lat || closestEscape.lat,
               lon: closestEscape.center?.lon || closestEscape.lon,
-              name: escapeTags.name || (escapeTags.tourism ? 'Refugio' : escapeTags.highway ? 'Carretera principal' : 'Núcleo urbano'),
+              name:
+                escapeTags.name ||
+                (escapeTags.tourism
+                  ? 'Refugio'
+                  : escapeTags.highway
+                    ? 'Carretera principal'
+                    : 'Núcleo urbano'),
               type: escapeTags.tourism ? 'shelter' : escapeTags.place ? 'town' : 'road',
               distanceFromRoute: Math.round(minEscapeDist * 10) / 10,
             }
