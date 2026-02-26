@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSession, signIn } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
-import { Loader2, Bike, Footprints, Activity } from 'lucide-react';
+import { Loader2, Bike, Footprints, Activity, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -39,6 +39,7 @@ export function StravaImport({ onRouteLoaded }: StravaImportProps) {
   const [routes, setRoutes] = useState<StravaRoute[]>([]);
   const [loadingList, setLoadingList] = useState(false);
   const [importingId, setImportingId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -74,6 +75,7 @@ export function StravaImport({ onRouteLoaded }: StravaImportProps) {
       }
 
       const gpxContent = await res.text();
+      setSelectedId(String(item.id));
       onRouteLoaded(gpxContent, `${item.name}.gpx`, item.activityType);
     } catch {
       setError(t('stravaImportError'));
@@ -117,31 +119,39 @@ export function StravaImport({ onRouteLoaded }: StravaImportProps) {
                 </p>
               ) : (
                 <ul className="custom-scrollbar flex max-h-64 flex-col gap-2 overflow-y-auto pr-1">
-                  {activities.map((a) => (
-                    <li key={a.id}>
-                      <button
-                        className="border-border bg-secondary hover:border-primary/30 flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-all disabled:opacity-50"
-                        onClick={() => handleImport('activity', a)}
-                        disabled={importingId === String(a.id)}
-                      >
-                        {a.activityType === 'cycling' ? (
-                          <Bike className="text-muted-foreground h-4 w-4 shrink-0" />
-                        ) : (
-                          <Footprints className="text-muted-foreground h-4 w-4 shrink-0" />
-                        )}
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium">{a.name}</p>
-                          <p className="text-muted-foreground text-xs">
-                            {a.distance} km · +{a.elevationGain} m ·{' '}
-                            {new Date(a.date).toLocaleDateString()}
-                          </p>
-                        </div>
-                        {importingId === String(a.id) && (
-                          <Loader2 className="text-muted-foreground h-4 w-4 shrink-0 animate-spin" />
-                        )}
-                      </button>
-                    </li>
-                  ))}
+                  {activities.map((a) => {
+                    const id = String(a.id);
+                    const isSelected = selectedId === id;
+                    const isImporting = importingId === id;
+                    return (
+                      <li key={a.id}>
+                        <button
+                          className={`flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-all disabled:opacity-50 ${
+                            isSelected
+                              ? 'border-primary bg-primary/10 text-foreground'
+                              : 'border-border bg-secondary hover:border-primary/30'
+                          }`}
+                          onClick={() => handleImport('activity', a)}
+                          disabled={isImporting}
+                        >
+                          {a.activityType === 'cycling' ? (
+                            <Bike className={`h-4 w-4 shrink-0 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
+                          ) : (
+                            <Footprints className={`h-4 w-4 shrink-0 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium">{a.name}</p>
+                            <p className="text-muted-foreground text-xs">
+                              {a.distance} km · +{a.elevationGain} m ·{' '}
+                              {new Date(a.date).toLocaleDateString()}
+                            </p>
+                          </div>
+                          {isImporting && <Loader2 className="text-muted-foreground h-4 w-4 shrink-0 animate-spin" />}
+                          {isSelected && !isImporting && <CheckCircle2 className="text-primary h-4 w-4 shrink-0" />}
+                        </button>
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </TabsContent>
@@ -153,30 +163,38 @@ export function StravaImport({ onRouteLoaded }: StravaImportProps) {
                 </p>
               ) : (
                 <ul className="custom-scrollbar flex max-h-64 flex-col gap-2 overflow-y-auto pr-1">
-                  {routes.map((r) => (
-                    <li key={r.id}>
-                      <button
-                        className="border-border bg-secondary hover:border-primary/30 flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-all disabled:opacity-50"
-                        onClick={() => handleImport('route', r)}
-                        disabled={importingId === String(r.id)}
-                      >
-                        {r.activityType === 'cycling' ? (
-                          <Bike className="text-muted-foreground h-4 w-4 shrink-0" />
-                        ) : (
-                          <Footprints className="text-muted-foreground h-4 w-4 shrink-0" />
-                        )}
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium">{r.name}</p>
-                          <p className="text-muted-foreground text-xs">
-                            {r.distance} km · +{r.elevationGain} m
-                          </p>
-                        </div>
-                        {importingId === String(r.id) && (
-                          <Loader2 className="text-muted-foreground h-4 w-4 shrink-0 animate-spin" />
-                        )}
-                      </button>
-                    </li>
-                  ))}
+                  {routes.map((r) => {
+                    const id = String(r.id);
+                    const isSelected = selectedId === id;
+                    const isImporting = importingId === id;
+                    return (
+                      <li key={r.id}>
+                        <button
+                          className={`flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-all disabled:opacity-50 ${
+                            isSelected
+                              ? 'border-primary bg-primary/10 text-foreground'
+                              : 'border-border bg-secondary hover:border-primary/30'
+                          }`}
+                          onClick={() => handleImport('route', r)}
+                          disabled={isImporting}
+                        >
+                          {r.activityType === 'cycling' ? (
+                            <Bike className={`h-4 w-4 shrink-0 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
+                          ) : (
+                            <Footprints className={`h-4 w-4 shrink-0 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium">{r.name}</p>
+                            <p className="text-muted-foreground text-xs">
+                              {r.distance} km · +{r.elevationGain} m
+                            </p>
+                          </div>
+                          {isImporting && <Loader2 className="text-muted-foreground h-4 w-4 shrink-0 animate-spin" />}
+                          {isSelected && !isImporting && <CheckCircle2 className="text-primary h-4 w-4 shrink-0" />}
+                        </button>
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </TabsContent>
