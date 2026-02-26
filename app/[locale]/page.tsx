@@ -24,6 +24,7 @@ import {
   ArrowRight,
   CheckCircle2,
   Globe,
+  Github,
 } from 'lucide-react';
 import { LogoIcon } from '@/app/_components/logo-icon';
 import { LandingThemeToggle } from './landing/_components/landing-theme-toggle';
@@ -42,6 +43,15 @@ function Nav() {
         <div className="flex items-center gap-2">
           <LocaleSwitcher />
           <LandingThemeToggle />
+          <a
+            href="https://github.com/magutierrez/zustrack"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-white/50 dark:hover:bg-white/8 dark:hover:text-white"
+            aria-label="GitHub"
+          >
+            <Github className="h-4.5 w-4.5" />
+          </a>
           <Link
             href="/app/login"
             className="flex items-center gap-1.5 rounded-lg bg-[#3b82f6] px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-blue-500/20 transition-all hover:bg-[#2563eb]"
