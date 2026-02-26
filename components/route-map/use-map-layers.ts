@@ -10,6 +10,7 @@ export function useMapLayers(
   weatherPoints?: RouteWeatherPoint[],
   activeFilter?: ActiveFilter,
   selectedRange?: { start: number; end: number } | null,
+  routeInfoData?: any[],
 ) {
   const routeData = useMemo<Feature<LineString> | null>(() => {
     if (points.length === 0) return null;
@@ -30,8 +31,7 @@ export function useMapLayers(
   }, [points]);
 
   const highlightedData = useMemo<FeatureCollection<LineString> | null>(() => {
-    if (!activeFilter || !weatherPoints || weatherPoints.length < 2 || points.length < 2)
-      return null;
+    if (!activeFilter || points.length < 2) return null;
 
     const features: Feature<LineString>[] = [];
 
@@ -64,19 +64,29 @@ export function useMapLayers(
       const filterKey = activeFilter.key;
       const colorMap = filterKey === 'pathType' ? PATH_TYPE_COLORS : SURFACE_COLORS;
       const segmentColor = colorMap[activeFilter.value] || colorMap.unknown;
+
+      // Use routeInfoData as priority for pathType/surface, fallback to weatherPoints
+      const dataForFiltering =
+        routeInfoData && routeInfoData.length > 0 ? routeInfoData : weatherPoints;
+
+      if (!dataForFiltering || dataForFiltering.length === 0) return null;
+
       let currentSegment: number[][] = [];
 
       points.forEach((p) => {
-        let matchingWp = weatherPoints[0];
-        for (let j = 0; j < weatherPoints.length; j++) {
-          if (p.distanceFromStart <= weatherPoints[j].point.distanceFromStart) {
-            matchingWp = weatherPoints[j];
+        let matchingData = dataForFiltering[0];
+        for (let j = 0; j < dataForFiltering.length; j++) {
+          const dataPoint = dataForFiltering[j];
+          const dataDist = dataPoint.distanceFromStart ?? dataPoint.point?.distanceFromStart;
+
+          if (p.distanceFromStart <= dataDist) {
+            matchingData = dataPoint;
             break;
           }
-          if (j === weatherPoints.length - 1) matchingWp = weatherPoints[j];
+          if (j === dataForFiltering.length - 1) matchingData = dataPoint;
         }
 
-        const currentFilterValue = matchingWp[filterKey] || 'unknown';
+        const currentFilterValue = matchingData[filterKey] || 'unknown';
 
         if (currentFilterValue === activeFilter.value) {
           currentSegment.push([p.lon, p.lat]);
@@ -102,7 +112,7 @@ export function useMapLayers(
     }
 
     return features.length > 0 ? { type: 'FeatureCollection', features } : null;
-  }, [activeFilter, weatherPoints, points]);
+  }, [activeFilter, weatherPoints, points, routeInfoData]);
 
   const rangeHighlightData = useMemo<Feature<LineString> | null>(() => {
     if (!selectedRange || points.length < 2) return null;

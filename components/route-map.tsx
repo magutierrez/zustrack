@@ -63,7 +63,11 @@ interface RouteMapProps {
   onToggleMobileFullscreen?: () => void;
 }
 
-export default function RouteMap({ onResetToFullRouteView, isMobileFullscreen, onToggleMobileFullscreen }: RouteMapProps) {
+export default function RouteMap({
+  onResetToFullRouteView,
+  isMobileFullscreen,
+  onToggleMobileFullscreen,
+}: RouteMapProps) {
   const { resolvedTheme } = useTheme();
   const locale = useLocale();
   const tMap = useTranslations('HomePage');
@@ -79,6 +83,7 @@ export default function RouteMap({ onResetToFullRouteView, isMobileFullscreen, o
   const chartHoverPoint = useRouteStore((s) => s.chartHoverPoint);
   const activeFilter = useRouteStore((s) => s.activeFilter);
   const selectedRange = useRouteStore((s) => s.selectedRange);
+  const routeInfoData = useRouteStore((s) => s.routeInfoData);
   const activityType = useRouteStore((s) => s.fetchedActivityType);
   const showWaterSources = useRouteStore((s) => s.showWaterSources);
   const showNoCoverageZones = useRouteStore((s) => s.showNoCoverageZones);
@@ -129,7 +134,9 @@ export default function RouteMap({ onResetToFullRouteView, isMobileFullscreen, o
     // Use the dense GPX points so the heatmap flows continuously along the route shape.
     const features: Feature[] = [];
     for (const p of points) {
-      const range = merged.find((r) => p.distanceFromStart >= r.start && p.distanceFromStart <= r.end);
+      const range = merged.find(
+        (r) => p.distanceFromStart >= r.start && p.distanceFromStart <= r.end,
+      );
       if (!range) continue;
       features.push({
         type: 'Feature',
@@ -154,6 +161,7 @@ export default function RouteMap({ onResetToFullRouteView, isMobileFullscreen, o
     weatherPoints.length > 0 ? weatherPoints : undefined,
     activeFilter,
     selectedRange,
+    routeInfoData,
   );
 
   const { resetToFullRouteView } = useMapView(mapRef, points, selectedRange);
@@ -181,13 +189,21 @@ export default function RouteMap({ onResetToFullRouteView, isMobileFullscreen, o
   // Kept in a ref so the stable applyMapLanguage callback always reads the latest value.
   const langExpression = useMemo(() => {
     if (locale === 'ca')
-      return ['coalesce', ['get', 'name:ca'], ['get', 'name:es'], ['get', 'name:latin'], ['get', 'name']];
+      return [
+        'coalesce',
+        ['get', 'name:ca'],
+        ['get', 'name:es'],
+        ['get', 'name:latin'],
+        ['get', 'name'],
+      ];
     if (locale === 'es')
       return ['coalesce', ['get', 'name:es'], ['get', 'name:latin'], ['get', 'name']];
     return ['coalesce', ['get', 'name:en'], ['get', 'name:latin'], ['get', 'name']];
   }, [locale]);
   const langExpressionRef = useRef(langExpression);
-  useEffect(() => { langExpressionRef.current = langExpression; }, [langExpression]);
+  useEffect(() => {
+    langExpressionRef.current = langExpression;
+  }, [langExpression]);
 
   const applyMapLanguage = useCallback((map: maplibregl.Map) => {
     if (!map.isStyleLoaded()) return;
@@ -195,7 +211,9 @@ export default function RouteMap({ onResetToFullRouteView, isMobileFullscreen, o
       if (layer.type === 'symbol' && (layer.layout as any)?.['text-field']) {
         try {
           map.setLayoutProperty(layer.id, 'text-field', langExpressionRef.current);
-        } catch { /* layer may not support text-field */ }
+        } catch {
+          /* layer may not support text-field */
+        }
       }
     }
   }, []);
@@ -453,7 +471,12 @@ export default function RouteMap({ onResetToFullRouteView, isMobileFullscreen, o
   if (!mounted) return null;
 
   return (
-    <div className={cn('border-border relative h-full w-full overflow-hidden border', isMobileFullscreen && 'mobile-fullscreen-map')}>
+    <div
+      className={cn(
+        'border-border relative h-full w-full overflow-hidden border',
+        isMobileFullscreen && 'mobile-fullscreen-map',
+      )}
+    >
       <Map
         ref={mapRef}
         mapLib={maplibregl}
@@ -531,21 +554,15 @@ export default function RouteMap({ onResetToFullRouteView, isMobileFullscreen, o
       {onToggleMobileFullscreen && !(isMobile && activePopupData) && (
         <button
           onClick={onToggleMobileFullscreen}
-          className="absolute top-3 right-3 z-20 rounded-lg border border-border bg-background/80 p-2 shadow-md backdrop-blur-sm lg:hidden"
+          className="border-border bg-background/80 absolute top-3 right-3 z-20 rounded-lg border p-2 shadow-md backdrop-blur-sm lg:hidden"
           aria-label={isMobileFullscreen ? tMap('collapseMap') : tMap('expandMap')}
         >
-          {isMobileFullscreen ? (
-            <X className="h-4 w-4" />
-          ) : (
-            <Maximize2 className="h-4 w-4" />
-          )}
+          {isMobileFullscreen ? <X className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
         </button>
       )}
 
       {/* Layer selector — shifted below fullscreen button on mobile, hidden when popup active */}
-      {!(isMobile && activePopupData) && (
-        <LayerControl mapType={mapType} setMapType={setMapType} />
-      )}
+      {!(isMobile && activePopupData) && <LayerControl mapType={mapType} setMapType={setMapType} />}
 
       <style jsx global>{`
         .weather-popup .maplibregl-popup-content {
