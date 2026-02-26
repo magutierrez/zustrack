@@ -538,8 +538,7 @@
   },
   "Landing": {
     "nav": {
-      "login": "Iniciar sessió",
-      "startFree": "Començar gratis"
+      "access": "Accedir"
     },
     "hero": {
       "badge": "Anàlisi meteorològica de ruta · Open-Meteo API",
@@ -670,7 +669,7 @@
       "title1": "Llest per sortir",
       "title2": "amb confiança?",
       "subtitle": "Uneix-te i analitza la teva propera ruta gratis. Només necessites un compte de Google o Strava.",
-      "button": "Començar gratis",
+      "button": "Accedir",
       "footnote": "Sense targeta de crèdit · Dades locals · Open source"
     },
     "footer": {

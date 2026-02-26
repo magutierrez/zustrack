@@ -43,16 +43,10 @@ function Nav() {
           <LocaleSwitcher />
           <LandingThemeToggle />
           <Link
-            href="/login"
-            className="hidden text-sm text-slate-500 transition-colors hover:text-slate-900 sm:block dark:text-white/60 dark:hover:text-white"
-          >
-            {t('login')}
-          </Link>
-          <Link
-            href="/login"
+            href="/app/login"
             className="flex items-center gap-1.5 rounded-lg bg-[#3b82f6] px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-blue-500/20 transition-all hover:bg-[#2563eb]"
           >
-            {t('startFree')} <ChevronRight className="h-3.5 w-3.5" />
+            {t('access')} <ChevronRight className="h-3.5 w-3.5" />
           </Link>
         </div>
       </div>

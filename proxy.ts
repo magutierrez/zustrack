@@ -27,16 +27,26 @@ export async function proxy(request: NextRequest) {
   // Strip locale prefix to get the clean path for auth checks
   const cleanPath = pathname.slice(locale.length + 1) || '/';
 
+  const isLoginPath = cleanPath.startsWith('/app/login');
+
   const isPublicPath =
     cleanPath === '/' ||
     cleanPath.startsWith('/terms') ||
     cleanPath.startsWith('/privacy') ||
-    cleanPath.startsWith('/app/login');
+    isLoginPath;
 
   if (!isPublicPath) {
     const session = await auth();
     if (!session?.user) {
       return NextResponse.redirect(new URL(`/${locale}/app/login`, request.url));
+    }
+  }
+
+  // Already logged in → skip the login page
+  if (isLoginPath) {
+    const session = await auth();
+    if (session?.user) {
+      return NextResponse.redirect(new URL(`/${locale}/app/setup`, request.url));
     }
   }
 
