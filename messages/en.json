@@ -63,7 +63,11 @@
       "readError": "Error reading GPX file. Check the format.",
       "noRouteSelected": "Please select or upload a route to analyze.",
       "saveError": "Error saving the route to the local database."
-    }
+    },
+    "tabGPX": "GPX",
+    "tabSaved": "Saved",
+    "tabWikiloc": "Wikiloc",
+    "tabStrava": "Strava"
   },
   "Hazards": {
     "title": "Critical Segments",

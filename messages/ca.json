@@ -63,7 +63,11 @@
       "readError": "Error en llegir l'arxiu GPX. Verifica el format.",
       "noRouteSelected": "Si us plau, selecciona o puja una ruta per analitzar.",
       "saveError": "Error en guardar la ruta a la base de dades local."
-    }
+    },
+    "tabGPX": "GPX",
+    "tabSaved": "Guardades",
+    "tabWikiloc": "Wikiloc",
+    "tabStrava": "Strava"
   },
   "Hazards": {
     "title": "Trams Crítics",
