@@ -19,10 +19,15 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-jetbrains-mono' });
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://www.zustrack.com';
+
 export const metadata: Metadata = {
-  title: 'zustrack - Forecast para tus rutas',
-  description:
-    'Sube tu archivo GPX y obtiene el forecast del tiempo para tu ruta en bici o hiking. Viento, temperatura y clima en cada punto.',
+  metadataBase: new URL(BASE_URL),
+  title: {
+    default: 'zustrack',
+    template: '%s | zustrack',
+  },
+  applicationName: 'zustrack',
 };
 
 export const viewport: Viewport = {

@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { LineString, TWKB } from '@/lib/tkwb-parser';
 import { base64ToUint8Array } from '@/lib/utils';
 
+// Edge runtime: runs on Cloudflare's edge network instead of AWS Lambda,
+// which has better IP reputation and avoids Wikiloc's data-center IP blocks.
+export const runtime = 'edge';
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const url = searchParams.get('url');
@@ -10,11 +14,33 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'URL is required' }, { status: 400 });
   }
 
+  // Only allow wikiloc.com URLs
+  try {
+    const parsed = new URL(url);
+    if (!parsed.hostname.endsWith('wikiloc.com')) {
+      return NextResponse.json({ error: 'Only Wikiloc URLs are supported' }, { status: 400 });
+    }
+  } catch {
+    return NextResponse.json({ error: 'Invalid URL' }, { status: 400 });
+  }
+
   try {
     const response = await fetch(url, {
       headers: {
         'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+        Accept:
+          'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+        'Accept-Language': 'es-ES,es;q=0.9,en-US;q=0.8,en;q=0.7',
+        'Cache-Control': 'no-cache',
+        Pragma: 'no-cache',
+        // Simulate navigating from within Wikiloc itself
+        Referer: 'https://www.wikiloc.com/',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'same-origin',
+        'Sec-Fetch-User': '?1',
+        'Upgrade-Insecure-Requests': '1',
       },
     });
 
@@ -39,6 +65,10 @@ export async function GET(request: NextRequest) {
           const points = geometry.coordinates.map((coordinates) => ({
             lat: coordinates[1],
             lon: coordinates[0],
+            // coordinates[2] is elevation (metres) when the TWKB geometry is 3D
+            ...(coordinates.length > 2 && coordinates[2] !== undefined
+              ? { ele: coordinates[2] }
+              : {}),
           }));
 
           if (points.length > 0) {

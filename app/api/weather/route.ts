@@ -9,6 +9,8 @@ interface WeatherRequest {
   }>;
 }
 
+export const runtime = 'edge';
+
 export async function POST(request: NextRequest) {
   try {
     const body: WeatherRequest = await request.json();

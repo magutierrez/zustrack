@@ -27,11 +27,13 @@ export async function proxy(request: NextRequest) {
   // Strip locale prefix to get the clean path for auth checks
   const cleanPath = pathname.slice(locale.length + 1) || '/';
 
+  const isLoginPath = cleanPath.startsWith('/app/login');
+
   const isPublicPath =
     cleanPath === '/' ||
     cleanPath.startsWith('/terms') ||
     cleanPath.startsWith('/privacy') ||
-    cleanPath.startsWith('/app/login');
+    isLoginPath;
 
   if (!isPublicPath) {
     const session = await auth();
@@ -40,9 +42,19 @@ export async function proxy(request: NextRequest) {
     }
   }
 
+  // Already logged in → skip the login page
+  if (isLoginPath) {
+    const session = await auth();
+    if (session?.user) {
+      return NextResponse.redirect(new URL(`/${locale}/app/setup`, request.url));
+    }
+  }
+
   return intlMiddleware(request);
 }
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+  // Exclude: API routes, Next.js internals, and any path with a file extension
+  // (e.g. /og.png, /favicon.ico, /robots.txt, /sitemap.xml, ...)
+  matcher: ['/((?!api|_next|.*\\.[^/]+$).*)'],
 };

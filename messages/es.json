@@ -63,7 +63,13 @@
       "readError": "Error al leer el archivo GPX. Verifica el formato.",
       "noRouteSelected": "Por favor, selecciona o sube una ruta para analizar.",
       "saveError": "Error al guardar la ruta en la base de datos local."
-    }
+    },
+    "tabGPX": "GPX",
+    "tabSaved": "Guardadas",
+    "tabWikiloc": "Wikiloc",
+    "tabStrava": "Strava",
+    "wikilocImported": "Ruta importada",
+    "wikilocPoints": "{count} puntos"
   },
   "Hazards": {
     "title": "Tramos Críticos",
@@ -538,8 +544,7 @@
   },
   "Landing": {
     "nav": {
-      "login": "Iniciar sesión",
-      "startFree": "Empezar gratis"
+      "access": "Acceder"
     },
     "hero": {
       "badge": "Análisis meteorológico de ruta · Open-Meteo API",
@@ -670,7 +675,7 @@
       "title1": "¿Listo para salir",
       "title2": "con confianza?",
       "subtitle": "Únete y analiza tu próxima ruta gratis. Solo necesitas una cuenta de Google o Strava.",
-      "button": "Empezar gratis",
+      "button": "Acceder",
       "footnote": "Sin tarjeta de crédito · Datos locales · Open source"
     },
     "footer": {

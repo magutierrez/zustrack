@@ -3,21 +3,20 @@
 import { useMemo, useCallback } from 'react';
 import { useRouteStore } from '@/store/route-store';
 import { PATH_TYPE_COLORS, SURFACE_COLORS } from '@/lib/route-colors';
-import type { RouteWeatherPoint } from '@/lib/types';
 
 function getBreakdown(
-  weatherPoints: RouteWeatherPoint[],
+  points: any[],
   key: 'pathType' | 'surface',
   colorMap: Record<string, string>,
 ) {
   const distances: Record<string, number> = {};
   let totalDist = 0;
 
-  for (let i = 0; i < weatherPoints.length; i++) {
-    const wp = weatherPoints[i];
-    const val = wp[key] || 'unknown';
-    const prevDist = i > 0 ? weatherPoints[i - 1].point.distanceFromStart : 0;
-    const segmentDist = wp.point.distanceFromStart - prevDist;
+  for (let i = 0; i < points.length; i++) {
+    const p = points[i];
+    const val = p[key] || 'unknown';
+    const prevDist = i > 0 ? points[i - 1].distanceFromStart : 0;
+    const segmentDist = p.distanceFromStart - prevDist;
     distances[val] = (distances[val] || 0) + segmentDist;
     totalDist += segmentDist;
   }
@@ -33,19 +32,19 @@ function getBreakdown(
 }
 
 export function useRouteSegments() {
-  const weatherPoints = useRouteStore((s) => s.weatherPoints);
+  const routeInfoData = useRouteStore((s) => s.routeInfoData);
   const activeFilter = useRouteStore((s) => s.activeFilter);
   const setActiveFilter = useRouteStore((s) => s.setActiveFilter);
   const setSelectedRange = useRouteStore((s) => s.setSelectedRange);
 
   const pathBreakdown = useMemo(
-    () => getBreakdown(weatherPoints, 'pathType', PATH_TYPE_COLORS),
-    [weatherPoints],
+    () => getBreakdown(routeInfoData, 'pathType', PATH_TYPE_COLORS),
+    [routeInfoData],
   );
 
   const surfaceBreakdown = useMemo(
-    () => getBreakdown(weatherPoints, 'surface', SURFACE_COLORS),
-    [weatherPoints],
+    () => getBreakdown(routeInfoData, 'surface', SURFACE_COLORS),
+    [routeInfoData],
   );
 
   const handleSegmentClick = useCallback(
@@ -55,15 +54,16 @@ export function useRouteSegments() {
         setSelectedRange(null);
       } else {
         setActiveFilter({ key, value });
-        const matchingPoints = weatherPoints.filter((wp) => (wp[key] || 'unknown') === value);
+        const matchingPoints = routeInfoData.filter((p) => (p[key] || 'unknown') === value);
         if (matchingPoints.length > 0) {
-          const startDist = Math.min(...matchingPoints.map((p) => p.point.distanceFromStart));
-          const endDist = Math.max(...matchingPoints.map((p) => p.point.distanceFromStart));
+          const distances = matchingPoints.map((p) => p.distanceFromStart);
+          const startDist = Math.min(...distances);
+          const endDist = Math.max(...distances);
           setSelectedRange({ start: startDist, end: endDist });
         }
       }
     },
-    [activeFilter, setActiveFilter, setSelectedRange, weatherPoints],
+    [activeFilter, setActiveFilter, setSelectedRange, routeInfoData],
   );
 
   return { pathBreakdown, surfaceBreakdown, handleSegmentClick, activeFilter };

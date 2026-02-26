@@ -64,7 +64,7 @@ export function MapPopup({ popupInfo, onClose, mobileMode }: MapPopupProps) {
 
   if (showStreetView) {
     return (
-      <div className="bg-background animate-in fade-in absolute inset-0 z-[100] flex flex-col duration-200">
+      <div className="bg-background animate-in fade-in absolute inset-0 z-[170] flex flex-col duration-200">
         <div className="border-border bg-card flex items-center justify-between border-b px-4 py-3 shadow-sm">
           <div className="flex items-center gap-4">
             <Button
@@ -131,12 +131,13 @@ export function MapPopup({ popupInfo, onClose, mobileMode }: MapPopupProps) {
           </span>
           {isWeatherPoint && (
             <span className="text-foreground font-mono text-[11px] font-bold">
-              {new Date(
-                popupInfo.point.estimatedTime || popupInfo.weather.time,
-              ).toLocaleTimeString('es-ES', {
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
+              {new Date(popupInfo.point.estimatedTime || popupInfo.weather.time).toLocaleTimeString(
+                'es-ES',
+                {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                },
+              )}
             </span>
           )}
         </div>
@@ -197,9 +198,7 @@ export function MapPopup({ popupInfo, onClose, mobileMode }: MapPopupProps) {
                 {getWindEffectIcon(popupInfo.windEffect)}
                 <span className="font-mono text-xs font-bold">
                   {Math.round(popupInfo.weather.windSpeed)}
-                  <span className="text-muted-foreground ml-0.5 text-[9px] font-normal">
-                    km/h
-                  </span>
+                  <span className="text-muted-foreground ml-0.5 text-[9px] font-normal">km/h</span>
                 </span>
               </div>
             </div>

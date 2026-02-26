@@ -63,7 +63,13 @@
       "readError": "Error reading GPX file. Check the format.",
       "noRouteSelected": "Please select or upload a route to analyze.",
       "saveError": "Error saving the route to the local database."
-    }
+    },
+    "tabGPX": "GPX",
+    "tabSaved": "Saved",
+    "tabWikiloc": "Wikiloc",
+    "tabStrava": "Strava",
+    "wikilocImported": "Route imported",
+    "wikilocPoints": "{count} waypoints"
   },
   "Hazards": {
     "title": "Critical Segments",
@@ -538,8 +544,7 @@
   },
   "Landing": {
     "nav": {
-      "login": "Sign in",
-      "startFree": "Start for free"
+      "access": "Log in"
     },
     "hero": {
       "badge": "Route weather analysis · Open-Meteo API",
@@ -670,7 +675,7 @@
       "title1": "Ready to go",
       "title2": "with confidence?",
       "subtitle": "Join and analyze your next route for free. All you need is a Google or Strava account.",
-      "button": "Start for free",
+      "button": "Log in",
       "footnote": "No credit card · Local data · Open source"
     },
     "footer": {

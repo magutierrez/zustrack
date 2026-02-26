@@ -16,7 +16,7 @@ import { WikilocImport } from '@/components/wikiloc-import';
 import { StravaImport } from '@/components/strava-import';
 import { SavedRoutesList } from '@/components/saved-routes-list';
 import { Button } from '@/components/ui/button';
-import { Bike, Footprints, ArrowRight, FileUp, History, Globe, Activity, Sun, Moon } from 'lucide-react';
+import { Bike, Footprints, ArrowRight, FileUp, History, Globe, Sun, Moon } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { LocaleSwitcher } from '@/app/_components/locale-switcher';
 import { useTheme } from 'next-themes';
@@ -170,22 +170,30 @@ export function SetupPageClient({ session: serverSession }: SetupPageClientProps
         <h1 className="text-foreground mb-6 text-center text-2xl font-bold">{t('title')}</h1>
 
         <Tabs defaultValue="gpx" className="mb-8 w-full">
-          <TabsList className="custom-scrollbar mb-6 flex w-full items-center justify-start overflow-x-auto overflow-y-hidden md:grid md:grid-cols-4 md:justify-center">
-            <TabsTrigger value="gpx" className="min-w-fit gap-2 md:w-full">
-              <FileUp className="h-4 w-4" />
-              <span>{t('uploadGPX')}</span>
+          <TabsList className="mb-6 grid h-auto w-full grid-cols-4">
+            <TabsTrigger value="gpx" className="flex-col gap-1 py-2.5">
+              <FileUp className="h-4 w-4 shrink-0" />
+              <span className="text-[11px] leading-none">{t('tabGPX')}</span>
             </TabsTrigger>
-            <TabsTrigger value="saved" className="min-w-fit gap-2 md:w-full">
-              <History className="h-4 w-4" />
-              <span>{t('savedRoutes')}</span>
+            <TabsTrigger value="saved" className="flex-col gap-1 py-2.5">
+              <History className="h-4 w-4 shrink-0" />
+              <span className="text-[11px] leading-none">{t('tabSaved')}</span>
             </TabsTrigger>
-            <TabsTrigger value="wikiloc" className="min-w-fit gap-2 md:w-full">
-              <Globe className="h-4 w-4" />
-              <span>{t('wikiloc')}</span>
+            <TabsTrigger value="wikiloc" className="flex-col gap-1 py-2.5">
+              <Globe className="h-4 w-4 shrink-0" />
+              <span className="text-[11px] leading-none">{t('tabWikiloc')}</span>
             </TabsTrigger>
-            <TabsTrigger value="strava" className="min-w-fit gap-2 md:w-full">
-              <Activity className="h-4 w-4" />
-              <span>{t('strava')}</span>
+            <TabsTrigger value="strava" className="flex-col gap-1 py-2.5">
+              <svg
+                className="h-4 w-4 shrink-0"
+                viewBox="0 0 64 64"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="M27.898 21.944l7.564 14.928h11.124L27.898 0 9.234 36.876H20.35" fill="#f05222" />
+                <path d="M41.03 47.852l-5.572-10.976h-8.172L41.03 64l13.736-27.124h-8.18" fill="#f9b797" />
+              </svg>
+              <span className="text-[11px] leading-none">{t('tabStrava')}</span>
             </TabsTrigger>
           </TabsList>
 

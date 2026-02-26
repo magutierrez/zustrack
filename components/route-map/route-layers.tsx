@@ -59,19 +59,17 @@ export function RouteLayers({
             type="symbol"
             layout={{
               'symbol-placement': 'line',
-              'symbol-spacing': 80, // More frequent arrows
-              'text-field': '>',
-              'text-size': ['interpolate', ['linear'], ['zoom'], 10, 12, 18, 24],
-              'text-keep-upright': false,
-              'text-allow-overlap': true,
-              'text-rotate': 0, // In line-placement, 0 is along the line
-              'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+              'symbol-spacing': 80,
+              'icon-image': 'route-arrow',
+              'icon-size': ['interpolate', ['linear'], ['zoom'], 10, 0.45, 18, 0.85],
+              'icon-allow-overlap': true,
+              'icon-keep-upright': false,
+              'icon-rotation-alignment': 'map',
             }}
             paint={{
-              'text-color': mapType === 'standard' ? '#000' : '#ffffff',
-              'text-opacity': activeFilter || selectedRange ? 0.4 : 1,
-              'text-halo-color': mapType === 'standard' ? '#ffffff' : '#000000',
-              'text-halo-width': 2,
+              'icon-color': mapType === 'standard' ? '#000000' : '#ffffff',
+              'icon-opacity': activeFilter || selectedRange ? 0.4 : 0.8,
+              'icon-halo-width': 0,
             }}
           />
         </Source>

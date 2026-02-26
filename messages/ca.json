@@ -63,7 +63,13 @@
       "readError": "Error en llegir l'arxiu GPX. Verifica el format.",
       "noRouteSelected": "Si us plau, selecciona o puja una ruta per analitzar.",
       "saveError": "Error en guardar la ruta a la base de dades local."
-    }
+    },
+    "tabGPX": "GPX",
+    "tabSaved": "Guardades",
+    "tabWikiloc": "Wikiloc",
+    "tabStrava": "Strava",
+    "wikilocImported": "Ruta importada",
+    "wikilocPoints": "{count} punts"
   },
   "Hazards": {
     "title": "Trams Crítics",
@@ -538,8 +544,7 @@
   },
   "Landing": {
     "nav": {
-      "login": "Iniciar sessió",
-      "startFree": "Començar gratis"
+      "access": "Accedir"
     },
     "hero": {
       "badge": "Anàlisi meteorològica de ruta · Open-Meteo API",
@@ -670,7 +675,7 @@
       "title1": "Llest per sortir",
       "title2": "amb confiança?",
       "subtitle": "Uneix-te i analitza la teva propera ruta gratis. Només necessites un compte de Google o Strava.",
-      "button": "Començar gratis",
+      "button": "Accedir",
       "footnote": "Sense targeta de crèdit · Dades locals · Open source"
     },
     "footer": {
