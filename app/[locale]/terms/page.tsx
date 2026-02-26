@@ -1,11 +1,21 @@
-import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
+import { cacheLife, cacheTag } from 'next/cache';
 import { Mountain, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-export default function TermsPage() {
-  const t = useTranslations('Terms');
+export default async function TermsPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  'use cache';
+  const { locale } = await params;
+  cacheTag(`terms-${locale}`);
+  cacheLife('weeks');
+
+  const t = await getTranslations({ locale, namespace: 'Terms' });
 
   return (
     <div className="bg-background flex min-h-screen flex-col items-center p-4 md:p-8">
@@ -22,7 +32,7 @@ export default function TermsPage() {
             <Mountain className="text-primary h-6 w-6" />
             <span className="text-xl font-bold">zustrack</span>
           </div>
-          <div className="w-20" /> {/* Spacer */}
+          <div className="w-20" />
         </div>
 
         <Card className="border-border shadow-sm">

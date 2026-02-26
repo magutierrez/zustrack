@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter, Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google';
-import { connection } from 'next/server';
-import { getLocale } from 'next-intl/server';
+import { Suspense } from 'react';
 
 import { ThemeProvider } from '@/components/theme-provider';
 import { SettingsProvider } from '@/components/settings-provider';
@@ -37,26 +36,25 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  await connection();
-  const locale = await getLocale();
-
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${inter.variable} ${plusJakartaSans.variable} ${jetbrainsMono.variable} font-sans antialiased`}
       >
-        <SessionProvider>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <SettingsProvider>
-              {children}
-            </SettingsProvider>
-          </ThemeProvider>
-        </SessionProvider>
+        <Suspense>
+          <SessionProvider>
+            <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+              <SettingsProvider>
+                {children}
+              </SettingsProvider>
+            </ThemeProvider>
+          </SessionProvider>
+        </Suspense>
         <SpeedInsights />
         <Analytics />
       </body>

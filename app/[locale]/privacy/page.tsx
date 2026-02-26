@@ -1,11 +1,21 @@
-import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
+import { cacheLife, cacheTag } from 'next/cache';
 import { Mountain, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-export default function PrivacyPage() {
-  const t = useTranslations('Privacy');
+export default async function PrivacyPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  'use cache';
+  const { locale } = await params;
+  cacheTag(`privacy-${locale}`);
+  cacheLife('weeks');
+
+  const t = await getTranslations({ locale, namespace: 'Privacy' });
 
   return (
     <div className="bg-background flex min-h-screen flex-col items-center p-4 md:p-8">
@@ -16,14 +26,13 @@ export default function PrivacyPage() {
           <Link href="/app/login">
             <Button variant="ghost" size="sm" className="gap-2">
               <ArrowLeft className="h-4 w-4" />
-              {/* Back button label if needed, or just the icon */}
             </Button>
           </Link>
           <div className="flex items-center gap-2">
             <Mountain className="text-primary h-6 w-6" />
             <span className="text-xl font-bold">zustrack</span>
           </div>
-          <div className="w-20" /> {/* Spacer */}
+          <div className="w-20" />
         </div>
 
         <Card className="border-border shadow-sm">

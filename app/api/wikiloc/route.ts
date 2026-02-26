@@ -2,10 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { LineString, TWKB } from '@/lib/tkwb-parser';
 import { base64ToUint8Array } from '@/lib/utils';
 
-// Edge runtime: runs on Cloudflare's edge network instead of AWS Lambda,
-// which has better IP reputation and avoids Wikiloc's data-center IP blocks.
-export const runtime = 'edge';
-
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const url = searchParams.get('url');
