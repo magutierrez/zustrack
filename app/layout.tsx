@@ -19,7 +19,7 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-jetbrains-mono' });
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://zustrack.com';
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://www.zustrack.com';
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),

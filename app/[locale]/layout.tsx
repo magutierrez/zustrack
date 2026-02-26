@@ -12,7 +12,7 @@ export function generateStaticParams() {
 // SEO metadata — per locale
 // ---------------------------------------------------------------------------
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://zustrack.com';
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://www.zustrack.com';
 
 const META = {
   en: {

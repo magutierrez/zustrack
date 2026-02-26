@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { routing } from '@/i18n/routing';
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://zustrack.com';
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://www.zustrack.com';
 
 const PUBLIC_PATHS = ['', '/terms', '/privacy'];
 
