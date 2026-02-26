@@ -6,6 +6,8 @@ interface Point {
   lon: number;
 }
 
+export const runtime = 'edge';
+
 // Fetch elevation for all points with Open-Meteo as primary and opentopodata.org as fallback.
 // opentopodata accepts max 100 locations per request, so long routes are chunked.
 async function fetchElevations(points: Point[]): Promise<number[]> {
