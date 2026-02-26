@@ -112,6 +112,37 @@ export async function generateMetadata({
 }
 
 // ---------------------------------------------------------------------------
+// JSON-LD structured data
+// ---------------------------------------------------------------------------
+
+function buildJsonLd(locale: string, m: { title: string; description: string }) {
+  const canonicalUrl = `${BASE_URL}/${locale}`;
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'zustrack',
+    url: canonicalUrl,
+    description: m.description,
+    applicationCategory: 'SportsApplication',
+    operatingSystem: 'All',
+    browserRequirements: 'Requires JavaScript',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'EUR',
+    },
+    featureList: [
+      'GPX route upload',
+      'Strava import',
+      'Point-by-point weather forecast',
+      'Elevation analysis',
+      'Risk detection',
+      'Mobile coverage map',
+    ],
+  };
+}
+
+// ---------------------------------------------------------------------------
 
 export default async function LocaleLayout({
   children,
@@ -129,9 +160,15 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
 
   const messages = await getMessages();
+  const m = META[(locale as Locale) in META ? (locale as Locale) : 'en'];
+  const jsonLd = buildJsonLd(locale, m);
 
   return (
     <NextIntlClientProvider messages={messages}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {children}
     </NextIntlClientProvider>
   );
