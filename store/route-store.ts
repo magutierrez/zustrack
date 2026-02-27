@@ -22,6 +22,7 @@ interface RouteState {
   config: RouteConfig;
 
   // ── Fetched route data (set by home-page-client from DB) ────────────────────
+  savedRouteId: string | null;
   fetchedRawGpxContent: string | null;
   fetchedGpxFileName: string | null;
   fetchedActivityType: 'cycling' | 'walking' | null;
@@ -67,6 +68,7 @@ interface RouteState {
     elevationGain: number;
     elevationLoss: number;
   }) => void;
+  setSavedRouteId: (id: string | null) => void;
   setLockedMetrics: (metrics: { distance: number; gain: number; loss: number } | null) => void;
   clearSelection: () => void;
   reset: () => void;
@@ -107,6 +109,7 @@ const initialState = {
   selectedPointIndex: null as number | null,
   config: { date: getDefaultDate(), time: '08:00', speed: 25 } as RouteConfig,
 
+  savedRouteId: null as string | null,
   fetchedRawGpxContent: null as string | null,
   fetchedGpxFileName: null as string | null,
   fetchedActivityType: null as 'cycling' | 'walking' | null,
@@ -179,6 +182,7 @@ export const useRouteStore = create<RouteState>()((set) => ({
       };
     }),
 
+  setSavedRouteId: (id) => set({ savedRouteId: id }),
   setLockedMetrics: (metrics) => set({ lockedMetrics: metrics }),
   clearSelection: () => set({ selectedRange: null, activeFilter: null }),
   reset: () =>

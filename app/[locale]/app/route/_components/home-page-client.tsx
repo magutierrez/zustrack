@@ -148,6 +148,7 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
     setGpxData,
     setGpxFileName,
     setLockedMetrics,
+    setSavedRouteId,
     setRecalculatedTotalDistance,
     setRecalculatedElevationGain,
     setRecalculatedElevationLoss,
@@ -221,6 +222,7 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
       const fetchRoute = async () => {
         const route = await getRouteFromDb(routeId, userIdentifier);
         if (route) {
+          setSavedRouteId(routeId);
           setFetchedRoute({
             rawGpxContent: route.gpx_content,
             gpxFileName: route.name,
@@ -237,7 +239,7 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
     } else if (!routeId) {
       router.replace('/app/setup');
     }
-  }, [routeId, session?.user?.email, session?.user?.id, setFetchedRoute, router]);
+  }, [routeId, session?.user?.email, session?.user?.id, setSavedRouteId, setFetchedRoute, router]);
 
   const onReverseWithRange = useCallback(() => {
     handleReverseRoute();

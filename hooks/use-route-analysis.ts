@@ -19,6 +19,7 @@ import {
   calculateSmartSpeed,
   calculateElevationGainLoss,
 } from '@/lib/utils';
+import { getRouteInfoFromDb, saveRouteInfoToDb } from '@/lib/db';
 import { useRouteStore } from '@/store/route-store';
 
 export function useRouteAnalysis() {
@@ -80,6 +81,17 @@ export function useRouteAnalysis() {
       return;
     }
 
+    const savedRouteId = useRouteStore.getState().savedRouteId;
+
+    // Check Dexie cache first to avoid redundant API calls
+    if (savedRouteId) {
+      const cached = await getRouteInfoFromDb(savedRouteId);
+      if (cached && cached.length > 0) {
+        setRouteInfoData(cached);
+        return;
+      }
+    }
+
     setIsRouteInfoLoading(true);
     try {
       const response = await fetch('/api/route-info', {
@@ -95,7 +107,11 @@ export function useRouteAnalysis() {
       });
       if (response.ok) {
         const data = await response.json();
-        setRouteInfoData(data.pathData || []);
+        const pathData = data.pathData || [];
+        setRouteInfoData(pathData);
+        if (savedRouteId && pathData.length > 0) {
+          saveRouteInfoToDb(savedRouteId, pathData);
+        }
       }
     } catch {
       setError(t('errors.unknownError'));
