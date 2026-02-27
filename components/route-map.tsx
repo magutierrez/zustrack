@@ -154,7 +154,7 @@ export default function RouteMap({
   const [isPlayerActive, setIsPlayerActive] = useState(false);
 
   const mapStyle = useMapStyle(mapType, resolvedTheme);
-  const { syncTerrain } = useMapTerrain(mapRef, mapStyle);
+  const { syncTerrain } = useMapTerrain(mapRef, mapStyle, isPlayerActive);
 
   const { routeData, highlightedData, rangeHighlightData } = useMapLayers(
     points,
