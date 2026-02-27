@@ -40,6 +40,7 @@ export function MobileElevationChart() {
           <XAxis dataKey="distance" hide />
           <YAxis hide domain={['auto', 'auto']} />
           <Tooltip
+            position={{ y: 4 }}
             content={({ active, payload }) => {
               if (active && payload && payload.length) {
                 const data = payload[0].payload;
@@ -50,20 +51,21 @@ export function MobileElevationChart() {
                     : data.elevation;
 
                 return (
-                  <div className="border-border bg-background/95 flex items-center gap-2 rounded-lg border p-1.5 shadow-lg backdrop-blur-sm">
-                    <div className="flex flex-col gap-0.5">
-                      <p className="text-muted-foreground text-[8px] font-black tracking-widest uppercase">
-                        {formatDistance(currentDist, unitSystem)}
-                      </p>
-                      <span className="text-foreground text-xs font-black">
-                        {formatElevation(displayEle, unitSystem)}
-                      </span>
-                    </div>
-                    <div className="border-border flex flex-col items-center gap-0.5 border-l pl-2">
-                      <span className="text-muted-foreground text-[7px] font-bold tracking-tighter uppercase">
-                        {t('slope')}
-                      </span>
-                      <span className="text-foreground font-mono text-[10px] font-black">
+                  <div className="border-border bg-background/90 flex items-center gap-1.5 rounded-md border px-2 py-1 shadow-md backdrop-blur-sm">
+                    <span className="text-foreground font-mono text-[10px] font-black">
+                      {formatElevation(displayEle, unitSystem)}
+                    </span>
+                    <span className="text-muted-foreground text-[8px]">·</span>
+                    <span className="text-muted-foreground text-[9px] font-bold">
+                      {formatDistance(currentDist, unitSystem)}
+                    </span>
+                    <span className="text-muted-foreground text-[8px]">·</span>
+                    <div className="flex items-center gap-0.5">
+                      <div
+                        className="h-1.5 w-1.5 rounded-full"
+                        style={{ backgroundColor: data.color }}
+                      />
+                      <span className="text-foreground font-mono text-[9px] font-black">
                         {data.slope}%
                       </span>
                     </div>

@@ -84,11 +84,11 @@ export function AnalysisChart() {
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={chartData}
-            onMouseDown={(e) => e && setRefAreaLeft(e.activeLabel as unknown as number)}
+            onMouseDown={isMobile ? undefined : (e) => e && setRefAreaLeft(e.activeLabel as unknown as number)}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
-            onMouseUp={zoom}
-            onDoubleClick={resetZoom}
+            onMouseUp={isMobile ? undefined : zoom}
+            onDoubleClick={isMobile ? undefined : resetZoom}
             margin={{ top: 5, right: isMobile ? 0 : 30, left: 0, bottom: 0 }}
           >
             <defs>
@@ -141,6 +141,7 @@ export function AnalysisChart() {
               hide={isMobile}
             />
             <Tooltip
+              position={isMobile ? { y: 4 } : undefined}
               content={({ active, payload }) => {
                 if (active && payload && payload.length) {
                   const data = payload[0].payload;
@@ -150,6 +151,30 @@ export function AnalysisChart() {
                     selectedPoint && Math.abs(selectedPoint.distanceFromStart - currentDist) < 0.05
                       ? selectedPoint.ele
                       : data.elevation;
+
+                  if (isMobile) {
+                    return (
+                      <div className="border-border bg-background/90 flex items-center gap-1.5 rounded-md border px-2 py-1 shadow-md backdrop-blur-sm">
+                        <span className="text-foreground font-mono text-[10px] font-black">
+                          {formatElevation(displayEle, unitSystem)}
+                        </span>
+                        <span className="text-muted-foreground text-[8px]">·</span>
+                        <span className="text-muted-foreground text-[9px] font-bold">
+                          {formatDistance(currentDist, unitSystem)}
+                        </span>
+                        <span className="text-muted-foreground text-[8px]">·</span>
+                        <div className="flex items-center gap-0.5">
+                          <div
+                            className="h-1.5 w-1.5 rounded-full"
+                            style={{ backgroundColor: data.color }}
+                          />
+                          <span className="text-foreground font-mono text-[9px] font-black">
+                            {data.slope}%
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  }
 
                   return (
                     <div className="border-border bg-background/95 animate-in fade-in zoom-in flex items-center gap-3 rounded-xl border p-2 shadow-xl backdrop-blur-sm duration-200 md:gap-4 md:p-3">
