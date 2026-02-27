@@ -7,6 +7,7 @@ import { useRouter } from '@/i18n/navigation';
 import { useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import polyline from '@mapbox/polyline';
+import LZString from 'lz-string';
 import { useRouteAnalysis } from '@/hooks/use-route-analysis';
 import { useRouteStore } from '@/store/route-store';
 import { getRouteFromDb } from '@/lib/db';
@@ -39,10 +40,35 @@ const RouteMap = dynamic(() => import('@/components/route-map'), {
   },
 });
 
-function decodeSharedRoute(encodedP: string, encodedE: string, name: string): GPXData {
-  const coords = polyline.decode(encodedP, 5);
+interface SharedRoutePayload {
+  p: string;
+  e: string;
+  n: string;
+  td: number;
+  tg: number;
+  tl: number;
+  a?: string;
+}
 
-  const deltas = atob(encodedE).split(',').map(Number);
+function parseHashPayload(): SharedRoutePayload | null {
+  if (typeof window === 'undefined') return null;
+  const hash = window.location.hash;
+  if (!hash.startsWith('#route=')) return null;
+  try {
+    const compressed = hash.slice('#route='.length);
+    const json = LZString.decompressFromEncodedURIComponent(compressed);
+    if (!json) return null;
+    return JSON.parse(json) as SharedRoutePayload;
+  } catch {
+    return null;
+  }
+}
+
+function decodeSharedRoute(payload: SharedRoutePayload): GPXData {
+  const coords = polyline.decode(payload.p, 5);
+
+  // Reconstruct elevations from delta-encoded comma-separated string
+  const deltas = payload.e.split(',').map(Number);
   const eles: number[] = [];
   for (let i = 0; i < deltas.length; i++) {
     eles.push(i === 0 ? deltas[0] : eles[i - 1] + deltas[i]);
@@ -84,7 +110,7 @@ function decodeSharedRoute(encodedP: string, encodedE: string, name: string): GP
     points.push({ lat, lon, ele, distanceFromStart: totalDistance });
   }
 
-  return { points, name, totalDistance, totalElevationGain, totalElevationLoss };
+  return { points, name: payload.n, totalDistance, totalElevationGain, totalElevationLoss };
 }
 
 interface HomePageClientProps {
@@ -97,13 +123,16 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
   const router = useRouter();
   const searchParams = useSearchParams();
   const routeId = searchParams.get('routeId');
-  const sharedPolyline = searchParams.get('p');
-  const sharedElevation = searchParams.get('e');
-  const sharedName = searchParams.get('n');
-  const sharedTotalDistance = searchParams.get('td');
-  const sharedTotalGain = searchParams.get('tg');
-  const sharedTotalLoss = searchParams.get('tl');
   const initialActivityType = (searchParams.get('activity') as 'cycling' | 'walking') || 'cycling';
+
+  // Parse the hash fragment on the client (fragments never reach the server)
+  const [hashPayload, setHashPayload] = useState<SharedRoutePayload | null>(null);
+  useEffect(() => {
+    setHashPayload(parseHashPayload());
+  }, []);
+
+  const isSharedRoute = hashPayload !== null;
+  const activityFromHash = (hashPayload?.a as 'cycling' | 'walking') ?? null;
 
   const tHomePage = useTranslations('HomePage');
 
@@ -131,50 +160,34 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
   const mapResetViewRef = useRef<(() => void) | null>(null);
   const [isMobileFullscreen, setIsMobileFullscreen] = useState(false);
 
-  const activityType = fetchedActivityType || initialActivityType;
+  const activityType = fetchedActivityType || activityFromHash || initialActivityType;
 
   // Reset store on unmount to avoid stale state on re-navigation
   useEffect(() => {
     return () => reset();
   }, [reset]);
 
-  // Load shared route from encoded polyline in URL params
+  // Load shared route from the decompressed hash payload
   useEffect(() => {
-    if (sharedPolyline && sharedElevation && !gpxData) {
-      try {
-        const decoded = decodeSharedRoute(
-          sharedPolyline,
-          sharedElevation,
-          sharedName || 'Shared Route',
-        );
-        if (decoded.points.length < 2) return;
+    if (!hashPayload || gpxData) return;
+    try {
+      const decoded = decodeSharedRoute(hashPayload);
+      if (decoded.points.length < 2) return;
 
-        // If the sharer included original metrics, lock them so the recalculation
-        // pipeline (which runs on sampled/API elevation data) cannot overwrite them
-        if (sharedTotalDistance && sharedTotalGain && sharedTotalLoss) {
-          const distance = parseFloat(sharedTotalDistance);
-          const gain = parseFloat(sharedTotalGain);
-          const loss = parseFloat(sharedTotalLoss);
-          setLockedMetrics({ distance, gain, loss });
-          setRecalculatedTotalDistance(distance);
-          setRecalculatedElevationGain(gain);
-          setRecalculatedElevationLoss(loss);
-        }
+      // Lock the original metrics so the recalculation pipeline cannot overwrite them
+      setLockedMetrics({ distance: hashPayload.td, gain: hashPayload.tg, loss: hashPayload.tl });
+      setRecalculatedTotalDistance(hashPayload.td);
+      setRecalculatedElevationGain(hashPayload.tg);
+      setRecalculatedElevationLoss(hashPayload.tl);
 
-        // Set gpxData after locking so useRouteAnalysis effects see the lock immediately
-        setGpxData(decoded);
-        setGpxFileName(decoded.name);
-      } catch (err) {
-        console.error('Error decoding shared route:', err);
-      }
+      // Set gpxData after locking so useRouteAnalysis effects see the lock immediately
+      setGpxData(decoded);
+      setGpxFileName(decoded.name);
+    } catch (err) {
+      console.error('Error decoding shared route:', err);
     }
   }, [
-    sharedPolyline,
-    sharedElevation,
-    sharedName,
-    sharedTotalDistance,
-    sharedTotalGain,
-    sharedTotalLoss,
+    hashPayload,
     gpxData,
     setGpxData,
     setGpxFileName,
@@ -184,9 +197,12 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
     setRecalculatedElevationLoss,
   ]);
 
-  // Fetch route data from DB (skip when loading from shared URL)
+  // Fetch route data from DB (skip when loading from shared hash).
+  // We check window.location.hash directly (synchronous) instead of relying on the
+  // hashPayload state, which is set in a separate useEffect and would be null on the
+  // first render — causing a redirect race condition.
   useEffect(() => {
-    if (sharedPolyline) return;
+    if (window.location.hash.startsWith('#route=')) return;
     const userIdentifier = session?.user?.email || session?.user?.id;
     if (routeId && userIdentifier) {
       const fetchRoute = async () => {
@@ -208,7 +224,7 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
     } else if (!routeId) {
       router.replace('/app/setup');
     }
-  }, [sharedPolyline, routeId, session?.user?.email, session?.user?.id, setFetchedRoute, router]);
+  }, [routeId, session?.user?.email, session?.user?.id, setFetchedRoute, router]);
 
   const onReverseWithRange = useCallback(() => {
     handleReverseRoute();

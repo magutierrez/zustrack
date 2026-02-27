@@ -4,10 +4,21 @@ import { useState } from 'react';
 import { Share2, Check } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import polyline from '@mapbox/polyline';
+import LZString from 'lz-string';
 
 import { Button } from '@/components/ui/button';
 import { useRouteStore } from '@/store/route-store';
 import { sampleRoutePoints } from '@/lib/gpx-parser';
+
+interface SharedRoutePayload {
+  p: string;   // @mapbox/polyline encoded coords
+  e: string;   // delta-encoded elevations, lz-compressed separately for better ratio
+  n: string;   // route name
+  td: number;  // totalDistance (km)
+  tg: number;  // totalElevationGain (m)
+  tl: number;  // totalElevationLoss (m)
+  a?: string;  // activity type
+}
 
 export function ShareButton() {
   const t = useTranslations('ShareButton');
@@ -25,30 +36,32 @@ export function ShareButton() {
 
     // Encode [lat, lon] pairs with @mapbox/polyline at precision 5
     const coords: [number, number][] = sampled.map((p) => [p.lat, p.lon]);
-    const encodedP = polyline.encode(coords, 5);
+    const encodedPolyline = polyline.encode(coords, 5);
 
-    // Delta-encode elevations (rounded to integer meters) then base64
+    // Delta-encode elevations as comma-separated integers (highly compressible)
     const eles = sampled.map((p) => Math.round(p.ele ?? 0));
     const deltas = eles.map((e, i) => (i === 0 ? e : e - eles[i - 1]));
-    const encodedE = btoa(deltas.join(','));
+    const elevationString = deltas.join(',');
 
-    // Encode the currently displayed (recalculated) metrics as ground truth
-    // so the recipient sees identical values regardless of point sampling
-    const totalDistance = recalculatedTotalDistance || gpxData.totalDistance;
-    const totalGain = recalculatedElevationGain || gpxData.totalElevationGain;
-    const totalLoss = recalculatedElevationLoss || gpxData.totalElevationLoss;
+    const payload: SharedRoutePayload = {
+      p: encodedPolyline,
+      e: elevationString,
+      n: gpxData.name,
+      td: parseFloat((recalculatedTotalDistance || gpxData.totalDistance).toFixed(3)),
+      tg: Math.round(recalculatedElevationGain || gpxData.totalElevationGain),
+      tl: Math.round(recalculatedElevationLoss || gpxData.totalElevationLoss),
+    };
+    if (fetchedActivityType) payload.a = fetchedActivityType;
+
+    // Compress the whole payload with lz-string and put it in the URL fragment.
+    // Fragments (#) are never sent to the server → no 414 risk, unlimited size.
+    const compressed = LZString.compressToEncodedURIComponent(JSON.stringify(payload));
 
     const url = new URL(window.location.href);
     url.searchParams.delete('routeId');
-    url.searchParams.set('p', encodedP);
-    url.searchParams.set('e', encodedE);
-    url.searchParams.set('n', gpxData.name);
-    url.searchParams.set('td', totalDistance.toFixed(3));
-    url.searchParams.set('tg', Math.round(totalGain).toString());
-    url.searchParams.set('tl', Math.round(totalLoss).toString());
-    if (fetchedActivityType) {
-      url.searchParams.set('activity', fetchedActivityType);
-    }
+    // Clear any old query-param style shared params
+    ['p', 'e', 'n', 'td', 'tg', 'tl', 'activity'].forEach((k) => url.searchParams.delete(k));
+    url.hash = `route=${compressed}`;
 
     navigator.clipboard.writeText(url.toString()).then(() => {
       setCopied(true);
