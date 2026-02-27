@@ -6,13 +6,17 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import polyline from '@mapbox/polyline';
 import { useRouteAnalysis } from '@/hooks/use-route-analysis';
 import { useRouteStore } from '@/store/route-store';
 import { getRouteFromDb } from '@/lib/db';
+import { haversineDistance } from '@/lib/gpx-parser';
 import { cn } from '@/lib/utils';
 import { Session } from 'next-auth';
+import type { GPXData, RoutePoint } from '@/lib/types';
 
 import { Header } from '@/app/_components/header';
+import { ShareButton } from '@/app/_components/share-button';
 import { EmptyState } from '@/app/_components/empty-state';
 import { ActivityConfigSection } from '@/app/_components/activity-config-section';
 import { RouteLoadingOverlay } from '@/app/_components/route-loading-overlay';
@@ -35,6 +39,54 @@ const RouteMap = dynamic(() => import('@/components/route-map'), {
   },
 });
 
+function decodeSharedRoute(encodedP: string, encodedE: string, name: string): GPXData {
+  const coords = polyline.decode(encodedP, 5);
+
+  const deltas = atob(encodedE).split(',').map(Number);
+  const eles: number[] = [];
+  for (let i = 0; i < deltas.length; i++) {
+    eles.push(i === 0 ? deltas[0] : eles[i - 1] + deltas[i]);
+  }
+
+  const ELE_THRESHOLD = 5;
+  let lastCommittedEle: number | undefined;
+  let totalDistance = 0;
+  let totalElevationGain = 0;
+  let totalElevationLoss = 0;
+  const points: RoutePoint[] = [];
+
+  for (let i = 0; i < coords.length; i++) {
+    const [lat, lon] = coords[i];
+    const ele = eles[i] !== undefined ? eles[i] : undefined;
+
+    if (i > 0) {
+      const prev = points[i - 1];
+      totalDistance += haversineDistance(prev.lat, prev.lon, lat, lon);
+
+      if (ele !== undefined) {
+        if (lastCommittedEle === undefined) {
+          lastCommittedEle = ele;
+        } else {
+          const diff = ele - lastCommittedEle;
+          if (diff >= ELE_THRESHOLD) {
+            totalElevationGain += diff;
+            lastCommittedEle = ele;
+          } else if (diff <= -ELE_THRESHOLD) {
+            totalElevationLoss += Math.abs(diff);
+            lastCommittedEle = ele;
+          }
+        }
+      }
+    } else if (ele !== undefined) {
+      lastCommittedEle = ele;
+    }
+
+    points.push({ lat, lon, ele, distanceFromStart: totalDistance });
+  }
+
+  return { points, name, totalDistance, totalElevationGain, totalElevationLoss };
+}
+
 interface HomePageClientProps {
   session: Session | null;
 }
@@ -45,6 +97,12 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
   const router = useRouter();
   const searchParams = useSearchParams();
   const routeId = searchParams.get('routeId');
+  const sharedPolyline = searchParams.get('p');
+  const sharedElevation = searchParams.get('e');
+  const sharedName = searchParams.get('n');
+  const sharedTotalDistance = searchParams.get('td');
+  const sharedTotalGain = searchParams.get('tg');
+  const sharedTotalLoss = searchParams.get('tl');
   const initialActivityType = (searchParams.get('activity') as 'cycling' | 'walking') || 'cycling';
 
   const tHomePage = useTranslations('HomePage');
@@ -56,7 +114,17 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
   const isWeatherAnalyzed = useRouteStore((s) => s.isWeatherAnalyzed);
   const config = useRouteStore((s) => s.config);
   const fetchedActivityType = useRouteStore((s) => s.fetchedActivityType);
-  const { setFetchedRoute, setConfig, reset } = useRouteStore();
+  const {
+    setFetchedRoute,
+    setConfig,
+    setGpxData,
+    setGpxFileName,
+    setLockedMetrics,
+    setRecalculatedTotalDistance,
+    setRecalculatedElevationGain,
+    setRecalculatedElevationLoss,
+    reset,
+  } = useRouteStore();
 
   const { handleAnalyze, handleReverseRoute, handleFindBestWindow } = useRouteAnalysis();
 
@@ -70,8 +138,55 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
     return () => reset();
   }, [reset]);
 
-  // Fetch route data from DB
+  // Load shared route from encoded polyline in URL params
   useEffect(() => {
+    if (sharedPolyline && sharedElevation && !gpxData) {
+      try {
+        const decoded = decodeSharedRoute(
+          sharedPolyline,
+          sharedElevation,
+          sharedName || 'Shared Route',
+        );
+        if (decoded.points.length < 2) return;
+
+        // If the sharer included original metrics, lock them so the recalculation
+        // pipeline (which runs on sampled/API elevation data) cannot overwrite them
+        if (sharedTotalDistance && sharedTotalGain && sharedTotalLoss) {
+          const distance = parseFloat(sharedTotalDistance);
+          const gain = parseFloat(sharedTotalGain);
+          const loss = parseFloat(sharedTotalLoss);
+          setLockedMetrics({ distance, gain, loss });
+          setRecalculatedTotalDistance(distance);
+          setRecalculatedElevationGain(gain);
+          setRecalculatedElevationLoss(loss);
+        }
+
+        // Set gpxData after locking so useRouteAnalysis effects see the lock immediately
+        setGpxData(decoded);
+        setGpxFileName(decoded.name);
+      } catch (err) {
+        console.error('Error decoding shared route:', err);
+      }
+    }
+  }, [
+    sharedPolyline,
+    sharedElevation,
+    sharedName,
+    sharedTotalDistance,
+    sharedTotalGain,
+    sharedTotalLoss,
+    gpxData,
+    setGpxData,
+    setGpxFileName,
+    setLockedMetrics,
+    setRecalculatedTotalDistance,
+    setRecalculatedElevationGain,
+    setRecalculatedElevationLoss,
+  ]);
+
+  // Fetch route data from DB (skip when loading from shared URL)
+  useEffect(() => {
+    if (sharedPolyline) return;
     const userIdentifier = session?.user?.email || session?.user?.id;
     if (routeId && userIdentifier) {
       const fetchRoute = async () => {
@@ -93,7 +208,7 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
     } else if (!routeId) {
       router.replace('/app/setup');
     }
-  }, [routeId, session?.user?.email, session?.user?.id, setFetchedRoute, router]);
+  }, [sharedPolyline, routeId, session?.user?.email, session?.user?.id, setFetchedRoute, router]);
 
   const onReverseWithRange = useCallback(() => {
     handleReverseRoute();
@@ -134,7 +249,7 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
 
   return (
     <div className="bg-background flex min-h-screen flex-col">
-      <Header session={session} />
+      <Header session={session} extraActions={<ShareButton />} />
 
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         <main className="relative flex min-w-0 flex-1 flex-col lg:flex-row lg:overflow-hidden">

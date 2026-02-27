@@ -1,7 +1,7 @@
 import type { RoutePoint, GPXData } from './types';
 import { decodeTWKB, type Point } from './twkb-parser';
 
-function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+export function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371; // km
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
@@ -260,7 +260,10 @@ export function decodeWikilocGeom(encoded: string): Point[] {
   return points;
 }
 
-export function pointsToGPX(points: { lat: number; lon: number; ele?: number }[], name: string): string {
+export function pointsToGPX(
+  points: { lat: number; lon: number; ele?: number }[],
+  name: string,
+): string {
   const gpxPoints = points
     .map((p) => {
       const eleTag = p.ele !== undefined ? `\n        <ele>${p.ele.toFixed(1)}</ele>` : '';

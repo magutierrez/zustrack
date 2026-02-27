@@ -30,6 +30,7 @@ export function useRouteAnalysis() {
   const fetchedGpxFileName = useRouteStore((s) => s.fetchedGpxFileName);
   const routeInfoData = useRouteStore((s) => s.routeInfoData);
   const elevationData = useRouteStore((s) => s.elevationData);
+  const lockedMetrics = useRouteStore((s) => s.lockedMetrics);
 
   // Store setters
   const {
@@ -191,8 +192,14 @@ export function useRouteAnalysis() {
     }
   }, [routeInfoData, setElevationData]);
 
-  // Recalculate totals when elevationData changes
+  // Recalculate totals when elevationData changes (skipped when metrics are locked via shared URL)
   useEffect(() => {
+    if (lockedMetrics) {
+      setRecalculatedElevationGain(lockedMetrics.gain);
+      setRecalculatedElevationLoss(lockedMetrics.loss);
+      setRecalculatedTotalDistance(lockedMetrics.distance);
+      return;
+    }
     if (elevationData.length > 0) {
       const { totalElevationGain, totalElevationLoss } = calculateElevationGainLoss(elevationData);
       setRecalculatedElevationGain(totalElevationGain);
@@ -201,6 +208,7 @@ export function useRouteAnalysis() {
     }
   }, [
     elevationData,
+    lockedMetrics,
     setRecalculatedElevationGain,
     setRecalculatedElevationLoss,
     setRecalculatedTotalDistance,
