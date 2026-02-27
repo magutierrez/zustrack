@@ -148,6 +148,9 @@ export function findNightPointIndex(weatherPoints: RouteWeatherPoint[]): {
   index: number | null;
   isValleyAdjusted: boolean;
 } {
+  // Only detect a day→night transition: skip night points at the very start of the route.
+  // This prevents showing a "night trap" marker when the departure itself is at night.
+  let foundDaylight = false;
   for (let i = 0; i < weatherPoints.length; i++) {
     const wp = weatherPoints[i];
     const time = new Date(wp.weather.time);
@@ -155,7 +158,10 @@ export function findNightPointIndex(weatherPoints: RouteWeatherPoint[]): {
     const isShaded = wp.solarExposure === 'shade';
     // In enclosed valleys the effective darkness threshold is ~11° above the horizon
     const threshold = isShaded ? 11 : 0;
-    if (sunAlt < threshold) {
+    const isNight = sunAlt < threshold;
+    if (!isNight) {
+      foundDaylight = true;
+    } else if (foundDaylight) {
       return { index: i, isValleyAdjusted: isShaded && sunAlt >= 0 };
     }
   }
@@ -542,4 +548,28 @@ export function base64ToUint8Array(base64: string): Uint8Array<ArrayBuffer> {
         return c.charCodeAt(0);
       }),
   );
+}
+
+export function stripGpxExtension(name: string): string {
+  return name.endsWith('.gpx') ? name.slice(0, -4) : name;
+}
+
+export type DifficultyLevel = 'veryEasy' | 'easy' | 'moderate' | 'hard' | 'veryHard' | 'extreme';
+
+const DIFFICULTY_BADGE_VARIANTS: Record<
+  DifficultyLevel,
+  'outline' | 'secondary' | 'destructive' | 'default'
+> = {
+  veryEasy: 'outline',
+  easy: 'outline',
+  moderate: 'secondary',
+  hard: 'destructive',
+  veryHard: 'default',
+  extreme: 'default',
+};
+
+export function getDifficultyBadgeVariant(
+  level: DifficultyLevel,
+): 'outline' | 'secondary' | 'destructive' | 'default' {
+  return DIFFICULTY_BADGE_VARIANTS[level] ?? 'outline';
 }

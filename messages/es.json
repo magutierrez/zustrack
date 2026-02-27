@@ -208,6 +208,9 @@
   },
   "RouteConfigPanel": {
     "routeSummary": "Resumen de Ruta",
+    "editRouteName": "Editar nombre de ruta",
+    "routeNamePlaceholder": "Nombre de ruta",
+    "routeNameSaved": "Nombre actualizado",
     "distance": "Distancia",
     "positiveElevation": "Desnivel +",
     "negativeElevation": "Desnivel -",
@@ -683,5 +686,9 @@
       "terms": "Términos",
       "login": "Iniciar sesión"
     }
+  },
+  "ShareButton": {
+    "share": "Compartir ruta",
+    "copied": "¡Enlace copiado!"
   }
 }

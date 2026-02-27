@@ -59,7 +59,7 @@ export function RouteLayers({
             type="symbol"
             layout={{
               'symbol-placement': 'line',
-              'symbol-spacing': 80,
+              'symbol-spacing': 120,
               'icon-image': 'route-arrow',
               'icon-size': ['interpolate', ['linear'], ['zoom'], 10, 0.45, 18, 0.85],
               'icon-allow-overlap': true,
@@ -67,8 +67,8 @@ export function RouteLayers({
               'icon-rotation-alignment': 'map',
             }}
             paint={{
-              'icon-color': mapType === 'standard' ? '#000000' : '#ffffff',
-              'icon-opacity': activeFilter || selectedRange ? 0.4 : 0.8,
+              'icon-color': mapType === 'standard' ? '#1368CE' : '#ffffff',
+              'icon-opacity': activeFilter || selectedRange ? 0.4 : 1,
               'icon-halo-width': 0,
             }}
           />
@@ -131,12 +131,19 @@ export function RouteLayers({
               'heatmap-intensity': ['interpolate', ['linear'], ['zoom'], 8, 0.4, 14, 1.5],
               'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 8, 12, 12, 20, 16, 35],
               'heatmap-color': [
-                'interpolate', ['linear'], ['heatmap-density'],
-                0,   'rgba(0,0,0,0)',
-                0.2, 'rgba(251,191,36,0.25)',
-                0.5, 'rgba(245,158,11,0.55)',
-                0.8, 'rgba(239,68,68,0.75)',
-                1,   'rgba(185,28,28,0.9)',
+                'interpolate',
+                ['linear'],
+                ['heatmap-density'],
+                0,
+                'rgba(0,0,0,0)',
+                0.2,
+                'rgba(251,191,36,0.25)',
+                0.5,
+                'rgba(245,158,11,0.55)',
+                0.8,
+                'rgba(239,68,68,0.75)',
+                1,
+                'rgba(185,28,28,0.9)',
               ],
               'heatmap-opacity': 0.85,
             }}

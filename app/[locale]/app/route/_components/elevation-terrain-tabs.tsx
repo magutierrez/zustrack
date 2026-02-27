@@ -11,10 +11,10 @@ export function ElevationTerrainTabs() {
   return (
     <Tabs defaultValue="elevation" className="w-full">
       <TabsList className="custom-scrollbar bg-secondary/50 mb-4 flex h-auto w-full flex-col items-center justify-start overflow-x-auto overflow-y-hidden md:grid md:grid-cols-2 md:justify-center lg:flex-row">
-        <TabsTrigger value="elevation" className="w-full min-w-fit">
+        <TabsTrigger value="elevation" className="h-8 w-full min-w-fit lg:h-auto">
           {twt('elevationTitle')}
         </TabsTrigger>
-        <TabsTrigger value="terrain" className="w-full min-w-fit">
+        <TabsTrigger value="terrain" className="h-8 w-full min-w-fit lg:h-auto">
           {twt('segmentsTitle')}
         </TabsTrigger>
       </TabsList>

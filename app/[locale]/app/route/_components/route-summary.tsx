@@ -2,10 +2,18 @@
 
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, Pencil, Check, X } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 import { useRouteStore } from '@/store/route-store';
 import { useSettings } from '@/hooks/use-settings';
-import { calculateIBP, getIBPDifficulty, formatDistance, formatElevation } from '@/lib/utils';
+import { useEditableRouteName } from '@/hooks/use-editable-route-name';
+import {
+  calculateIBP,
+  getIBPDifficulty,
+  getDifficultyBadgeVariant,
+  formatDistance,
+  formatElevation,
+} from '@/lib/utils';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -14,6 +22,7 @@ export function RouteSummary() {
   const t = useTranslations('RouteConfigPanel');
   const tibp = useTranslations('IBP');
   const { unitSystem } = useSettings();
+  const routeId = useSearchParams().get('routeId');
 
   const gpxData = useRouteStore((s) => s.gpxData);
   const recalculatedTotalDistance = useRouteStore((s) => s.recalculatedTotalDistance);
@@ -22,9 +31,8 @@ export function RouteSummary() {
   const fetchedActivityType = useRouteStore((s) => s.fetchedActivityType);
   const error = useRouteStore((s) => s.error);
 
-  const activityType = fetchedActivityType || 'cycling';
+  const activityType = fetchedActivityType ?? 'cycling';
 
-  // IBP calculation for route summary
   const ibpIndex = gpxData
     ? calculateIBP(recalculatedTotalDistance, recalculatedElevationGain, activityType, recalculatedElevationLoss)
     : 0;
@@ -36,37 +44,74 @@ export function RouteSummary() {
     [gpxData],
   );
 
+  const {
+    currentName,
+    isEditing,
+    editValue,
+    saved,
+    inputRef,
+    setEditValue,
+    startEditing,
+    cancelEditing,
+    commitName,
+    handleKeyDown,
+  } = useEditableRouteName(routeId);
+
   const mapsUrl = (lat: number, lon: number) =>
     `https://www.google.com/maps?q=${lat.toFixed(6)},${lon.toFixed(6)}`;
 
-  const getDifficultyBadgeVariant = (
-    difficultyLevel: 'veryEasy' | 'easy' | 'moderate' | 'hard' | 'veryHard' | 'extreme',
-  ) => {
-    switch (difficultyLevel) {
-      case 'veryEasy':
-      case 'easy':
-        return 'outline';
-      case 'moderate':
-        return 'secondary';
-      case 'hard':
-        return 'destructive';
-      case 'veryHard':
-      case 'extreme':
-        return 'default';
-      default:
-        return 'outline';
-    }
-  };
-
   return (
     <div className="border-border bg-card rounded-lg border p-4">
-      <div className="mb-3 flex items-center justify-between">
-        <Label className="text-muted-foreground block text-xs font-semibold tracking-wider uppercase">
+      {/* Header: label + editable route name */}
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <Label className="text-muted-foreground block shrink-0 text-xs font-semibold tracking-wider uppercase">
           {t('routeSummary')}
         </Label>
+
+        {gpxData && (
+          <div className="flex min-w-0 flex-1 items-center justify-end gap-1">
+            {isEditing ? (
+              <>
+                <input
+                  ref={inputRef}
+                  value={editValue}
+                  onChange={(e) => setEditValue(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  onBlur={commitName}
+                  placeholder={t('routeNamePlaceholder')}
+                  maxLength={80}
+                  autoFocus
+                  className="border-border bg-background text-foreground focus:ring-ring min-w-0 flex-1 truncate rounded border px-2 py-0.5 text-right text-sm font-medium focus:outline-none focus:ring-1"
+                />
+                <button onClick={commitName} className="text-primary hover:text-primary/80 shrink-0" aria-label={t('editRouteName')}>
+                  <Check className="h-3.5 w-3.5" />
+                </button>
+                <button onClick={cancelEditing} className="text-muted-foreground hover:text-foreground shrink-0" aria-label="Cancel">
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={startEditing}
+                title={t('editRouteName')}
+                className="group flex min-w-0 items-center gap-1 rounded px-1 py-0.5 transition-colors hover:bg-secondary"
+              >
+                <span className="text-foreground min-w-0 truncate text-right text-sm font-medium">
+                  {saved ? (
+                    <span className="text-primary text-xs">{t('routeNameSaved')}</span>
+                  ) : (
+                    currentName
+                  )}
+                </span>
+                <Pencil className="text-muted-foreground h-3 w-3 shrink-0 opacity-0 transition-opacity group-hover:opacity-100" />
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+      {/* Stats grid */}
+      <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
         <div className="bg-secondary rounded-lg p-3 text-center">
           <p className="text-muted-foreground mb-1 text-[8px] font-black tracking-widest uppercase">
             {t('distance')}
@@ -78,6 +123,7 @@ export function RouteSummary() {
             {formatDistance(recalculatedTotalDistance, unitSystem).split(' ')[1]}
           </p>
         </div>
+
         <div className="bg-secondary rounded-lg p-3 text-center">
           <p className="text-muted-foreground mb-1 text-[8px] font-black tracking-widest uppercase">
             {t('positiveElevation')}
@@ -89,6 +135,7 @@ export function RouteSummary() {
             {formatElevation(recalculatedElevationGain, unitSystem).split(' ')[1]}
           </p>
         </div>
+
         <div className="bg-secondary rounded-lg p-3 text-center">
           <p className="text-muted-foreground mb-1 text-[8px] font-black tracking-widest uppercase">
             {t('negativeElevation')}
@@ -100,7 +147,8 @@ export function RouteSummary() {
             {formatElevation(recalculatedElevationLoss, unitSystem).split(' ')[1]}
           </p>
         </div>
-        <div className="bg-secondary group relative flex flex-col items-center justify-center rounded-lg p-3 text-center">
+
+        <div className="bg-secondary relative flex flex-col items-center justify-center rounded-lg p-3 text-center">
           <p className="text-muted-foreground mb-1 text-[8px] font-black tracking-widest uppercase">
             {t('difficulty')}
           </p>
@@ -126,6 +174,7 @@ export function RouteSummary() {
         </div>
       </div>
 
+      {/* Start / end map links */}
       {startPoint && endPoint && (
         <div className="mt-3 flex flex-col gap-2 lg:flex-row">
           <a
@@ -147,6 +196,7 @@ export function RouteSummary() {
             </div>
             <ExternalLink className="h-3 w-3 shrink-0 text-emerald-600 opacity-0 transition-opacity group-hover:opacity-100" />
           </a>
+
           <a
             href={mapsUrl(endPoint.lat, endPoint.lon)}
             target="_blank"

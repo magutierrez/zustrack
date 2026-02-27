@@ -6,13 +6,18 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import polyline from '@mapbox/polyline';
+import LZString from 'lz-string';
 import { useRouteAnalysis } from '@/hooks/use-route-analysis';
 import { useRouteStore } from '@/store/route-store';
 import { getRouteFromDb } from '@/lib/db';
+import { haversineDistance } from '@/lib/gpx-parser';
 import { cn } from '@/lib/utils';
 import { Session } from 'next-auth';
+import type { GPXData, RoutePoint } from '@/lib/types';
 
 import { Header } from '@/app/_components/header';
+import { ShareButton } from '@/app/_components/share-button';
 import { EmptyState } from '@/app/_components/empty-state';
 import { ActivityConfigSection } from '@/app/_components/activity-config-section';
 import { RouteLoadingOverlay } from '@/app/_components/route-loading-overlay';
@@ -35,6 +40,79 @@ const RouteMap = dynamic(() => import('@/components/route-map'), {
   },
 });
 
+interface SharedRoutePayload {
+  p: string;
+  e: string;
+  n: string;
+  td: number;
+  tg: number;
+  tl: number;
+  a?: string;
+}
+
+function parseHashPayload(): SharedRoutePayload | null {
+  if (typeof window === 'undefined') return null;
+  const hash = window.location.hash;
+  if (!hash.startsWith('#route=')) return null;
+  try {
+    const compressed = hash.slice('#route='.length);
+    const json = LZString.decompressFromEncodedURIComponent(compressed);
+    if (!json) return null;
+    return JSON.parse(json) as SharedRoutePayload;
+  } catch {
+    return null;
+  }
+}
+
+function decodeSharedRoute(payload: SharedRoutePayload): GPXData {
+  const coords = polyline.decode(payload.p, 5);
+
+  // Reconstruct elevations from delta-encoded comma-separated string
+  const deltas = payload.e.split(',').map(Number);
+  const eles: number[] = [];
+  for (let i = 0; i < deltas.length; i++) {
+    eles.push(i === 0 ? deltas[0] : eles[i - 1] + deltas[i]);
+  }
+
+  const ELE_THRESHOLD = 5;
+  let lastCommittedEle: number | undefined;
+  let totalDistance = 0;
+  let totalElevationGain = 0;
+  let totalElevationLoss = 0;
+  const points: RoutePoint[] = [];
+
+  for (let i = 0; i < coords.length; i++) {
+    const [lat, lon] = coords[i];
+    const ele = eles[i] !== undefined ? eles[i] : undefined;
+
+    if (i > 0) {
+      const prev = points[i - 1];
+      totalDistance += haversineDistance(prev.lat, prev.lon, lat, lon);
+
+      if (ele !== undefined) {
+        if (lastCommittedEle === undefined) {
+          lastCommittedEle = ele;
+        } else {
+          const diff = ele - lastCommittedEle;
+          if (diff >= ELE_THRESHOLD) {
+            totalElevationGain += diff;
+            lastCommittedEle = ele;
+          } else if (diff <= -ELE_THRESHOLD) {
+            totalElevationLoss += Math.abs(diff);
+            lastCommittedEle = ele;
+          }
+        }
+      }
+    } else if (ele !== undefined) {
+      lastCommittedEle = ele;
+    }
+
+    points.push({ lat, lon, ele, distanceFromStart: totalDistance });
+  }
+
+  return { points, name: payload.n, totalDistance, totalElevationGain, totalElevationLoss };
+}
+
 interface HomePageClientProps {
   session: Session | null;
 }
@@ -47,6 +125,14 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
   const routeId = searchParams.get('routeId');
   const initialActivityType = (searchParams.get('activity') as 'cycling' | 'walking') || 'cycling';
 
+  // Parse the hash fragment on the client (fragments never reach the server)
+  const [hashPayload, setHashPayload] = useState<SharedRoutePayload | null>(null);
+  useEffect(() => {
+    setHashPayload(parseHashPayload());
+  }, []);
+
+  const activityFromHash = (hashPayload?.a as 'cycling' | 'walking') ?? null;
+
   const tHomePage = useTranslations('HomePage');
 
   // Read reactive state from store
@@ -56,22 +142,80 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
   const isWeatherAnalyzed = useRouteStore((s) => s.isWeatherAnalyzed);
   const config = useRouteStore((s) => s.config);
   const fetchedActivityType = useRouteStore((s) => s.fetchedActivityType);
-  const { setFetchedRoute, setConfig, reset } = useRouteStore();
+  const {
+    setFetchedRoute,
+    setConfig,
+    setGpxData,
+    setGpxFileName,
+    setLockedMetrics,
+    setRecalculatedTotalDistance,
+    setRecalculatedElevationGain,
+    setRecalculatedElevationLoss,
+    reset,
+  } = useRouteStore();
 
   const { handleAnalyze, handleReverseRoute, handleFindBestWindow } = useRouteAnalysis();
 
   const mapResetViewRef = useRef<(() => void) | null>(null);
   const [isMobileFullscreen, setIsMobileFullscreen] = useState(false);
 
-  const activityType = fetchedActivityType || initialActivityType;
+  const activityType = fetchedActivityType || activityFromHash || initialActivityType;
 
   // Reset store on unmount to avoid stale state on re-navigation
   useEffect(() => {
     return () => reset();
   }, [reset]);
 
-  // Fetch route data from DB
+  // Load shared route from the decompressed hash payload
   useEffect(() => {
+    if (!hashPayload || gpxData) return;
+    try {
+      const decoded = decodeSharedRoute(hashPayload);
+      if (decoded.points.length < 2) return;
+
+      // Lock the original metrics so the recalculation pipeline cannot overwrite them
+      setLockedMetrics({ distance: hashPayload.td, gain: hashPayload.tg, loss: hashPayload.tl });
+      setRecalculatedTotalDistance(hashPayload.td);
+      setRecalculatedElevationGain(hashPayload.tg);
+      setRecalculatedElevationLoss(hashPayload.tl);
+
+      // Set gpxData after locking so useRouteAnalysis effects see the lock immediately
+      setGpxData(decoded);
+      setGpxFileName(decoded.name);
+
+      // Propagate activity type so fetchedActivityType is set in the store and
+      // getSmartDefaultSpeed calculates the correct default speed (walking << cycling).
+      // rawGpxContent is empty (falsy) so the useRouteAnalysis re-parse effect won't fire
+      // (it guards with: fetchedRawGpxContent && fetchedGpxFileName && !gpxData).
+      setFetchedRoute({
+        rawGpxContent: '',
+        gpxFileName: decoded.name,
+        activityType: (hashPayload.a as 'cycling' | 'walking') || 'cycling',
+        distance: hashPayload.td,
+        elevationGain: hashPayload.tg,
+        elevationLoss: hashPayload.tl,
+      });
+    } catch (err) {
+      console.error('Error decoding shared route:', err);
+    }
+  }, [
+    hashPayload,
+    gpxData,
+    setGpxData,
+    setGpxFileName,
+    setFetchedRoute,
+    setLockedMetrics,
+    setRecalculatedTotalDistance,
+    setRecalculatedElevationGain,
+    setRecalculatedElevationLoss,
+  ]);
+
+  // Fetch route data from DB (skip when loading from shared hash).
+  // We check window.location.hash directly (synchronous) instead of relying on the
+  // hashPayload state, which is set in a separate useEffect and would be null on the
+  // first render — causing a redirect race condition.
+  useEffect(() => {
+    if (window.location.hash.startsWith('#route=')) return;
     const userIdentifier = session?.user?.email || session?.user?.id;
     if (routeId && userIdentifier) {
       const fetchRoute = async () => {
@@ -134,7 +278,7 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
 
   return (
     <div className="bg-background flex min-h-screen flex-col">
-      <Header session={session} />
+      <Header session={session} extraActions={<ShareButton />} />
 
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         <main className="relative flex min-w-0 flex-1 flex-col lg:flex-row lg:overflow-hidden">
@@ -175,13 +319,16 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
           <div
             className={cn(
               'border-border relative w-full',
-              !isMobileFullscreen && 'h-[70vh] border-t lg:h-[calc(100vh-57px)] lg:w-[45%] lg:border-t-0 lg:border-l',
-              isMobileFullscreen && 'fixed inset-0 z-50 flex flex-col border-0 bg-background',
+              !isMobileFullscreen &&
+                'h-[70vh] border-t lg:h-[calc(100vh-57px)] lg:w-[45%] lg:border-t-0 lg:border-l',
+              isMobileFullscreen && 'bg-background fixed inset-0 z-50 flex flex-col border-0',
               !gpxData && !isMobileFullscreen && 'hidden lg:block',
             )}
           >
             {/* Map fills all space normally, or flex-1 when chart is below */}
-            <div className={cn('relative', isMobileFullscreen ? 'min-h-0 flex-1' : 'h-full w-full')}>
+            <div
+              className={cn('relative', isMobileFullscreen ? 'min-h-0 flex-1' : 'h-full w-full')}
+            >
               <RouteLoadingOverlay isVisible={isRouteInfoLoading} />
               <RouteMap
                 onResetToFullRouteView={(func) => (mapResetViewRef.current = func)}

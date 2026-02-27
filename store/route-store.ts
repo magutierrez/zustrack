@@ -28,6 +28,8 @@ interface RouteState {
   initialDistance: number;
   initialElevationGain: number;
   initialElevationLoss: number;
+  /** When set, prevents the pipeline from recalculating these metrics (used for shared routes) */
+  lockedMetrics: { distance: number; gain: number; loss: number } | null;
 
   // ── Analysis results (managed by useRouteAnalysis hook) ─────────────────────
   gpxData: GPXData | null;
@@ -65,6 +67,7 @@ interface RouteState {
     elevationGain: number;
     elevationLoss: number;
   }) => void;
+  setLockedMetrics: (metrics: { distance: number; gain: number; loss: number } | null) => void;
   clearSelection: () => void;
   reset: () => void;
 
@@ -110,6 +113,7 @@ const initialState = {
   initialDistance: 0,
   initialElevationGain: 0,
   initialElevationLoss: 0,
+  lockedMetrics: null as { distance: number; gain: number; loss: number } | null,
 
   gpxData: null as GPXData | null,
   gpxFileName: null as string | null,
@@ -175,6 +179,7 @@ export const useRouteStore = create<RouteState>()((set) => ({
       };
     }),
 
+  setLockedMetrics: (metrics) => set({ lockedMetrics: metrics }),
   clearSelection: () => set({ selectedRange: null, activeFilter: null }),
   reset: () =>
     set((state) => ({

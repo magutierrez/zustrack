@@ -26,9 +26,10 @@ import { Link } from '@/i18n/navigation';
 interface HeaderProps {
   session: Session | null;
   mobileMenuContent?: React.ReactNode;
+  extraActions?: React.ReactNode;
 }
 
-export function Header({ session, mobileMenuContent }: HeaderProps) {
+export function Header({ session, mobileMenuContent, extraActions }: HeaderProps) {
   const t = useTranslations('Auth');
   const isMobile = useIsMobile();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -47,6 +48,7 @@ export function Header({ session, mobileMenuContent }: HeaderProps) {
       </Link>
 
       <div className="flex items-center gap-2">
+        {extraActions}
         <LocaleSwitcher />
 
         <Button
