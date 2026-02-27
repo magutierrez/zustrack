@@ -72,13 +72,13 @@ export function AnalysisResults({
     <div id="analysis-results-container">
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList className="custom-scrollbar bg-secondary/50 mb-8 flex h-auto w-full flex-col items-center justify-start overflow-x-auto overflow-y-hidden md:grid md:grid-cols-3 md:justify-center lg:flex-row">
-          <TabsTrigger value="weather" className="w-full min-w-fit">
+          <TabsTrigger value="weather" className="h-8 w-full min-w-fit lg:h-auto">
             {t('sections.weatherAnalysis')}
           </TabsTrigger>
-          <TabsTrigger value="advice" className="w-full min-w-fit">
+          <TabsTrigger value="advice" className="h-8 w-full min-w-fit lg:h-auto">
             {t('sections.advice')}
           </TabsTrigger>
-          <TabsTrigger value="hazards" className="w-full min-w-fit">
+          <TabsTrigger value="hazards" className="h-8 w-full min-w-fit lg:h-auto">
             {t('sections.hazards')}
           </TabsTrigger>
         </TabsList>
