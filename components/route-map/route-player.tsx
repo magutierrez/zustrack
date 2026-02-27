@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Play, Pause, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -34,6 +34,30 @@ export function RoutePlayer({ points, onStop, map }: RoutePlayerProps) {
   const lastUiUpdateRef = useRef<number>(0);
   // Ref so the running rAF loop always reads the latest speed without re-creating callbacks
   const speedRef = useRef(1);
+
+  // 1. Pre-calculate temporal axis (seconds from start)
+  const timeOffsets = useMemo(() => {
+    if (points.length < 2) return [];
+
+    // Check if points have timestamps (from GPX or analysis)
+    const hasTimestamps = points[0].estimatedTime && points[points.length - 1].estimatedTime;
+
+    if (hasTimestamps) {
+      const start = points[0].estimatedTime!.getTime();
+      return points.map((p) => {
+        if (!p.estimatedTime) return 0; // Should not happen if hasTimestamps is true for start/end
+        return (p.estimatedTime.getTime() - start) / 1000;
+      });
+    }
+
+    // Fallback: Constant speed simulation based on distance (assume 15km/h = 4.16 m/s)
+    // 15 km/h is a neutral reference. The 'speed' multiplier (1x, 2x...) will adjust it.
+    const referenceSpeedKmH = 15;
+    return points.map((p) => (p.distanceFromStart / referenceSpeedKmH) * 3600);
+  }, [points]);
+
+  const totalActivityTime = timeOffsets.length > 0 ? timeOffsets[timeOffsets.length - 1] : 0;
+  const currentActivityTimeRef = useRef(0);
 
   const updateMapCamera = useCallback(
     (fractionalIdx: number, forceUiUpdate = false) => {
@@ -103,28 +127,47 @@ export function RoutePlayer({ points, onStop, map }: RoutePlayerProps) {
     (time: number) => {
       if (!lastTimeRef.current) lastTimeRef.current = time;
       const deltaTime = time - lastTimeRef.current;
+      lastTimeRef.current = time;
 
-      const increment = (speedRef.current * deltaTime) / 300;
-      currentIndexRef.current += increment;
+      // Advance activity time
+      const BASE_SPEED_FACTOR = 10; // 1x = 10x real speed
+      currentActivityTimeRef.current += (deltaTime / 1000) * speedRef.current * BASE_SPEED_FACTOR;
 
-      if (currentIndexRef.current >= points.length - 1) {
+      if (currentActivityTimeRef.current >= totalActivityTime) {
+        currentActivityTimeRef.current = totalActivityTime;
         currentIndexRef.current = points.length - 1;
         updateMapCamera(currentIndexRef.current, true);
         setIsPlaying(false);
         return;
       }
 
-      updateMapCamera(currentIndexRef.current);
+      // Find the fractional index corresponding to currentActivityTime
+      // Since it's monotonic and we update frequently, we can just search forward from current index
+      let idx = Math.floor(currentIndexRef.current);
+      while (
+        idx < timeOffsets.length - 1 &&
+        timeOffsets[idx + 1] < currentActivityTimeRef.current
+      ) {
+        idx++;
+      }
 
-      lastTimeRef.current = time;
+      const t1 = timeOffsets[idx];
+      const t2 = timeOffsets[idx + 1];
+      const ratio = (currentActivityTimeRef.current - t1) / (t2 - t1 || 1);
+      const fractionalIdx = idx + ratio;
+
+      currentIndexRef.current = fractionalIdx;
+      updateMapCamera(fractionalIdx);
+
       requestRef.current = requestAnimationFrame(animate);
     },
-    [points, updateMapCamera],
+    [points, updateMapCamera, timeOffsets, totalActivityTime],
   );
 
   const startPlayback = () => {
     if (currentIndexRef.current >= points.length - 1) {
       currentIndexRef.current = 0;
+      currentActivityTimeRef.current = 0;
       currentBearingRef.current = null;
     }
     setIsPlaying(true);
@@ -140,6 +183,7 @@ export function RoutePlayer({ points, onStop, map }: RoutePlayerProps) {
   const stopPlayback = () => {
     pausePlayback();
     currentIndexRef.current = 0;
+    currentActivityTimeRef.current = 0;
     currentBearingRef.current = null;
     updateMapCamera(0, true);
     onStop();
@@ -147,10 +191,13 @@ export function RoutePlayer({ points, onStop, map }: RoutePlayerProps) {
 
   const handleSeek = (value: number[]) => {
     const newProgress = value[0];
-    const newIndex = Math.floor((newProgress / 100) * (points.length - 1));
-    currentIndexRef.current = newIndex;
+    const fractionalIdx = (newProgress / 100) * (points.length - 1);
+    const idx = Math.floor(fractionalIdx);
+
+    currentIndexRef.current = fractionalIdx;
+    currentActivityTimeRef.current = timeOffsets[idx] || 0;
     currentBearingRef.current = null;
-    updateMapCamera(newIndex, true);
+    updateMapCamera(fractionalIdx, true);
   };
 
   useEffect(() => {
@@ -193,7 +240,7 @@ export function RoutePlayer({ points, onStop, map }: RoutePlayerProps) {
         />
       </Source>
 
-      <div className="z-[160] animate-in fade-in slide-in-from-bottom-4 absolute bottom-10 lg:bottom-20 left-1/2 w-[95%] max-w-lg -translate-x-1/2">
+      <div className="animate-in fade-in slide-in-from-bottom-4 absolute bottom-10 left-1/2 z-[160] w-[95%] max-w-lg -translate-x-1/2 lg:bottom-20">
         <div className="bg-background/95 border-border rounded-2xl border p-4 shadow-2xl backdrop-blur-md">
           <div className="mb-4 flex items-center justify-between px-1">
             <div className="flex items-center gap-2">
@@ -225,11 +272,11 @@ export function RoutePlayer({ points, onStop, map }: RoutePlayerProps) {
                   <SelectItem value="2" className="cursor-pointer text-[10px] font-bold">
                     2x
                   </SelectItem>
-                  <SelectItem value="3" className="cursor-pointer text-[10px] font-bold">
-                    3x
+                  <SelectItem value="5" className="cursor-pointer text-[10px] font-bold">
+                    5x
                   </SelectItem>
-                  <SelectItem value="4" className="cursor-pointer text-[10px] font-bold">
-                    4x
+                  <SelectItem value="10" className="cursor-pointer text-[10px] font-bold">
+                    10x
                   </SelectItem>
                 </SelectContent>
               </Select>

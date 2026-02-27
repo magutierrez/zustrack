@@ -295,21 +295,21 @@ export function useRouteAnalysis() {
       };
 
       try {
-        const sampled = sampleRoutePoints(currentGpxData.points, 48);
         const startTime = new Date(`${analysisConfig.date}T${analysisConfig.time}:00`);
 
         if (isNaN(startTime.getTime())) {
           throw new Error('Invalid start time configuration');
         }
 
-        const pointsWithTime: any[] = [];
-        let currentElapsedTime = 0;
+        // Apply estimatedTime to ALL points in the full GPX data to enable real-speed player
+        const allPointsWithTime: any[] = [];
+        let totalElapsedTime = 0;
 
-        sampled.forEach((point, idx) => {
+        currentGpxData.points.forEach((point, idx) => {
           if (idx === 0) {
-            pointsWithTime.push({ ...point, estimatedTime: new Date(startTime.getTime()) });
+            allPointsWithTime.push({ ...point, estimatedTime: new Date(startTime.getTime()) });
           } else {
-            const prevPoint = sampled[idx - 1];
+            const prevPoint = currentGpxData.points[idx - 1];
             const segmentDist = point.distanceFromStart - prevPoint.distanceFromStart;
             const segmentEleGain = Math.max(0, (point.ele || 0) - (prevPoint.ele || 0));
             const speedAtSegment = calculateSmartSpeed(
@@ -318,13 +318,19 @@ export function useRouteAnalysis() {
               segmentEleGain,
               analysisConfig.activityType,
             );
-            currentElapsedTime += segmentDist / speedAtSegment;
-            pointsWithTime.push({
+            totalElapsedTime += segmentDist / speedAtSegment;
+            allPointsWithTime.push({
               ...point,
-              estimatedTime: new Date(startTime.getTime() + currentElapsedTime * 3600000),
+              estimatedTime: new Date(startTime.getTime() + totalElapsedTime * 3600000),
             });
           }
         });
+
+        // Update the store with the enriched points (for the player)
+        setGpxData({ ...currentGpxData, points: allPointsWithTime });
+
+        // Now sample for weather API (48 points is plenty for weather)
+        const pointsWithTime = sampleRoutePoints(allPointsWithTime, 48);
 
         const response = await fetchWithRetry('/api/weather', {
           method: 'POST',
@@ -333,7 +339,7 @@ export function useRouteAnalysis() {
             points: pointsWithTime.map((p) => ({
               lat: p.lat,
               lon: p.lon,
-              estimatedTime: p.estimatedTime.toISOString(),
+              estimatedTime: p.estimatedTime!.toISOString(),
             })),
           }),
         });
@@ -384,7 +390,7 @@ export function useRouteAnalysis() {
           const slopeDeg = (slopeRad * 180) / Math.PI;
           const aspectDeg = eleDiff > 0 ? (bearing + 180) % 360 : bearing;
 
-          const sunPos = getSunPosition(point.estimatedTime, point.lat, point.lon);
+          const sunPos = getSunPosition(point.estimatedTime!, point.lat, point.lon);
           const solarExposure = getSolarExposure(weather, sunPos, Math.abs(slopeDeg), aspectDeg);
           const solarIntensity = getSolarIntensity(weather.directRadiation, solarExposure);
 

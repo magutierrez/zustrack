@@ -34,6 +34,8 @@ export function parseGPX(gpxString: string): GPXData {
     const lon = parseFloat(trkpt.getAttribute('lon') || '0');
     const eleEl = trkpt.querySelector('ele');
     const ele = eleEl ? parseFloat(eleEl.textContent || '0') : undefined;
+    const timeEl = trkpt.querySelector('time');
+    const time = timeEl ? new Date(timeEl.textContent || '') : undefined;
 
     if (i > 0) {
       const prevPoint = points[i - 1];
@@ -54,6 +56,7 @@ export function parseGPX(gpxString: string): GPXData {
       lon,
       ele,
       distanceFromStart: totalDistance,
+      estimatedTime: time && !isNaN(time.getTime()) ? time : undefined,
     });
   });
 
