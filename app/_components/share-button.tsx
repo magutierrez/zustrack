@@ -7,12 +7,13 @@ import polyline from '@mapbox/polyline';
 import LZString from 'lz-string';
 
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useRouteStore } from '@/store/route-store';
 import { sampleRoutePoints } from '@/lib/gpx-parser';
 
 interface SharedRoutePayload {
   p: string;   // @mapbox/polyline encoded coords
-  e: string;   // delta-encoded elevations, lz-compressed separately for better ratio
+  e: string;   // delta-encoded elevations as comma-separated integers
   n: string;   // route name
   td: number;  // totalDistance (km)
   tg: number;  // totalElevationGain (m)
@@ -34,11 +35,9 @@ export function ShareButton() {
   const handleShare = () => {
     const sampled = sampleRoutePoints(gpxData.points, 300);
 
-    // Encode [lat, lon] pairs with @mapbox/polyline at precision 5
     const coords: [number, number][] = sampled.map((p) => [p.lat, p.lon]);
     const encodedPolyline = polyline.encode(coords, 5);
 
-    // Delta-encode elevations as comma-separated integers (highly compressible)
     const eles = sampled.map((p) => Math.round(p.ele ?? 0));
     const deltas = eles.map((e, i) => (i === 0 ? e : e - eles[i - 1]));
     const elevationString = deltas.join(',');
@@ -53,13 +52,10 @@ export function ShareButton() {
     };
     if (fetchedActivityType) payload.a = fetchedActivityType;
 
-    // Compress the whole payload with lz-string and put it in the URL fragment.
-    // Fragments (#) are never sent to the server → no 414 risk, unlimited size.
     const compressed = LZString.compressToEncodedURIComponent(JSON.stringify(payload));
 
     const url = new URL(window.location.href);
     url.searchParams.delete('routeId');
-    // Clear any old query-param style shared params
     ['p', 'e', 'n', 'td', 'tg', 'tl', 'activity'].forEach((k) => url.searchParams.delete(k));
     url.hash = `route=${compressed}`;
 
@@ -70,15 +66,27 @@ export function ShareButton() {
   };
 
   return (
-    <Button
-      variant="ghost"
-      size="icon"
-      className="h-9 w-9"
-      onClick={handleShare}
-      title={copied ? t('copied') : t('share')}
-    >
-      {copied ? <Check className="h-5 w-5 text-green-500" /> : <Share2 className="h-5 w-5" />}
-      <span className="sr-only">{t('share')}</span>
-    </Button>
+    <TooltipProvider delayDuration={0}>
+      <Tooltip open={copied}>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9"
+            onClick={handleShare}
+            aria-label={t('share')}
+          >
+            {copied ? (
+              <Check className="h-5 w-5 text-green-500" />
+            ) : (
+              <Share2 className="h-5 w-5" />
+            )}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom">
+          <p>{t('copied')}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }

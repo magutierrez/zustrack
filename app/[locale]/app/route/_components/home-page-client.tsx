@@ -131,7 +131,6 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
     setHashPayload(parseHashPayload());
   }, []);
 
-  const isSharedRoute = hashPayload !== null;
   const activityFromHash = (hashPayload?.a as 'cycling' | 'walking') ?? null;
 
   const tHomePage = useTranslations('HomePage');
@@ -183,6 +182,19 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
       // Set gpxData after locking so useRouteAnalysis effects see the lock immediately
       setGpxData(decoded);
       setGpxFileName(decoded.name);
+
+      // Propagate activity type so fetchedActivityType is set in the store and
+      // getSmartDefaultSpeed calculates the correct default speed (walking << cycling).
+      // rawGpxContent is empty (falsy) so the useRouteAnalysis re-parse effect won't fire
+      // (it guards with: fetchedRawGpxContent && fetchedGpxFileName && !gpxData).
+      setFetchedRoute({
+        rawGpxContent: '',
+        gpxFileName: decoded.name,
+        activityType: (hashPayload.a as 'cycling' | 'walking') || 'cycling',
+        distance: hashPayload.td,
+        elevationGain: hashPayload.tg,
+        elevationLoss: hashPayload.tl,
+      });
     } catch (err) {
       console.error('Error decoding shared route:', err);
     }
@@ -191,6 +203,7 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
     gpxData,
     setGpxData,
     setGpxFileName,
+    setFetchedRoute,
     setLockedMetrics,
     setRecalculatedTotalDistance,
     setRecalculatedElevationGain,
@@ -306,13 +319,16 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
           <div
             className={cn(
               'border-border relative w-full',
-              !isMobileFullscreen && 'h-[70vh] border-t lg:h-[calc(100vh-57px)] lg:w-[45%] lg:border-t-0 lg:border-l',
-              isMobileFullscreen && 'fixed inset-0 z-50 flex flex-col border-0 bg-background',
+              !isMobileFullscreen &&
+                'h-[70vh] border-t lg:h-[calc(100vh-57px)] lg:w-[45%] lg:border-t-0 lg:border-l',
+              isMobileFullscreen && 'bg-background fixed inset-0 z-50 flex flex-col border-0',
               !gpxData && !isMobileFullscreen && 'hidden lg:block',
             )}
           >
             {/* Map fills all space normally, or flex-1 when chart is below */}
-            <div className={cn('relative', isMobileFullscreen ? 'min-h-0 flex-1' : 'h-full w-full')}>
+            <div
+              className={cn('relative', isMobileFullscreen ? 'min-h-0 flex-1' : 'h-full w-full')}
+            >
               <RouteLoadingOverlay isVisible={isRouteInfoLoading} />
               <RouteMap
                 onResetToFullRouteView={(func) => (mapResetViewRef.current = func)}
