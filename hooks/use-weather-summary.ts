@@ -47,14 +47,17 @@ export function useWeatherSummary(weatherPoints: RouteWeatherPoint[]) {
     const lastPoint = weatherPoints[weatherPoints.length - 1];
     const lastTime = new Date(lastPoint.weather.time);
     const sunPosAtLast = getSunPosition(lastTime, lastPoint.point.lat, lastPoint.point.lon);
-    const arrivesAtNight = sunPosAtLast.altitude < 0;
+
+    const { index: nightPointIndex, isValleyAdjusted } = findNightPointIndex(weatherPoints);
+    const nightPoint = nightPointIndex !== null ? weatherPoints[nightPointIndex] : null;
+
+    // Only warn about night arrival if there was a day→night transition during the route
+    // (nightPoint !== null). If the whole route is at night, there's no transition to warn about.
+    const arrivesAtNight = sunPosAtLast.altitude < 0 && nightPoint !== null;
 
     const avgSnowDepthCm =
       weatherPoints.reduce((s, w) => s + (w.weather.snowDepthCm ?? 0), 0) / weatherPoints.length;
     const hasSnow = weatherPoints.some((w) => (w.weather.snowDepthCm ?? 0) > 0);
-
-    const { index: nightPointIndex, isValleyAdjusted } = findNightPointIndex(weatherPoints);
-    const nightPoint = nightPointIndex !== null ? weatherPoints[nightPointIndex] : null;
 
     return {
       avgTemp,
