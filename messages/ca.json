@@ -208,6 +208,9 @@
   },
   "RouteConfigPanel": {
     "routeSummary": "Resum de Ruta",
+    "editRouteName": "Editar nom de ruta",
+    "routeNamePlaceholder": "Nom de ruta",
+    "routeNameSaved": "Nom actualitzat",
     "distance": "Distància",
     "positiveElevation": "Elevació +",
     "negativeElevation": "Elevació -",

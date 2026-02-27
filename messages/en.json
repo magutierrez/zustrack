@@ -208,6 +208,9 @@
   },
   "RouteConfigPanel": {
     "routeSummary": "Route Summary",
+    "editRouteName": "Edit route name",
+    "routeNamePlaceholder": "Route name",
+    "routeNameSaved": "Name updated",
     "distance": "Distance",
     "positiveElevation": "Elevation +",
     "negativeElevation": "Elevation -",

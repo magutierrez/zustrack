@@ -1,19 +1,27 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState, useRef, useCallback, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, Pencil, Check, X } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 import { useRouteStore } from '@/store/route-store';
 import { useSettings } from '@/hooks/use-settings';
+import { useSavedRoutes } from '@/hooks/use-saved-routes';
 import { calculateIBP, getIBPDifficulty, formatDistance, formatElevation } from '@/lib/utils';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
+function stripGpxExtension(name: string): string {
+  return name.endsWith('.gpx') ? name.slice(0, -4) : name;
+}
+
 export function RouteSummary() {
   const t = useTranslations('RouteConfigPanel');
   const tibp = useTranslations('IBP');
   const { unitSystem } = useSettings();
+  const searchParams = useSearchParams();
+  const routeId = searchParams.get('routeId');
 
   const gpxData = useRouteStore((s) => s.gpxData);
   const recalculatedTotalDistance = useRouteStore((s) => s.recalculatedTotalDistance);
@@ -21,8 +29,66 @@ export function RouteSummary() {
   const recalculatedElevationLoss = useRouteStore((s) => s.recalculatedElevationLoss);
   const fetchedActivityType = useRouteStore((s) => s.fetchedActivityType);
   const error = useRouteStore((s) => s.error);
+  const { setGpxData, setGpxFileName } = useRouteStore();
+
+  const { updateRouteName } = useSavedRoutes();
 
   const activityType = fetchedActivityType || 'cycling';
+
+  const currentName = stripGpxExtension(gpxData?.name ?? '');
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState(currentName);
+  const [saved, setSaved] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Keep editValue in sync if gpxData.name changes from outside
+  useEffect(() => {
+    if (!isEditing) setEditValue(currentName);
+  }, [currentName, isEditing]);
+
+  const startEditing = useCallback(() => {
+    setEditValue(currentName);
+    setIsEditing(true);
+    // Focus next tick so the input is rendered
+    setTimeout(() => inputRef.current?.select(), 0);
+  }, [currentName]);
+
+  const cancelEditing = useCallback(() => {
+    setIsEditing(false);
+    setEditValue(currentName);
+  }, [currentName]);
+
+  const commitName = useCallback(async () => {
+    const trimmed = editValue.trim();
+    if (!trimmed || trimmed === currentName) {
+      cancelEditing();
+      return;
+    }
+
+    // Update the Zustand store
+    if (gpxData) {
+      setGpxData({ ...gpxData, name: trimmed });
+      setGpxFileName(trimmed);
+    }
+
+    // Update Dexie only when viewing a saved route (not a shared hash route)
+    if (routeId) {
+      await updateRouteName(routeId, trimmed);
+    }
+
+    setIsEditing(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  }, [editValue, currentName, gpxData, routeId, setGpxData, setGpxFileName, updateRouteName, cancelEditing]);
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter') commitName();
+      if (e.key === 'Escape') cancelEditing();
+    },
+    [commitName, cancelEditing],
+  );
 
   // IBP calculation for route summary
   const ibpIndex = gpxData
@@ -60,10 +126,61 @@ export function RouteSummary() {
 
   return (
     <div className="border-border bg-card rounded-lg border p-4">
-      <div className="mb-3 flex items-center justify-between">
-        <Label className="text-muted-foreground block text-xs font-semibold tracking-wider uppercase">
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <Label className="text-muted-foreground block text-xs font-semibold tracking-wider uppercase shrink-0">
           {t('routeSummary')}
         </Label>
+
+        {/* Editable route name */}
+        {gpxData && (
+          <div className="flex min-w-0 flex-1 items-center justify-end gap-1">
+            {isEditing ? (
+              <>
+                <input
+                  ref={inputRef}
+                  value={editValue}
+                  onChange={(e) => setEditValue(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  onBlur={commitName}
+                  placeholder={t('routeNamePlaceholder')}
+                  className="border-border bg-background text-foreground min-w-0 flex-1 truncate rounded border px-2 py-0.5 text-right text-sm font-medium focus:outline-none focus:ring-1 focus:ring-ring"
+                  maxLength={80}
+                  autoFocus
+                />
+                <button
+                  onClick={commitName}
+                  className="text-primary hover:text-primary/80 shrink-0"
+                  aria-label={t('editRouteName')}
+                >
+                  <Check className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  onClick={cancelEditing}
+                  className="text-muted-foreground hover:text-foreground shrink-0"
+                  aria-label="Cancel"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={startEditing}
+                className="group flex min-w-0 items-center gap-1 rounded px-1 py-0.5 transition-colors hover:bg-secondary"
+                aria-label={t('editRouteName')}
+                title={t('editRouteName')}
+              >
+                <span className="text-foreground min-w-0 truncate text-right text-sm font-medium">
+                  {saved ? (
+                    <span className="text-primary text-xs">{t('routeNameSaved')}</span>
+                  ) : (
+                    currentName
+                  )}
+                </span>
+                <Pencil className="text-muted-foreground h-3 w-3 shrink-0 opacity-0 transition-opacity group-hover:opacity-100" />
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
