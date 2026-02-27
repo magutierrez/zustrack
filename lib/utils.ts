@@ -549,3 +549,27 @@ export function base64ToUint8Array(base64: string): Uint8Array<ArrayBuffer> {
       }),
   );
 }
+
+export function stripGpxExtension(name: string): string {
+  return name.endsWith('.gpx') ? name.slice(0, -4) : name;
+}
+
+export type DifficultyLevel = 'veryEasy' | 'easy' | 'moderate' | 'hard' | 'veryHard' | 'extreme';
+
+const DIFFICULTY_BADGE_VARIANTS: Record<
+  DifficultyLevel,
+  'outline' | 'secondary' | 'destructive' | 'default'
+> = {
+  veryEasy: 'outline',
+  easy: 'outline',
+  moderate: 'secondary',
+  hard: 'destructive',
+  veryHard: 'default',
+  extreme: 'default',
+};
+
+export function getDifficultyBadgeVariant(
+  level: DifficultyLevel,
+): 'outline' | 'secondary' | 'destructive' | 'default' {
+  return DIFFICULTY_BADGE_VARIANTS[level] ?? 'outline';
+}
