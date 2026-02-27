@@ -34,7 +34,7 @@ import { cn } from '@/lib/utils';
  * Must be called on initial load and again after every style swap.
  */
 function addArrowImage(map: maplibregl.Map) {
-  const size = 30;
+  const size = 35;
   const canvas = document.createElement('canvas');
   canvas.width = size;
   canvas.height = size;
@@ -42,14 +42,14 @@ function addArrowImage(map: maplibregl.Map) {
 
   ctx.clearRect(0, 0, size, size);
   ctx.strokeStyle = 'white';
-  ctx.lineWidth = size * 0.2;
+  ctx.lineWidth = size * 0.11;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
   // Chevron pointing right — MapLibre rotates it to follow the line
   ctx.beginPath();
-  ctx.moveTo(size * 0.25, size * 0.2);
-  ctx.lineTo(size * 0.72, size * 0.5);
-  ctx.lineTo(size * 0.25, size * 0.8);
+  ctx.moveTo(size * 0.26, size * 0.18);
+  ctx.lineTo(size * 0.68, size * 0.5);
+  ctx.lineTo(size * 0.26, size * 0.82);
   ctx.stroke();
 
   const imageData = ctx.getImageData(0, 0, size, size);
