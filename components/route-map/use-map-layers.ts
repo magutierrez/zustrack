@@ -37,28 +37,76 @@ export function useMapLayers(
 
     if (activeFilter.key === 'hazard') {
       const [start, end] = activeFilter.value.split('-').map(Number);
+      const segPts = points.filter(
+        (p) => p.distanceFromStart >= start && p.distanceFromStart <= end,
+      );
 
-      for (let i = 0; i < points.length - 1; i++) {
-        const p1 = points[i];
-        const p2 = points[i + 1];
+      if (segPts.length >= 2) {
+        const n = segPts.length;
 
-        if (p1.distanceFromStart >= start && p2.distanceFromStart <= end) {
-          const distDiffM = (p2.distanceFromStart - p1.distanceFromStart) * 1000;
-          const eleDiffM = (p2.ele || 0) - (p1.ele || 0);
-          const slope = distDiffM > 0.1 ? (eleDiffM / distDiffM) * 100 : 0;
+        // ── 1. Raw point-to-point slopes ──────────────────────────────────
+        const rawSlopes = new Array<number>(n).fill(0);
+        for (let i = 1; i < n; i++) {
+          const distDiffM =
+            (segPts[i].distanceFromStart - segPts[i - 1].distanceFromStart) * 1000;
+          const eleDiffM = (segPts[i].ele ?? 0) - (segPts[i - 1].ele ?? 0);
+          if (distDiffM > 0.1) rawSlopes[i] = (eleDiffM / distDiffM) * 100;
+        }
 
+        // ── 2. 400 m sliding-window smoothing (same as hazard chart) ──────
+        const halfWindowKm = 0.2;
+        const smoothSlopes = new Array<number>(n).fill(0);
+        let left = 0,
+          right = -1,
+          wSum = 0,
+          wCount = 0;
+        for (let i = 0; i < n; i++) {
+          const center = segPts[i].distanceFromStart;
+          while (
+            right + 1 < n &&
+            segPts[right + 1].distanceFromStart <= center + halfWindowKm
+          ) {
+            right++;
+            wSum += rawSlopes[right];
+            wCount++;
+          }
+          while (
+            left <= right &&
+            segPts[left].distanceFromStart < center - halfWindowKm
+          ) {
+            wSum -= rawSlopes[left];
+            left++;
+            wCount--;
+          }
+          smoothSlopes[i] = wCount > 0 ? wSum / wCount : 0;
+        }
+
+        // ── 3. Merge consecutive same-color edges into one LineString each ─
+        let groupStart = 0;
+        let prevColor = getSlopeColorHex(smoothSlopes[1]);
+
+        for (let i = 2; i < n; i++) {
+          const color = getSlopeColorHex(smoothSlopes[i]);
+          if (color !== prevColor) {
+            const coords = segPts.slice(groupStart, i).map((p) => [p.lon, p.lat]);
+            if (coords.length >= 2)
+              features.push({
+                type: 'Feature',
+                geometry: { type: 'LineString', coordinates: coords },
+                properties: { color: prevColor },
+              });
+            groupStart = i - 1; // overlap one point → seamless join
+            prevColor = color;
+          }
+        }
+
+        const finalCoords = segPts.slice(groupStart).map((p) => [p.lon, p.lat]);
+        if (finalCoords.length >= 2)
           features.push({
             type: 'Feature',
-            geometry: {
-              type: 'LineString',
-              coordinates: [
-                [p1.lon, p1.lat],
-                [p2.lon, p2.lat],
-              ],
-            },
-            properties: { color: getSlopeColorHex(slope) },
+            geometry: { type: 'LineString', coordinates: finalCoords },
+            properties: { color: prevColor },
           });
-        }
       }
     } else {
       const filterKey = activeFilter.key;

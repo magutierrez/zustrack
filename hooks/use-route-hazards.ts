@@ -24,23 +24,46 @@ export function useRouteHazards(weatherPoints: RouteWeatherPoint[]) {
   }, [weatherPoints]);
 
   const buildChartData = useCallback((densePoints: RoutePoint[]) => {
-    return densePoints.map((p, pIdx) => {
-      let slope = 0;
-      if (pIdx > 0) {
-        const prev = densePoints[pIdx - 1];
-        const distDiff = (p.distanceFromStart - prev.distanceFromStart) * 1000;
-        const eleDiff = (p.ele || 0) - (prev.ele || 0);
-        if (distDiff > 0.1) {
-          slope = (eleDiff / distDiff) * 100;
-        }
+    const n = densePoints.length;
+    if (n === 0) return [];
+
+    // ── 1. Raw point-to-point slopes ─────────────────────────────────────────
+    const rawSlopes = new Array<number>(n).fill(0);
+    for (let i = 1; i < n; i++) {
+      const distDiff = (densePoints[i].distanceFromStart - densePoints[i - 1].distanceFromStart) * 1000;
+      const eleDiff = (densePoints[i].ele ?? 0) - (densePoints[i - 1].ele ?? 0);
+      if (distDiff > 0.1) rawSlopes[i] = (eleDiff / distDiff) * 100;
+    }
+
+    // ── 2. Sliding-window slope average (200 m each side = 400 m total) ──────
+    // O(n) two-pointer approach — keeps colours coherent across the segment
+    const halfWindowKm = 0.2;
+    const smoothSlopes = new Array<number>(n).fill(0);
+    let left = 0, right = -1, wSum = 0, wCount = 0;
+    for (let i = 0; i < n; i++) {
+      const center = densePoints[i].distanceFromStart;
+      while (right + 1 < n && densePoints[right + 1].distanceFromStart <= center + halfWindowKm) {
+        right++; wSum += rawSlopes[right]; wCount++;
       }
-      return {
-        dist: p.distanceFromStart,
-        ele: p.ele || 0,
-        slope: Math.abs(slope),
-        color: getSlopeColorHex(slope),
-      };
-    });
+      while (left <= right && densePoints[left].distanceFromStart < center - halfWindowKm) {
+        wSum -= rawSlopes[left]; left++; wCount--;
+      }
+      smoothSlopes[i] = wCount > 0 ? wSum / wCount : 0;
+    }
+
+    // ── 3. Subsample to ≤ 100 points for the gradient (avoids SVG stop flood) ─
+    const maxPts = 100;
+    const step = n <= maxPts ? 1 : Math.ceil(n / maxPts);
+    const indices: number[] = [];
+    for (let i = 0; i < n; i += step) indices.push(i);
+    if (indices[indices.length - 1] !== n - 1) indices.push(n - 1);
+
+    return indices.map((i) => ({
+      dist: densePoints[i].distanceFromStart,
+      ele: densePoints[i].ele ?? 0,
+      slope: Math.abs(smoothSlopes[i]),
+      color: getSlopeColorHex(smoothSlopes[i]),
+    }));
   }, []);
 
   const handleMouseMove = useCallback(

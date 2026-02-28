@@ -95,9 +95,13 @@ export function RouteHazards({
               : seg.points.map((wp) => wp.point);
 
           const chartData = buildChartData(densePoints);
+          if (chartData.length === 0) return null;
 
           const minEle = Math.min(...chartData.map((d) => d.ele));
           const maxEle = Math.max(...chartData.map((d) => d.ele));
+          const eleRange = Math.max(maxEle - minEle, 1);
+          const yMin = minEle - Math.max(10, eleRange * 0.12);
+          const yMax = maxEle + Math.max(5, eleRange * 0.08);
           const distance = seg.endDist - seg.startDist;
 
           const maxSlopePoint = chartData.reduce(
@@ -188,7 +192,10 @@ export function RouteHazards({
                             const data = payload[0].payload;
                             return (
                               <div className="border-border bg-background/95 animate-in fade-in zoom-in rounded-lg border p-2 shadow-xl backdrop-blur-sm duration-200">
-                                <div className="flex min-w-[60px] flex-col gap-0.5">
+                                <div className="flex min-w-[70px] flex-col gap-0.5">
+                                  <span className="text-muted-foreground font-mono text-[9px]">
+                                    km {(data.dist as number).toFixed(2)}
+                                  </span>
                                   <span className="text-foreground flex items-center justify-between font-mono text-[10px] font-black">
                                     {Math.round(data.ele)}m
                                     <span className="bg-secondary text-primary ml-2 rounded px-1">
@@ -217,26 +224,28 @@ export function RouteHazards({
                         isAnimationActive={false}
                         connectNulls
                       />
-                      <ReferenceLine
-                        x={maxSlopePoint.dist}
-                        stroke="#991b1b"
-                        strokeDasharray="3 3"
-                        strokeWidth={1}
-                        label={{
-                          value: 'MAX',
-                          position: 'top',
-                          fill: '#991b1b',
-                          fontSize: 8,
-                          fontWeight: 'black',
-                        }}
-                      />
+                      {(seg.type === 'steepClimb' || seg.type === 'steepDescent') && (
+                        <ReferenceLine
+                          x={maxSlopePoint.dist}
+                          stroke="#991b1b"
+                          strokeDasharray="3 3"
+                          strokeWidth={1}
+                          label={{
+                            value: `${Math.round(maxSlopePoint.slope)}%`,
+                            position: 'top',
+                            fill: '#991b1b',
+                            fontSize: 8,
+                            fontWeight: 'black',
+                          }}
+                        />
+                      )}
                       <XAxis
                         type="number"
                         dataKey="dist"
                         hide
                         domain={[seg.startDist, seg.endDist]}
                       />
-                      <YAxis hide domain={[minEle - 1, maxEle + 1]} />
+                      <YAxis hide domain={[yMin, yMax]} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>

@@ -469,6 +469,14 @@ export default function RouteMap({
     }
   }, [focusPoint, weatherPoints]);
 
+  // On mobile fullscreen, pan (no zoom change) to track the chart-hover point
+  useEffect(() => {
+    if (!isMobileFullscreen || !chartHoverPoint) return;
+    const map = mapRef.current?.getMap();
+    if (!map) return;
+    map.easeTo({ center: [chartHoverPoint.lon, chartHoverPoint.lat], duration: 150 });
+  }, [chartHoverPoint, isMobileFullscreen]);
+
   const activePopupData = useMemo(() => {
     if (manualPopupInfo) return manualPopupInfo;
     return popupInfo;
