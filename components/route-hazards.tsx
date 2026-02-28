@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, ReferenceLine, Tooltip } from 'recharts';
 import { useRouteHazards } from '@/hooks/use-route-hazards';
+import { useRouteStore } from '@/store/route-store';
 
 interface RouteHazardsProps {
   weatherPoints: RouteWeatherPoint[];
@@ -46,12 +47,23 @@ export function RouteHazards({
   const tRouteMap = useTranslations('RouteMap');
 
   const { sortedSegments, buildChartData, handleMouseMove, handleMouseLeave } = useRouteHazards(weatherPoints);
+  const setIsMobileFullscreen = useRouteStore((s) => s.setIsMobileFullscreen);
+  const setMobileHazardRange = useRouteStore((s) => s.setMobileHazardRange);
 
   if (weatherPoints.length === 0) return null;
 
   const handleCardClick = (seg: any) => {
     onSelectSegment?.({ start: seg.startDist, end: seg.endDist });
     setActiveFilter?.({ key: 'hazard', value: `${seg.startDist}-${seg.endDist}` });
+  };
+
+  const handleShowOnMap = (seg: any) => {
+    handleCardClick(seg);
+    // On mobile (below lg breakpoint), also enter fullscreen map with the hazard chart
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setMobileHazardRange({ startDist: seg.startDist, endDist: seg.endDist });
+      setIsMobileFullscreen(true);
+    }
   };
 
   return (
@@ -97,7 +109,7 @@ export function RouteHazards({
             <Card
               key={idx}
               className="border-border/50 bg-card hover:border-primary/50 cursor-pointer overflow-hidden transition-all hover:shadow-md active:scale-[0.98]"
-              onClick={() => handleCardClick(seg)}
+              onClick={() => handleShowOnMap(seg)}
             >
               <CardContent className="p-0">
                 <div className="border-border/50 bg-muted/30 flex items-start justify-between border-b p-4">
@@ -254,7 +266,7 @@ export function RouteHazards({
                     className="hover:bg-primary hover:text-primary-foreground h-7 gap-1.5 px-2 text-[10px] font-bold uppercase transition-colors"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleCardClick(seg);
+                      handleShowOnMap(seg);
                     }}
                   >
                     <Map className="h-3 w-3" />

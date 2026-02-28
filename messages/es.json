@@ -83,6 +83,7 @@
     "avg": "Media",
     "max": "Máx",
     "showOnMap": "Ver en el mapa",
+    "showFullRoute": "Ver ruta completa",
     "noSegments": "No se han detectado tramos de riesgo en esta ruta.",
     "levels": {
       "low": "BAJO",

@@ -83,6 +83,7 @@
     "avg": "Avg",
     "max": "Max",
     "showOnMap": "Show on map",
+    "showFullRoute": "Full route",
     "noSegments": "No risk segments have been detected on this route.",
     "levels": {
       "low": "LOW",

@@ -142,6 +142,7 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
   const isWeatherAnalyzed = useRouteStore((s) => s.isWeatherAnalyzed);
   const config = useRouteStore((s) => s.config);
   const fetchedActivityType = useRouteStore((s) => s.fetchedActivityType);
+  const isMobileFullscreen = useRouteStore((s) => s.isMobileFullscreen);
   const {
     setFetchedRoute,
     setConfig,
@@ -149,6 +150,8 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
     setGpxFileName,
     setLockedMetrics,
     setSavedRouteId,
+    setIsMobileFullscreen,
+    setMobileHazardRange,
     setRecalculatedTotalDistance,
     setRecalculatedElevationGain,
     setRecalculatedElevationLoss,
@@ -158,7 +161,6 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
   const { handleAnalyze, handleReverseRoute, handleFindBestWindow } = useRouteAnalysis();
 
   const mapResetViewRef = useRef<(() => void) | null>(null);
-  const [isMobileFullscreen, setIsMobileFullscreen] = useState(false);
 
   const activityType = fetchedActivityType || activityFromHash || initialActivityType;
 
@@ -335,7 +337,11 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
               <RouteMap
                 onResetToFullRouteView={(func) => (mapResetViewRef.current = func)}
                 isMobileFullscreen={isMobileFullscreen}
-                onToggleMobileFullscreen={() => setIsMobileFullscreen((v) => !v)}
+                onToggleMobileFullscreen={() => {
+                  const next = !isMobileFullscreen;
+                  setIsMobileFullscreen(next);
+                  if (!next) setMobileHazardRange(null);
+                }}
               />
             </div>
 
