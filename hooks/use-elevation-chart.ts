@@ -44,23 +44,37 @@ export function useElevationChart() {
   }, [displayData]);
 
   const chartData = useMemo(() => {
-    return displayData.map((d, idx) => {
-      let slope = 0;
-      if (idx > 0) {
-        const prev = displayData[idx - 1];
-        const distDiff = (d.distance - prev.distance) * 1000;
-        const eleDiff = d.elevation - prev.elevation;
-        if (distDiff > 0.1) {
-          slope = (eleDiff / distDiff) * 100;
-        }
+    const n = displayData.length;
+
+    // ── Raw point-to-point slopes ──────────────────────────────────────────
+    const rawSlopes = new Array<number>(n).fill(0);
+    for (let i = 1; i < n; i++) {
+      const distDiff = (displayData[i].distance - displayData[i - 1].distance) * 1000;
+      const eleDiff = displayData[i].elevation - displayData[i - 1].elevation;
+      if (distDiff > 0.1) rawSlopes[i] = (eleDiff / distDiff) * 100;
+    }
+
+    // ── 1 km sliding-window smooth (500 m each side) ───────────────────────
+    const halfWindowKm = 0.5;
+    const smoothSlopes = new Array<number>(n).fill(0);
+    let sl = 0, sr = -1, wSum = 0, wCount = 0;
+    for (let i = 0; i < n; i++) {
+      const center = displayData[i].distance;
+      while (sr + 1 < n && displayData[sr + 1].distance <= center + halfWindowKm) {
+        sr++; wSum += rawSlopes[sr]; wCount++;
       }
-      return {
-        ...d,
-        elevation: isNaN(d.elevation) ? 0 : d.elevation,
-        slope: Math.round(slope * 10) / 10,
-        color: getSlopeColorHex(slope),
-      };
-    });
+      while (sl <= sr && displayData[sl].distance < center - halfWindowKm) {
+        wSum -= rawSlopes[sl]; sl++; wCount--;
+      }
+      smoothSlopes[i] = wCount > 0 ? wSum / wCount : 0;
+    }
+
+    return displayData.map((d, idx) => ({
+      ...d,
+      elevation: isNaN(d.elevation) ? 0 : d.elevation,
+      slope: Math.round(smoothSlopes[idx] * 10) / 10,
+      color: getSlopeColorHex(smoothSlopes[idx]),
+    }));
   }, [displayData]);
 
   const gradientId = useMemo(

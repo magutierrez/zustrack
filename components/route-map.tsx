@@ -94,6 +94,15 @@ export default function RouteMap({
 
   const points = gpxData?.points || [];
 
+  // When a range is selected (hazard segment or elevation zoom), play only that slice
+  const playerPoints = useMemo(() => {
+    if (!selectedRange || points.length === 0) return points;
+    const filtered = points.filter(
+      (p) => p.distanceFromStart >= selectedRange.start && p.distanceFromStart <= selectedRange.end,
+    );
+    return filtered.length >= 2 ? filtered : points;
+  }, [points, selectedRange]);
+
   const nightPointIndex = useMemo(
     () => (weatherPoints.length > 0 ? findNightPointIndex(weatherPoints).index : null),
     [weatherPoints],
@@ -554,7 +563,7 @@ export default function RouteMap({
         )}
 
         {isPlayerActive && (
-          <RoutePlayer points={points} map={mapRef.current} onStop={handleStopPlayer} />
+          <RoutePlayer points={playerPoints} map={mapRef.current} onStop={handleStopPlayer} />
         )}
       </Map>
 
