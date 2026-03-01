@@ -76,6 +76,7 @@
     "steepClimb": "Pujada Exigent",
     "steepDescent": "Descens Perillós",
     "heatStress": "Estrès Tèrmic",
+    "effort": "Esforç Sostingut",
     "effortLevel": "Nivell d'Esforç",
     "danger": "Risc",
     "distance": "Distància",
@@ -83,6 +84,7 @@
     "avg": "Mitjana",
     "max": "Màx",
     "showOnMap": "Veure al mapa",
+    "showFullRoute": "Veure ruta completa",
     "noSegments": "No s'han detectat trams de risc en aquesta ruta.",
     "levels": {
       "low": "BAIX",

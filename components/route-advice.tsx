@@ -31,6 +31,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { calculatePhysiologicalNeeds, cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useRouteStore } from '@/store/route-store';
 
 interface RouteAdviceProps {
   weatherPoints: RouteWeatherPoint[];
@@ -56,6 +57,19 @@ export function RouteAdvice({
   const t = useTranslations('Advice');
   const tp = useTranslations('physiology');
   const typeKey = activityType === 'cycling' ? 'cycling' : 'hiking';
+
+  const setIsMobileFullscreen = useRouteStore((s) => s.setIsMobileFullscreen);
+  const setMobileHazardRange = useRouteStore((s) => s.setMobileHazardRange);
+  const requestMapReset = useRouteStore((s) => s.requestMapReset);
+
+  // On mobile: show the map fullscreen and reset to full route view
+  const showOnMapMobile = () => {
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setMobileHazardRange(null);
+      setIsMobileFullscreen(true);
+      requestMapReset();
+    }
+  };
 
   if (weatherPoints.length === 0) return null;
 
@@ -188,7 +202,7 @@ export function RouteAdvice({
           <Button
             variant="outline"
             size="sm"
-            onClick={onToggleWaterSources}
+            onClick={() => { onToggleWaterSources?.(); showOnMapMobile(); }}
             className={cn(
               'h-7 w-fit gap-2 text-[10px] font-bold uppercase transition-all',
               showWaterSources
@@ -242,7 +256,7 @@ export function RouteAdvice({
             <Button
               variant="outline"
               size="sm"
-              onClick={onToggleEscapePoints}
+              onClick={() => { onToggleEscapePoints?.(); showOnMapMobile(); }}
               className={cn(
                 'h-7 w-fit gap-2 text-[10px] font-bold uppercase transition-all',
                 showEscapePoints
@@ -276,7 +290,7 @@ export function RouteAdvice({
           <Button
             variant="outline"
             size="sm"
-            onClick={onToggleNoCoverageZones}
+            onClick={() => { onToggleNoCoverageZones?.(); showOnMapMobile(); }}
             className={cn(
               'h-7 w-fit gap-2 text-[10px] font-bold uppercase transition-all',
               showNoCoverageZones

@@ -89,9 +89,19 @@ export default function RouteMap({
   const showNoCoverageZones = useRouteStore((s) => s.showNoCoverageZones);
   const showEscapePoints = useRouteStore((s) => s.showEscapePoints);
   const focusPoint = useRouteStore((s) => s.focusPoint);
+  const mapResetRequested = useRouteStore((s) => s.mapResetRequested);
   const { setSelectedPointIndex, setExactSelectedPoint, clearSelection } = useRouteStore();
 
   const points = gpxData?.points || [];
+
+  // When a range is selected (hazard segment or elevation zoom), play only that slice
+  const playerPoints = useMemo(() => {
+    if (!selectedRange || points.length === 0) return points;
+    const filtered = points.filter(
+      (p) => p.distanceFromStart >= selectedRange.start && p.distanceFromStart <= selectedRange.end,
+    );
+    return filtered.length >= 2 ? filtered : points;
+  }, [points, selectedRange]);
 
   const nightPointIndex = useMemo(
     () => (weatherPoints.length > 0 ? findNightPointIndex(weatherPoints).index : null),
@@ -152,6 +162,7 @@ export default function RouteMap({
   const [mounted, setMounted] = useState(false);
   const [mapType, setMapType] = useState<MapLayerType>('standard');
   const [isPlayerActive, setIsPlayerActive] = useState(false);
+  const geolocateControlRef = useRef<maplibregl.GeolocateControl | null>(null);
 
   const mapStyle = useMapStyle(mapType, resolvedTheme);
   const { syncTerrain } = useMapTerrain(mapRef, mapStyle, isPlayerActive);
@@ -175,6 +186,11 @@ export default function RouteMap({
       onResetToFullRouteView(resetToFullRouteView);
     }
   }, [onResetToFullRouteView, resetToFullRouteView]);
+
+  // Reset map to full-route view when requested from the store (e.g. mobile "show on map" buttons)
+  useEffect(() => {
+    if (mapResetRequested > 0) resetToFullRouteView();
+  }, [mapResetRequested, resetToFullRouteView]);
 
   const handleStopPlayer = useCallback(() => {
     setIsPlayerActive(false);
@@ -229,6 +245,18 @@ export default function RouteMap({
         addArrowImage(map);
         applyMapLanguage(map);
       });
+
+      // Add native GeolocateControl so it integrates directly with the maplibre-gl instance
+      if (!geolocateControlRef.current) {
+        geolocateControlRef.current = new maplibregl.GeolocateControl({
+          positionOptions: { enableHighAccuracy: true },
+          trackUserLocation: true,
+          showAccuracyCircle: true,
+          showUserLocation: true,
+        });
+        map.addControl(geolocateControlRef.current, 'bottom-right');
+      }
+
       resetToFullRouteView();
     },
     [syncTerrain, applyMapLanguage, resetToFullRouteView],
@@ -450,6 +478,14 @@ export default function RouteMap({
     }
   }, [focusPoint, weatherPoints]);
 
+  // On mobile fullscreen, pan (no zoom change) to track the chart-hover point
+  useEffect(() => {
+    if (!isMobileFullscreen || !chartHoverPoint) return;
+    const map = mapRef.current?.getMap();
+    if (!map) return;
+    map.easeTo({ center: [chartHoverPoint.lon, chartHoverPoint.lat], duration: 150 });
+  }, [chartHoverPoint, isMobileFullscreen]);
+
   const activePopupData = useMemo(() => {
     if (manualPopupInfo) return manualPopupInfo;
     return popupInfo;
@@ -527,7 +563,7 @@ export default function RouteMap({
         )}
 
         {isPlayerActive && (
-          <RoutePlayer points={points} map={mapRef.current} onStop={handleStopPlayer} />
+          <RoutePlayer points={playerPoints} map={mapRef.current} onStop={handleStopPlayer} />
         )}
       </Map>
 

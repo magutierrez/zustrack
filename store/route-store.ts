@@ -19,9 +19,15 @@ interface RouteState {
   showNoCoverageZones: boolean;
   showEscapePoints: boolean;
   selectedPointIndex: number | null;
+  isMobileFullscreen: boolean;
+  /** When set, mobile elevation chart shows only this hazard segment */
+  mobileHazardRange: { startDist: number; endDist: number } | null;
+  /** Incremented to request that the map resets to full-route view */
+  mapResetRequested: number;
   config: RouteConfig;
 
   // ── Fetched route data (set by home-page-client from DB) ────────────────────
+  savedRouteId: string | null;
   fetchedRawGpxContent: string | null;
   fetchedGpxFileName: string | null;
   fetchedActivityType: 'cycling' | 'walking' | null;
@@ -67,7 +73,11 @@ interface RouteState {
     elevationGain: number;
     elevationLoss: number;
   }) => void;
+  setSavedRouteId: (id: string | null) => void;
   setLockedMetrics: (metrics: { distance: number; gain: number; loss: number } | null) => void;
+  setIsMobileFullscreen: (v: boolean) => void;
+  setMobileHazardRange: (range: { startDist: number; endDist: number } | null) => void;
+  requestMapReset: () => void;
   clearSelection: () => void;
   reset: () => void;
 
@@ -105,8 +115,12 @@ const initialState = {
   showNoCoverageZones: false,
   showEscapePoints: false,
   selectedPointIndex: null as number | null,
+  isMobileFullscreen: false,
+  mobileHazardRange: null as { startDist: number; endDist: number } | null,
+  mapResetRequested: 0,
   config: { date: getDefaultDate(), time: '08:00', speed: 25 } as RouteConfig,
 
+  savedRouteId: null as string | null,
   fetchedRawGpxContent: null as string | null,
   fetchedGpxFileName: null as string | null,
   fetchedActivityType: null as 'cycling' | 'walking' | null,
@@ -179,7 +193,11 @@ export const useRouteStore = create<RouteState>()((set) => ({
       };
     }),
 
+  setSavedRouteId: (id) => set({ savedRouteId: id }),
   setLockedMetrics: (metrics) => set({ lockedMetrics: metrics }),
+  setIsMobileFullscreen: (v) => set({ isMobileFullscreen: v }),
+  setMobileHazardRange: (range) => set({ mobileHazardRange: range }),
+  requestMapReset: () => set((s) => ({ mapResetRequested: s.mapResetRequested + 1 })),
   clearSelection: () => set({ selectedRange: null, activeFilter: null }),
   reset: () =>
     set((state) => ({

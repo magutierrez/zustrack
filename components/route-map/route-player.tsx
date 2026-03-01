@@ -34,6 +34,16 @@ export function RoutePlayer({ points, onStop, map }: RoutePlayerProps) {
   const lastUiUpdateRef = useRef<number>(0);
   // Ref so the running rAF loop always reads the latest speed without re-creating callbacks
   const speedRef = useRef(1);
+  // Base playback duration in ms: ~5 s per km of route, min 2 min.
+  // Stored in a ref so the rAF loop reads the latest value without being in the dep array.
+  const baseDurationMsRef = useRef(120_000);
+
+  // Recompute baseDurationMs whenever points change
+  useEffect(() => {
+    const totalDistanceKm =
+      points.length > 0 ? (points[points.length - 1].distanceFromStart ?? 0) : 0;
+    baseDurationMsRef.current = Math.max(120_000, totalDistanceKm * 5_000);
+  }, [points]);
 
   const updateMapCamera = useCallback(
     (fractionalIdx: number, forceUiUpdate = false) => {
@@ -102,9 +112,11 @@ export function RoutePlayer({ points, onStop, map }: RoutePlayerProps) {
   const animate = useCallback(
     (time: number) => {
       if (!lastTimeRef.current) lastTimeRef.current = time;
-      const deltaTime = time - lastTimeRef.current;
+      // Cap deltaTime to 100ms to avoid a huge jump when the tab was in background
+      const deltaTime = Math.min(time - lastTimeRef.current, 100);
 
-      const increment = (speedRef.current * deltaTime) / 300;
+      // Normalize so 1x always takes baseDurationMs regardless of point density
+      const increment = (speedRef.current * points.length * deltaTime) / baseDurationMsRef.current;
       currentIndexRef.current += increment;
 
       if (currentIndexRef.current >= points.length - 1) {

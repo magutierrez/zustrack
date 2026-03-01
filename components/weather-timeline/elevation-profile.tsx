@@ -97,9 +97,16 @@ export function AnalysisChart() {
                   <stop key={`line-${i}`} offset={stop.offset} stopColor={stop.color} />
                 ))}
               </linearGradient>
-              <linearGradient id={`${gradientId}-fill`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.15} />
-                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.01} />
+              {/* Komoot-style: fill colour matches slope (green=easy, orange/red=climb) */}
+              <linearGradient id={`${gradientId}-fill`} x1="0" y1="0" x2="1" y2="0">
+                {gradientStops.map((stop, i) => (
+                  <stop
+                    key={`fill-${i}`}
+                    offset={stop.offset}
+                    stopColor={stop.color}
+                    stopOpacity={stop.color === '#10b981' ? 0.12 : 0.22}
+                  />
+                ))}
               </linearGradient>
             </defs>
             {!isMobile && (

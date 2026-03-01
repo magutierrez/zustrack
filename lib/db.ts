@@ -10,6 +10,7 @@ export interface SavedRoute {
   elevation_gain: number;
   elevation_loss: number;
   elevation_points?: number[]; // Added for mini-preview
+  route_info?: string; // JSON-serialized pathData from /api/route-info
   created_at: string;
 }
 
@@ -98,5 +99,26 @@ export async function getRouteFromDb(
   } catch (error) {
     console.error('Error getting route from DB:', error);
     return null;
+  }
+}
+
+export async function getRouteInfoFromDb(routeId: string): Promise<unknown[] | null> {
+  try {
+    const route = await db.saved_routes.get(routeId);
+    if (route?.route_info) {
+      return JSON.parse(route.route_info) as unknown[];
+    }
+    return null;
+  } catch (error) {
+    console.error('Error reading route info from DB:', error);
+    return null;
+  }
+}
+
+export async function saveRouteInfoToDb(routeId: string, pathData: unknown[]): Promise<void> {
+  try {
+    await db.saved_routes.update(routeId, { route_info: JSON.stringify(pathData) });
+  } catch (error) {
+    console.error('Error saving route info to DB:', error);
   }
 }

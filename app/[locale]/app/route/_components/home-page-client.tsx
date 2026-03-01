@@ -142,12 +142,16 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
   const isWeatherAnalyzed = useRouteStore((s) => s.isWeatherAnalyzed);
   const config = useRouteStore((s) => s.config);
   const fetchedActivityType = useRouteStore((s) => s.fetchedActivityType);
+  const isMobileFullscreen = useRouteStore((s) => s.isMobileFullscreen);
   const {
     setFetchedRoute,
     setConfig,
     setGpxData,
     setGpxFileName,
     setLockedMetrics,
+    setSavedRouteId,
+    setIsMobileFullscreen,
+    setMobileHazardRange,
     setRecalculatedTotalDistance,
     setRecalculatedElevationGain,
     setRecalculatedElevationLoss,
@@ -157,7 +161,6 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
   const { handleAnalyze, handleReverseRoute, handleFindBestWindow } = useRouteAnalysis();
 
   const mapResetViewRef = useRef<(() => void) | null>(null);
-  const [isMobileFullscreen, setIsMobileFullscreen] = useState(false);
 
   const activityType = fetchedActivityType || activityFromHash || initialActivityType;
 
@@ -221,6 +224,7 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
       const fetchRoute = async () => {
         const route = await getRouteFromDb(routeId, userIdentifier);
         if (route) {
+          setSavedRouteId(routeId);
           setFetchedRoute({
             rawGpxContent: route.gpx_content,
             gpxFileName: route.name,
@@ -237,7 +241,7 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
     } else if (!routeId) {
       router.replace('/app/setup');
     }
-  }, [routeId, session?.user?.email, session?.user?.id, setFetchedRoute, router]);
+  }, [routeId, session?.user?.email, session?.user?.id, setSavedRouteId, setFetchedRoute, router]);
 
   const onReverseWithRange = useCallback(() => {
     handleReverseRoute();
@@ -333,7 +337,11 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
               <RouteMap
                 onResetToFullRouteView={(func) => (mapResetViewRef.current = func)}
                 isMobileFullscreen={isMobileFullscreen}
-                onToggleMobileFullscreen={() => setIsMobileFullscreen((v) => !v)}
+                onToggleMobileFullscreen={() => {
+                  const next = !isMobileFullscreen;
+                  setIsMobileFullscreen(next);
+                  if (!next) setMobileHazardRange(null);
+                }}
               />
             </div>
 

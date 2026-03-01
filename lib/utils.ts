@@ -256,12 +256,10 @@ export interface RouteSegment {
   score: number;
 }
 
-export function analyzeRouteSegments(weatherPoints: any[]): RouteSegment[] {
-  if (weatherPoints.length === 0) return [];
+export function analyzeRouteSegments(weatherPoints: RouteWeatherPoint[]): RouteSegment[] {
+  if (weatherPoints.length < 2) return [];
 
-  const segments: RouteSegment[] = [];
-  let currentSegment: any = null;
-
+  // ── Helpers ────────────────────────────────────────────────────────────────
   const getClimbCategory = (score: number): RouteSegment['climbCategory'] => {
     if (score >= 80000) return 'HC';
     if (score >= 64000) return '1';
@@ -271,117 +269,255 @@ export function analyzeRouteSegments(weatherPoints: any[]): RouteSegment[] {
     return 'none';
   };
 
-  weatherPoints.forEach((wp, i) => {
-    if (i === 0) return;
+  const bumpDanger = (seg: RouteSegment): void => {
+    if (seg.dangerLevel === 'high') return;
+    if (seg.dangerLevel === 'medium') {
+      seg.dangerLevel = 'high';
+      seg.dangerColor = 'text-red-600';
+    } else {
+      seg.dangerLevel = 'medium';
+      seg.dangerColor = 'text-orange-500';
+    }
+  };
+
+  // ── 1. Compute raw slopes ─────────────────────────────────────────────────
+  const rawSlopes = new Array<number>(weatherPoints.length).fill(0);
+  for (let i = 1; i < weatherPoints.length; i++) {
     const prev = weatherPoints[i - 1];
+    const wp = weatherPoints[i];
     const distKm = wp.point.distanceFromStart - prev.point.distanceFromStart;
-    const eleDiff = (wp.point.ele || 0) - (prev.point.ele || 0);
-    const slope = distKm > 0 ? (eleDiff / (distKm * 1000)) * 100 : 0;
+    const eleDiff = (wp.point.ele ?? 0) - (prev.point.ele ?? 0);
+    rawSlopes[i] = distKm > 0.01 ? (eleDiff / (distKm * 1000)) * 100 : 0;
+  }
 
-    let type: RouteSegment['type'] | null = null;
-
-    // Garmin-style thresholds:
-    // Climb: Slope > 3%
-    // Descent: Slope < -5%
-    if (slope >= 3) {
-      type = 'steepClimb';
-    } else if (slope <= -5) {
-      type = 'steepDescent';
-    } else if (wp.weather.temperature > 26 && wp.solarIntensity === 'intense') {
-      type = 'heatStress';
-    }
-
-    if (type) {
-      if (!currentSegment || currentSegment.type !== type) {
-        if (currentSegment) {
-          // Finalize previous segment with Garmin logic
-          finalizeSegment(currentSegment, segments);
-        }
-        currentSegment = {
-          type,
-          startDist: prev.point.distanceFromStart,
-          points: [prev, wp],
-          maxSlope: Math.abs(slope),
-          avgTemp: wp.weather.temperature,
-          endDist: wp.point.distanceFromStart,
-        };
-      } else {
-        currentSegment.points.push(wp);
-        currentSegment.maxSlope = Math.max(currentSegment.maxSlope, Math.abs(slope));
-        currentSegment.endDist = wp.point.distanceFromStart;
-        currentSegment.avgTemp = (currentSegment.avgTemp + wp.weather.temperature) / 2;
-      }
-    } else if (currentSegment) {
-      finalizeSegment(currentSegment, segments);
-      currentSegment = null;
-    }
+  // ── 2. Smooth slopes (3-point weighted: 25-50-25) ─────────────────────────
+  const slopes = rawSlopes.map((s, i) => {
+    if (i === 0 || i === rawSlopes.length - 1) return s;
+    return rawSlopes[i - 1] * 0.25 + s * 0.5 + rawSlopes[i + 1] * 0.25;
   });
 
-  if (currentSegment) finalizeSegment(currentSegment, segments);
+  // ── 3. Classify each point ─────────────────────────────────────────────────
+  const classifyPoint = (i: number): RouteSegment['type'] | null => {
+    if (i === 0) return null;
+    const wp = weatherPoints[i];
+    const slope = slopes[i];
 
-  function finalizeSegment(seg: any, list: RouteSegment[]) {
+    if (slope >= 3) return 'steepClimb';
+    if (slope <= -5) return 'steepDescent';
+    if (slope >= 1.5) return 'effort'; // 1.5 – <3% (steepClimb already handled above)
+
+    // Heat stress: must be daytime, apparentTemperature threshold
+    if (wp.solarIntensity && wp.solarIntensity !== 'night') {
+      const appTemp = wp.weather.apparentTemperature;
+      const humidity = wp.weather.humidity;
+      if (appTemp >= 28 || (appTemp >= 24 && humidity >= 75)) return 'heatStress';
+    }
+
+    return null;
+  };
+
+  const pointTypes = weatherPoints.map((_, i) => classifyPoint(i));
+
+  // ── 4. Gap tolerance: bridge single neutral points between the same type ───
+  for (let i = 1; i < pointTypes.length - 1; i++) {
+    if (
+      pointTypes[i] === null &&
+      pointTypes[i - 1] !== null &&
+      pointTypes[i + 1] === pointTypes[i - 1]
+    ) {
+      pointTypes[i] = pointTypes[i - 1];
+    }
+  }
+
+  // ── 5. Build segments ──────────────────────────────────────────────────────
+  type SegmentAccum = {
+    type: RouteSegment['type'];
+    startDist: number;
+    endDist: number;
+    points: RouteWeatherPoint[];
+    maxSlope: number;
+    tempSum: number;
+    pointCount: number;
+  };
+
+  const segments: RouteSegment[] = [];
+  let currentSeg: SegmentAccum | null = null;
+
+  const pushSeg = (seg: SegmentAccum): void => {
     const lengthM = (seg.endDist - seg.startDist) * 1000;
-    const firstPoint = seg.points[0].point;
-    const lastPoint = seg.points[seg.points.length - 1].point;
-    const totalEleDiff = (lastPoint.ele || 0) - (firstPoint.ele || 0);
+    const firstPt = seg.points[0].point;
+    const lastPt = seg.points[seg.points.length - 1].point;
+    const totalEleDiff = (lastPt.ele ?? 0) - (firstPt.ele ?? 0);
     const avgSlope = lengthM > 0 ? (totalEleDiff / lengthM) * 100 : 0;
     const absAvgSlope = Math.abs(avgSlope);
+    const avgTemp = seg.tempSum / seg.pointCount;
     const score = lengthM * absAvgSlope;
+
+    let result: RouteSegment | null = null;
 
     if (seg.type === 'steepClimb') {
       // Garmin ClimbPro thresholds: length > 500m, avg slope > 3%, score > 3500
       if (lengthM < 500 || absAvgSlope < 3 || score < 3500) return;
-
       const cat = getClimbCategory(score);
-      seg.climbCategory = cat;
-      seg.avgSlope = absAvgSlope;
-      seg.lengthM = lengthM;
-      seg.score = score;
-
+      let dangerLevel: RouteSegment['dangerLevel'];
+      let dangerColor: string;
       if (cat === 'HC' || cat === '1' || absAvgSlope > 12) {
-        seg.dangerLevel = 'high';
-        seg.dangerColor = 'text-red-600';
+        dangerLevel = 'high';
+        dangerColor = 'text-red-600';
       } else if (cat === '2' || cat === '3' || absAvgSlope > 8) {
-        seg.dangerLevel = 'medium';
-        seg.dangerColor = 'text-orange-500';
+        dangerLevel = 'medium';
+        dangerColor = 'text-orange-500';
       } else {
-        seg.dangerLevel = 'low';
-        seg.dangerColor = 'text-amber-500';
+        dangerLevel = 'low';
+        dangerColor = 'text-amber-500';
+      }
+      result = {
+        type: 'steepClimb',
+        dangerLevel,
+        dangerColor,
+        climbCategory: cat,
+        startDist: seg.startDist,
+        endDist: seg.endDist,
+        points: seg.points,
+        maxSlope: seg.maxSlope,
+        avgSlope: absAvgSlope,
+        avgTemp,
+        lengthM,
+        score,
+      };
+      // Contextual: headwind on climb raises danger
+      if (seg.points.some((wp) => wp.windEffect === 'headwind' && wp.weather.windSpeed > 15)) {
+        bumpDanger(result);
       }
     } else if (seg.type === 'steepDescent') {
-      // Technical/Steep descent: length > 300m and avg slope < -5%
       if (lengthM < 300 || absAvgSlope < 5) return;
-
-      seg.avgSlope = absAvgSlope;
-      seg.lengthM = lengthM;
-      seg.score = score;
-
+      let dangerLevel: RouteSegment['dangerLevel'];
+      let dangerColor: string;
       if (absAvgSlope > 15 || (absAvgSlope > 10 && lengthM > 2000)) {
-        seg.dangerLevel = 'high';
-        seg.dangerColor = 'text-red-600';
+        dangerLevel = 'high';
+        dangerColor = 'text-red-600';
       } else if (absAvgSlope > 10 || (absAvgSlope > 7 && lengthM > 1000)) {
-        seg.dangerLevel = 'medium';
-        seg.dangerColor = 'text-orange-500';
+        dangerLevel = 'medium';
+        dangerColor = 'text-orange-500';
       } else {
-        seg.dangerLevel = 'low';
-        seg.dangerColor = 'text-blue-400';
+        dangerLevel = 'low';
+        dangerColor = 'text-blue-400';
       }
+      result = {
+        type: 'steepDescent',
+        dangerLevel,
+        dangerColor,
+        startDist: seg.startDist,
+        endDist: seg.endDist,
+        points: seg.points,
+        maxSlope: seg.maxSlope,
+        avgSlope: absAvgSlope,
+        avgTemp,
+        lengthM,
+        score,
+      };
+      // Contextual: wet surface or unpaved terrain raises danger on descent
+      const hasWetOrUnpaved = seg.points.some(
+        (wp) =>
+          wp.weather.precipitation > 0.5 ||
+          ['unpaved', 'gravel', 'dirt', 'sand', 'grass'].some((s) =>
+            wp.surface?.toLowerCase().includes(s),
+          ),
+      );
+      if (hasWetOrUnpaved) bumpDanger(result);
+    } else if (seg.type === 'effort') {
+      // Sustained moderate climbing: min 2 km
+      if (lengthM < 2000 || absAvgSlope < 1.5) return;
+      let dangerLevel: RouteSegment['dangerLevel'];
+      let dangerColor: string;
+      if (lengthM >= 8000) {
+        dangerLevel = 'high';
+        dangerColor = 'text-orange-500';
+      } else if (lengthM >= 4000) {
+        dangerLevel = 'medium';
+        dangerColor = 'text-amber-500';
+      } else {
+        dangerLevel = 'low';
+        dangerColor = 'text-yellow-500';
+      }
+      result = {
+        type: 'effort',
+        dangerLevel,
+        dangerColor,
+        startDist: seg.startDist,
+        endDist: seg.endDist,
+        points: seg.points,
+        maxSlope: seg.maxSlope,
+        avgSlope: absAvgSlope,
+        avgTemp,
+        lengthM,
+        score,
+      };
     } else {
-      // Heat Stress
-      seg.avgSlope = absAvgSlope;
-      seg.lengthM = lengthM;
-      seg.score = score;
-      if (seg.avgTemp > 32) {
-        seg.dangerLevel = 'high';
-        seg.dangerColor = 'text-red-600';
+      // heatStress
+      if (lengthM < 300) return;
+      let dangerLevel: RouteSegment['dangerLevel'];
+      let dangerColor: string;
+      if (avgTemp > 32) {
+        dangerLevel = 'high';
+        dangerColor = 'text-red-600';
       } else {
-        seg.dangerLevel = 'medium';
-        seg.dangerColor = 'text-orange-500';
+        dangerLevel = 'medium';
+        dangerColor = 'text-orange-500';
       }
+      result = {
+        type: 'heatStress',
+        dangerLevel,
+        dangerColor,
+        startDist: seg.startDist,
+        endDist: seg.endDist,
+        points: seg.points,
+        maxSlope: seg.maxSlope,
+        avgSlope: absAvgSlope,
+        avgTemp,
+        lengthM,
+        score,
+      };
+      // Contextual: high humidity exacerbates heat stress
+      if (seg.points.some((wp) => wp.weather.humidity >= 75)) bumpDanger(result);
     }
 
-    list.push(seg);
+    if (result) segments.push(result);
+  };
+
+  for (let i = 1; i < weatherPoints.length; i++) {
+    const wp = weatherPoints[i];
+    const prev = weatherPoints[i - 1];
+    const type = pointTypes[i];
+
+    if (type !== null) {
+      if (currentSeg && currentSeg.type === type) {
+        // Extend current segment
+        currentSeg.points.push(wp);
+        currentSeg.endDist = wp.point.distanceFromStart;
+        currentSeg.maxSlope = Math.max(currentSeg.maxSlope, Math.abs(slopes[i]));
+        currentSeg.tempSum += wp.weather.temperature;
+        currentSeg.pointCount++;
+      } else {
+        // Finalize previous segment, start a new one
+        if (currentSeg) pushSeg(currentSeg);
+        currentSeg = {
+          type,
+          startDist: prev.point.distanceFromStart,
+          endDist: wp.point.distanceFromStart,
+          points: [prev, wp],
+          maxSlope: Math.abs(slopes[i]),
+          tempSum: wp.weather.temperature,
+          pointCount: 1,
+        };
+      }
+    } else if (currentSeg) {
+      pushSeg(currentSeg);
+      currentSeg = null;
+    }
   }
+
+  if (currentSeg) pushSeg(currentSeg);
 
   return segments;
 }
