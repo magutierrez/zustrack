@@ -78,8 +78,10 @@
     "zustand": "^5.0.11"
   },
   "devDependencies": {
+    "@eslint/compat": "^2.0.2",
     "@eslint/eslintrc": "^3.3.4",
     "@eslint/js": "^10.0.1",
+    "@next/eslint-plugin-next": "^16.1.6",
     "@tailwindcss/postcss": "^4.1.13",
     "@types/geojson": "^7946.0.16",
     "@types/mapbox__polyline": "^1.0.5",
@@ -90,11 +92,14 @@
     "eslint-config-next": "^16.1.6",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
     "postcss": "^8.5",
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "tailwindcss": "^4.1.18",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.56.1"
   },
   "pnpm": {
     "overrides": {

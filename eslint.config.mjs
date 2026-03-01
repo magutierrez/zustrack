@@ -1,34 +1,48 @@
-import { defineConfig } from 'eslint/config';
-import prettier from 'eslint-plugin-prettier';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import js from '@eslint/js';
-import { FlatCompat } from '@eslint/eslintrc';
+import tseslint from 'typescript-eslint';
+import prettier from 'eslint-config-prettier';
+import nextPlugin from '@next/eslint-plugin-next';
+import reactPlugin from 'eslint-plugin-react';
+import hooksPlugin from 'eslint-plugin-react-hooks';
+import { fixupPluginRules } from '@eslint/compat';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-  recommendedConfig: js.configs.recommended,
-  allConfig: js.configs.all,
-});
-
-export default defineConfig([
+export default tseslint.config(
   {
-    extends: compat.extends('next/core-web-vitals', 'next/typescript', 'prettier'),
-
+    ignores: ['.next/**', 'out/**', 'build/**', 'node_modules/**', 'public/**', 'testing/**'],
+  },
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  {
+    files: ['**/*.{js,jsx,ts,tsx}'],
     plugins: {
-      prettier,
+      react: fixupPluginRules(reactPlugin),
+      'react-hooks': fixupPluginRules(hooksPlugin),
+      '@next/next': fixupPluginRules(nextPlugin),
     },
-
+    languageOptions: {
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
+        },
+      },
+    },
+    settings: {
+      react: {
+        version: 'detect',
+      },
+    },
     rules: {
-      'prettier/prettier': 'error',
-      semi: ['error', 'always'],
-      '@typescript-eslint/semi': ['error', 'always'],
-      '@typescript-eslint/no-unused-vars': 'warn',
+      ...reactPlugin.configs.recommended.rules,
+      ...reactPlugin.configs['jsx-runtime'].rules,
+      ...hooksPlugin.configs.recommended.rules,
+      ...nextPlugin.configs.recommended.rules,
+      ...nextPlugin.configs['core-web-vitals'].rules,
+
+      'no-console': 'warn',
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'warn',
       'react-hooks/exhaustive-deps': 'warn',
-      'no-console': 'error',
     },
   },
-]);
+  prettier,
+);
