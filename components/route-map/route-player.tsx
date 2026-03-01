@@ -88,16 +88,19 @@ export function RoutePlayer({ points, onStop, map }: RoutePlayerProps) {
         let diff = targetBearing - currentBearingRef.current;
         if (diff > 180) diff -= 360;
         if (diff < -180) diff += 360;
-        currentBearingRef.current += diff * 0.1;
+        currentBearingRef.current += diff * 0.05;
         currentBearingRef.current = (currentBearingRef.current + 360) % 360;
       }
 
-      // 4. Frame-Perfect Camera Positioning
-      mapInstance.jumpTo({
+      // 4. Smooth cinematic camera — easeTo with a ~200 ms window so the map
+      // glides to each new position instead of snapping (Strava flyover feel).
+      mapInstance.easeTo({
         center: [interpolatedLon, interpolatedLat],
         bearing: currentBearingRef.current,
-        pitch: 60,
-        zoom: 16.5,
+        pitch: 65,
+        zoom: 14.5,
+        duration: 200,
+        easing: (t: number) => t, // linear — no acceleration artifacts while tracking
       });
 
       const now = Date.now();

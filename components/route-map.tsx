@@ -165,7 +165,14 @@ export default function RouteMap({
   const geolocateControlRef = useRef<maplibregl.GeolocateControl | null>(null);
 
   const mapStyle = useMapStyle(mapType, resolvedTheme);
-  const { syncTerrain } = useMapTerrain(mapRef, mapStyle, isPlayerActive);
+
+  // During playback switch to MapTiler satellite for the Strava-like 3-D flyover.
+  // When the player stops, mapStyle reverts to the user's selected layer.
+  const effectiveMapStyle = isPlayerActive
+    ? `https://api.maptiler.com/maps/satellite/style.json?key=${process.env.NEXT_PUBLIC_MAPTILER_KEY}`
+    : mapStyle;
+
+  const { syncTerrain } = useMapTerrain(mapRef, effectiveMapStyle, isPlayerActive);
 
   const { routeData, highlightedData, rangeHighlightData } = useMapLayers(
     points,
@@ -518,7 +525,7 @@ export default function RouteMap({
         mapLib={maplibregl}
         initialViewState={initialViewState}
         style={{ width: '100%', height: '100%' }}
-        mapStyle={mapStyle as any}
+        mapStyle={effectiveMapStyle as any}
         onClick={onMapClick}
         onLoad={onMapLoad}
         onMouseMove={onMapMouseMove}
