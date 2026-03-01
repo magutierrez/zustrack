@@ -16,7 +16,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://www.zustrack.com';
 
 const META = {
   en: {
-    title: 'zustrack — Point-by-point weather for cyclists & hikers',
+    title: 'zustrack — Analyze your next route. Master the road',
     description:
       'Upload your GPX or import from Strava. Get point-by-point weather forecast, elevation analysis, risk detection and mobile coverage for your cycling and hiking routes.',
     keywords:
@@ -24,7 +24,7 @@ const META = {
     ogLocale: 'en_US',
   },
   es: {
-    title: 'zustrack — Pronóstico del tiempo punto a punto para ciclistas y senderistas',
+    title: 'zustrack — Analiza tu próxima ruta. Domina el camino',
     description:
       'Sube tu ruta GPX o importa desde Strava. Pronóstico del tiempo punto a punto, perfil de elevación, análisis de terreno, detección de riesgos y cobertura móvil para ciclismo y senderismo.',
     keywords:
@@ -32,7 +32,7 @@ const META = {
     ogLocale: 'es_ES',
   },
   ca: {
-    title: 'zustrack — Predicció meteorològica punt a punt per a ciclistes i senderistes',
+    title: 'zustrack — Analitza la teva propera ruta. Domina el camí',
     description:
       "Puja la teva ruta GPX o importa des de Strava. Predicció del temps punt a punt, perfil d'elevació, anàlisi del terreny, detecció de riscos i cobertura mòbil per a ciclisme i senderisme.",
     keywords:
