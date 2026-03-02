@@ -27,7 +27,6 @@ export function decodeTWKB(base64: string): Point[] {
   while (ctx.offset < buffer.length) {
     try {
       const typeAndPrecision = buffer[ctx.offset++];
-      const type = typeAndPrecision & 0x0f;
 
       // Precision is ZigZag encoded in the high 4 bits
       const precisionRaw = (typeAndPrecision & 0xf0) >> 4;

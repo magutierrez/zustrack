@@ -291,7 +291,9 @@
       "slopeHard": "Difícil",
       "resetZoom": "Restablir zoom",
       "highestPoint": "Punt més alt",
-      "lowestPoint": "Punt més baix"
+      "lowestPoint": "Punt més baix",
+      "ascent": "Ascens",
+      "descent": "Descens"
     },
     "windEffect": {
       "tailwind": "A favor",
