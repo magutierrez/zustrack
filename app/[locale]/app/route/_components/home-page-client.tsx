@@ -23,13 +23,15 @@ import { RouteSummary } from './route-summary';
 import { ElevationTerrainTabs } from './elevation-terrain-tabs';
 import { MobileElevationChart } from '@/components/mobile-elevation-chart';
 
+import { SpecialLoading } from '@/app/_components/special-loading';
+
 const RouteMap = dynamic(() => import('@/components/route-map'), {
   ssr: false,
   loading: function Loading() {
     const th = useTranslations('HomePage');
     return (
-      <div className="bg-card flex h-full items-center justify-center rounded-lg">
-        <span className="text-muted-foreground text-sm">{th('loadingMap')}</span>
+      <div className="bg-card flex h-full items-center justify-center rounded-lg border border-slate-200 dark:border-white/5">
+        <SpecialLoading message={th('loadingMap')} />
       </div>
     );
   },
