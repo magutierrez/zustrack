@@ -20,8 +20,6 @@ import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
 
 export function AppMockup() {
   const t = useTranslations('Landing.mockup');
-  const tv = useTranslations('Landing.visuals');
-  const th = useTranslations('HomePage');
   const [mounted, setMounted] = useState(false);
   const mapRef = useRef<MapRef>(null);
   const { resolvedTheme } = useTheme();
@@ -31,7 +29,8 @@ export function AppMockup() {
   const isInView = useInView(containerRef, { once: false, margin: '200px 0px' });
 
   useEffect(() => {
-    setMounted(true);
+    const timer = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const initialZoom = mounted
@@ -302,13 +301,19 @@ export function AppMockup() {
       <div className="border-border bg-card flex h-14 items-center justify-between border-b px-4 md:px-6">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <div className="bg-primary h-6 w-6 rounded-md" />
-            <span className="text-foreground font-bold tracking-tight">zustrack</span>
+            <div className="h-3 w-3 rounded-full bg-red-400 shadow-sm" />
+            <div className="h-3 w-3 rounded-full bg-amber-400 shadow-sm" />
+            <div className="h-3 w-3 rounded-full bg-green-400 shadow-sm" />
+          </div>
+        </div>
+        <div className="flex flex-1 items-center justify-center px-4">
+          <div className="bg-muted/50 text-muted-foreground flex h-8 w-full max-w-sm items-center justify-center gap-2 rounded-md text-xs font-medium">
+            <Navigation className="h-3 w-3" />
+            zustrack.com/app/route
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <div className="bg-muted h-8 w-24 animate-pulse rounded-full" />
-          <div className="bg-secondary h-8 w-8 rounded-full" />
+          <div className="bg-muted h-8 w-8 rounded-full" />
         </div>
       </div>
 
