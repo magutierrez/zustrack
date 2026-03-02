@@ -553,6 +553,26 @@
     "nav": {
       "access": "Log in"
     },
+    "mockup": {
+      "config": "Configuration",
+      "activity": "Activity",
+      "cycling": "Cycling",
+      "date": "Departure",
+      "dateValue": "Today, 09:00",
+      "analyzeBtn": "Analyze Route",
+      "tabElev": "Elevation",
+      "tabTerrain": "Terrain",
+      "tabWeather": "Weather",
+      "profile": "Profile",
+      "gain": "Gain: +820m",
+      "summary": "Route Summary",
+      "distLabel": "Distance",
+      "timeLabel": "Est. Time",
+      "altLabel": "Max Alt",
+      "avgLabel": "Avg",
+      "windLabel": "Wind",
+      "rainLabel": "Rain"
+    },
     "hero": {
       "badge": "Route weather analysis · Open-Meteo API",
       "title1": "Know every kilometer",

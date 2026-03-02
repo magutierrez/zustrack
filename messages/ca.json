@@ -553,6 +553,26 @@
     "nav": {
       "access": "Accedir"
     },
+    "mockup": {
+      "config": "Configuració",
+      "activity": "Activitat",
+      "cycling": "Ciclisme",
+      "date": "Data sortida",
+      "dateValue": "Avui, 09:00",
+      "analyzeBtn": "Analitzar Ruta",
+      "tabElev": "Elevació",
+      "tabTerrain": "Terreny",
+      "tabWeather": "Clima",
+      "profile": "Perfil",
+      "gain": "Desnivell: +820m",
+      "summary": "Resum de la ruta",
+      "distLabel": "Distància",
+      "timeLabel": "Temps Est.",
+      "altLabel": "Altitud Max",
+      "avgLabel": "Mitjana",
+      "windLabel": "Vent",
+      "rainLabel": "Pluja"
+    },
     "hero": {
       "badge": "Anàlisi meteorològica de ruta · Open-Meteo API",
       "title1": "Coneix cada quilòmetre",

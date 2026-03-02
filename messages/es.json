@@ -553,6 +553,26 @@
     "nav": {
       "access": "Acceder"
     },
+    "mockup": {
+      "config": "Configuración",
+      "activity": "Actividad",
+      "cycling": "Ciclismo",
+      "date": "Fecha salida",
+      "dateValue": "Hoy, 09:00",
+      "analyzeBtn": "Analizar Ruta",
+      "tabElev": "Elevación",
+      "tabTerrain": "Terreno",
+      "tabWeather": "Clima",
+      "profile": "Perfil",
+      "gain": "Desnivel: +820m",
+      "summary": "Resumen de la ruta",
+      "distLabel": "Distancia",
+      "timeLabel": "Tiempo Est.",
+      "altLabel": "Altitud Max",
+      "avgLabel": "Media",
+      "windLabel": "Viento",
+      "rainLabel": "Lluvia"
+    },
     "hero": {
       "badge": "Análisis meteorológico de ruta · Open-Meteo API",
       "title1": "Conoce cada kilómetro",
