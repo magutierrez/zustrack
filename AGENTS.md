@@ -134,7 +134,7 @@
 5. **Map components**: Always dynamically imported with `ssr: false`.
 6. **No prop drilling**: Shared state goes in the Zustand store.
 7. **New weather providers**: Implement `WeatherProvider` interface in `lib/weather-providers.ts`.
-8. **Type-check**: Run `npm run tsc` to validate before merging.
+8. **Type-check**: Run `pnpm run tsc` to validate before merging.
 
 ## 6. Common Tasks (Quick Reference)
 
