@@ -27,41 +27,72 @@ export function useElevationChart() {
             distance: wp.point.distanceFromStart,
             elevation: wp.point.ele || 0,
           }));
-    return rawData.map((d) => ({ ...d, elevation: Math.round(d.elevation) }));
+
+    if (!rawData.length) return [];
+
+    // Resample to 100m (0.1km) steps
+    const step = 0.1;
+    const maxDist = rawData[rawData.length - 1].distance;
+    const resampled = [];
+
+    let currentIdx = 0;
+    for (let d = 0; d <= maxDist; d += step) {
+      while (currentIdx < rawData.length - 1 && rawData[currentIdx + 1].distance < d) {
+        currentIdx++;
+      }
+
+      const p1 = rawData[currentIdx];
+      const p2 = rawData[currentIdx + 1] || p1;
+
+      let elevation = p1.elevation;
+      if (p2.distance > p1.distance) {
+        const ratio = (d - p1.distance) / (p2.distance - p1.distance);
+        elevation = p1.elevation + ratio * (p2.elevation - p1.elevation);
+      }
+
+      resampled.push({
+        distance: Math.round(d * 10) / 10,
+        elevation: Math.round(elevation),
+      });
+    }
+
+    // Ensure the last point is included if it doesn't align exactly with the step
+    if (resampled.length === 0 || resampled[resampled.length - 1].distance < maxDist) {
+      resampled.push({
+        distance: maxDist,
+        elevation: Math.round(rawData[rawData.length - 1].elevation),
+      });
+    }
+
+    return resampled;
   }, [elevationData, weatherPoints]);
 
   const chartData = useMemo(() => {
     const n = displayData.length;
 
-    // Raw point-to-point slopes
-    const rawSlopes = new Array<number>(n).fill(0);
-    for (let i = 1; i < n; i++) {
-      const distDiff = (displayData[i].distance - displayData[i - 1].distance) * 1000;
-      const eleDiff = displayData[i].elevation - displayData[i - 1].elevation;
-      if (distDiff > 0.1) rawSlopes[i] = (eleDiff / distDiff) * 100;
-    }
-
-    // 1 km sliding-window smooth (500 m each side)
-    const halfWindowKm = 0.5;
-    const smoothSlopes = new Array<number>(n).fill(0);
-    let sl = 0, sr = -1, wSum = 0, wCount = 0;
-    for (let i = 0; i < n; i++) {
-      const center = displayData[i].distance;
-      while (sr + 1 < n && displayData[sr + 1].distance <= center + halfWindowKm) {
-        sr++; wSum += rawSlopes[sr]; wCount++;
+    return displayData.map((d, idx) => {
+      let slope = 0;
+      // Calculate slope based on the 100m segment leading up to this point
+      if (idx > 0) {
+        const prev = displayData[idx - 1];
+        const distDiff = (d.distance - prev.distance) * 1000;
+        const eleDiff = d.elevation - prev.elevation;
+        if (distDiff > 0.1) slope = (eleDiff / distDiff) * 100;
+      } else if (n > 1) {
+        // First point uses the slope of the first segment
+        const next = displayData[1];
+        const distDiff = (next.distance - d.distance) * 1000;
+        const eleDiff = next.elevation - d.elevation;
+        if (distDiff > 0.1) slope = (eleDiff / distDiff) * 100;
       }
-      while (sl <= sr && displayData[sl].distance < center - halfWindowKm) {
-        wSum -= rawSlopes[sl]; sl++; wCount--;
-      }
-      smoothSlopes[i] = wCount > 0 ? wSum / wCount : 0;
-    }
 
-    return displayData.map((d, idx) => ({
-      ...d,
-      elevation: isNaN(d.elevation) ? 0 : d.elevation,
-      slope: Math.round(smoothSlopes[idx] * 10) / 10,
-      color: getSlopeColorHex(smoothSlopes[idx]),
-    }));
+      return {
+        ...d,
+        elevation: isNaN(d.elevation) ? 0 : d.elevation,
+        slope: Math.round(slope * 10) / 10,
+        color: getSlopeColorHex(slope),
+      };
+    });
   }, [displayData]);
 
   const visibleStats = useMemo(() => {
@@ -76,7 +107,8 @@ export function useElevationChart() {
     if (!visible.length) return { min: 0, max: 0, gain: 0, loss: 0, distance: 0 };
 
     const elevations = visible.map((d) => d.elevation);
-    let gain = 0, loss = 0;
+    let gain = 0,
+      loss = 0;
     for (let i = 1; i < visible.length; i++) {
       const diff = visible[i].elevation - visible[i - 1].elevation;
       if (diff > 0) gain += diff;

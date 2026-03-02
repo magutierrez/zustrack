@@ -24,7 +24,7 @@ import { useMapTerrain } from './route-map/use-map-terrain';
 import { RoutePlayer } from './route-map/route-player';
 import { MapOverlayControls } from './route-map/map-overlay-controls';
 import { useRouteStore } from '@/store/route-store';
-import { findClosestPointIndex, projectOntoSegment } from '@/lib/geometry';
+import { findClosestPointIndex, projectOntoSegment, interpolatePointOnRoute } from '@/lib/geometry';
 import { cn } from '@/lib/utils';
 
 /**
@@ -89,6 +89,7 @@ export default function RouteMap({
   const showNoCoverageZones = useRouteStore((s) => s.showNoCoverageZones);
   const showEscapePoints = useRouteStore((s) => s.showEscapePoints);
   const focusPoint = useRouteStore((s) => s.focusPoint);
+  const clickedChartPointDist = useRouteStore((s) => s.clickedChartPointDist);
   const mapResetRequested = useRouteStore((s) => s.mapResetRequested);
   const { setSelectedPointIndex, setExactSelectedPoint, clearSelection } = useRouteStore();
 
@@ -485,6 +486,66 @@ export default function RouteMap({
     }
   }, [focusPoint, weatherPoints]);
 
+  // Handle chart click exact point popup
+  useEffect(() => {
+    if (clickedChartPointDist !== null && points.length > 0) {
+      const interpolatedPoint = interpolatePointOnRoute(points, clickedChartPointDist);
+      if (!interpolatedPoint) return;
+
+      // Find closest segment for bearing and slope
+      let closestIdx = 0;
+      for (let i = 0; i < points.length - 1; i++) {
+        if (
+          points[i].distanceFromStart <= clickedChartPointDist &&
+          points[i + 1].distanceFromStart >= clickedChartPointDist
+        ) {
+          closestIdx = i;
+          break;
+        }
+      }
+
+      const p1 = points[closestIdx];
+      const p2 = points[closestIdx + 1] || p1;
+
+      const distDiff = (p2.distanceFromStart - p1.distanceFromStart) * 1000;
+      const eleDiff = (p2.ele || 0) - (p1.ele || 0);
+      const slope = distDiff > 0.1 ? (eleDiff / distDiff) * 100 : 0;
+
+      const toRad = (deg: number) => (deg * Math.PI) / 180;
+      const toDeg = (rad: number) => (rad * 180) / Math.PI;
+      const lat1 = toRad(p1.lat);
+      const lat2 = toRad(p2.lat);
+      const dLon = toRad(p2.lon - p1.lon);
+      const y = Math.sin(dLon) * Math.cos(lat2);
+      const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+      const bearing = (toDeg(Math.atan2(y, x)) + 360) % 360;
+
+      const weatherIdx = Math.min(
+        Math.floor(
+          (interpolatedPoint.distanceFromStart / points[points.length - 1].distanceFromStart) *
+            weatherPoints.length,
+        ),
+        weatherPoints.length - 1,
+      );
+
+      const weatherInfo = weatherPoints[weatherIdx] || {
+        weather: { temperature: 0, weatherCode: 0, windSpeed: 0, time: new Date().toISOString() },
+        windEffect: 'tailwind',
+        solarIntensity: 'moderate',
+      };
+
+      setManualPopupInfo({
+        point: { ...interpolatedPoint, slope },
+        weather: weatherInfo.weather,
+        index: -1,
+        bearing: bearing,
+        windEffect: weatherInfo.windEffect,
+        solarIntensity: weatherInfo.solarIntensity,
+      });
+      setHoveredPointIdx(null);
+    }
+  }, [clickedChartPointDist, points, weatherPoints]);
+
   // On mobile fullscreen, pan (no zoom change) to track the chart-hover point
   useEffect(() => {
     if (!isMobileFullscreen || !chartHoverPoint) return;
@@ -607,6 +668,7 @@ export default function RouteMap({
       {/* Layer selector — shifted below fullscreen button on mobile, hidden when popup active */}
       {!(isMobile && activePopupData) && <LayerControl mapType={mapType} setMapType={setMapType} />}
 
+      {/* eslint-disable-next-line react/no-unknown-property */}
       <style jsx global>{`
         .weather-popup .maplibregl-popup-content {
           background: var(--card) !important;

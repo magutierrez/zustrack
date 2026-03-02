@@ -11,50 +11,66 @@ import { formatElevation, formatDistance } from '@/lib/utils';
 import { useElevationChart } from '@/hooks/use-elevation-chart';
 import { useRouteStore } from '@/store/route-store';
 
-const MARGIN        = { top: 8, right: 16, bottom: 28, left: 52 };
-const MARGIN_MOBILE = { top: 4, right: 4,  bottom: 0,  left: 0  };
-const MAX_ZOOM      = 3;
+const MARGIN = { top: 8, right: 16, bottom: 28, left: 52 };
+const MARGIN_MOBILE = { top: 4, right: 4, bottom: 0, left: 0 };
+const MAX_ZOOM = 3;
 
-type ChartPoint   = { distance: number; elevation: number; slope: number; color: string };
-type TooltipState = { svgX: number; svgY: number; dist: number; ele: number; slope: number; color: string };
+type ChartPoint = { distance: number; elevation: number; slope: number; color: string };
+type TooltipState = {
+  svgX: number;
+  svgY: number;
+  dist: number;
+  ele: number;
+  slope: number;
+  color: string;
+};
 
 export function AnalysisChart() {
-  const t              = useTranslations('WeatherTimeline');
+  const t = useTranslations('WeatherTimeline');
   const { unitSystem } = useSettings();
-  const isMobile       = useIsMobile();
+  const isMobile = useIsMobile();
 
   const {
-    chartData, visibleStats, selectedPoint,
-    zoomRange, setHoverByDistance, confirmSelection, resetZoom,
+    chartData,
+    visibleStats,
+    selectedPoint,
+    zoomRange,
+    setHoverByDistance,
+    confirmSelection,
+    resetZoom,
   } = useElevationChart();
 
-  const weatherPoints       = useRouteStore((s) => s.weatherPoints);
   const setSelectedPointIdx = useRouteStore((s) => s.setSelectedPointIndex);
+  const setClickedChartPointDist = useRouteStore((s) => s.setClickedChartPointDist);
 
   // ── Refs & state ──────────────────────────────────────────────────────
-  const outerRef  = useRef<HTMLDivElement>(null);  // viewport measurement
-  const scrollRef = useRef<HTMLDivElement>(null);  // scrollable container
-  const svgRef    = useRef<SVGSVGElement>(null);
+  const outerRef = useRef<HTMLDivElement>(null); // viewport measurement
+  const scrollRef = useRef<HTMLDivElement>(null); // scrollable container
+  const svgRef = useRef<SVGSVGElement>(null);
 
-  const [vpSize,     setVpSize]     = useState({ w: 0, h: 0 });
+  const [vpSize, setVpSize] = useState({ w: 0, h: 0 });
   const [scrollLeft, setScrollLeft] = useState(0);
-  const [tooltip,     setTooltip]     = useState<TooltipState | null>(null);
+  const [tooltip, setTooltip] = useState<TooltipState | null>(null);
   const [dragPreview, setDragPreview] = useState<{ start: number; end: number } | null>(null);
 
   // Drag refs
-  const isDragging         = useRef(false);
-  const dragStartRef       = useRef<number | null>(null);
-  const dragEndRef         = useRef<number | null>(null);
-  const dragStartPxRef     = useRef<number | null>(null);  // pixel position for click vs drag
-  const wasSignificantDrag = useRef(false);                // true if dragged > 5px
-  const shouldCenterRef    = useRef(false);    // set true only after a completed drag selection
-  const confirmRef        = useRef(confirmSelection);
-  useEffect(() => { confirmRef.current = confirmSelection; }, [confirmSelection]);
+  const isDragging = useRef(false);
+  const dragStartRef = useRef<number | null>(null);
+  const dragEndRef = useRef<number | null>(null);
+  const dragStartPxRef = useRef<number | null>(null); // pixel position for click vs drag
+  const wasSignificantDrag = useRef(false); // true if dragged > 5px
+  const shouldCenterRef = useRef(false); // set true only after a completed drag selection
+  const confirmRef = useRef(confirmSelection);
+  useEffect(() => {
+    confirmRef.current = confirmSelection;
+  }, [confirmSelection]);
 
   // Resize-handle refs
-  const isResizing   = useRef<'left' | 'right' | null>(null);
+  const isResizing = useRef<'left' | 'right' | null>(null);
   const zoomRangeRef = useRef(zoomRange);
-  useEffect(() => { zoomRangeRef.current = zoomRange; }, [zoomRange]);
+  useEffect(() => {
+    zoomRangeRef.current = zoomRange;
+  }, [zoomRange]);
 
   // ── ResizeObserver on the viewport div ───────────────────────────────
   useEffect(() => {
@@ -78,16 +94,19 @@ export function AnalysisChart() {
   // ── Window mouseup ────────────────────────────────────────────────────
   useEffect(() => {
     const onUp = () => {
-      if (isResizing.current) { isResizing.current = null; return; }
+      if (isResizing.current) {
+        isResizing.current = null;
+        return;
+      }
       if (!isDragging.current) return;
       isDragging.current = false;
       const s = dragStartRef.current;
       const e = dragEndRef.current;
       dragStartRef.current = null;
-      dragEndRef.current   = null;
+      dragEndRef.current = null;
       setDragPreview(null);
       if (s !== null && e !== null && Math.abs(s - e) > 0.01) {
-        shouldCenterRef.current = true;  // flag: center viewport on this new selection
+        shouldCenterRef.current = true; // flag: center viewport on this new selection
         confirmRef.current(s, e);
       }
     };
@@ -98,33 +117,40 @@ export function AnalysisChart() {
   // ── Zoom & dimensions ─────────────────────────────────────────────────
   const margin = isMobile ? MARGIN_MOBILE : MARGIN;
 
-  const totalDist = useMemo(() =>
-    chartData.length
-      ? chartData[chartData.length - 1].distance - chartData[0].distance
-      : 0,
-  [chartData]);
+  const totalDist = useMemo(
+    () => (chartData.length ? chartData[chartData.length - 1].distance - chartData[0].distance : 0),
+    [chartData],
+  );
 
   const zoomFactor = useMemo(() => {
     if (!zoomRange || totalDist === 0) return 1;
-    const selW   = zoomRange.end - zoomRange.start;
+    const selW = zoomRange.end - zoomRange.start;
     const padded = selW * 1.6; // generous context so zoom stays subtle
     return Math.min(MAX_ZOOM, totalDist / padded);
   }, [zoomRange, totalDist]);
 
   const chartWidth = vpSize.w > 0 ? Math.round(vpSize.w * zoomFactor) : 0;
-  const innerW     = Math.max(0, chartWidth - margin.left - margin.right);
-  const innerH     = Math.max(0, vpSize.h  - margin.top  - margin.bottom);
+  const innerW = Math.max(0, chartWidth - margin.left - margin.right);
+  const innerH = Math.max(0, vpSize.h - margin.top - margin.bottom);
 
   // Auto-center on selection after a completed drag (not during resize drags)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   useEffect(() => {
-    if (!zoomRange || !shouldCenterRef.current || !scrollRef.current || chartWidth === 0 || vpSize.w === 0 || !chartData.length) return;
+    if (
+      !zoomRange ||
+      !shouldCenterRef.current ||
+      !scrollRef.current ||
+      chartWidth === 0 ||
+      vpSize.w === 0 ||
+      !chartData.length
+    )
+      return;
     shouldCenterRef.current = false;
-    const firstDist   = chartData[0].distance;
-    const localTotal  = chartData[chartData.length - 1].distance - firstDist;
+    const firstDist = chartData[0].distance;
+    const localTotal = chartData[chartData.length - 1].distance - firstDist;
     if (localTotal === 0) return;
-    const centerDist   = (zoomRange.start + zoomRange.end) / 2;
-    const ratio        = (centerDist - firstDist) / localTotal;
+    const centerDist = (zoomRange.start + zoomRange.end) / 2;
+    const ratio = (centerDist - firstDist) / localTotal;
     const targetScroll = Math.max(0, ratio * chartWidth - vpSize.w / 2);
     requestAnimationFrame(() => {
       if (scrollRef.current) {
@@ -137,7 +163,8 @@ export function AnalysisChart() {
   // ── Scales ────────────────────────────────────────────────────────────
   const xScale = useMemo(() => {
     if (!chartData.length || innerW === 0) return null;
-    return d3.scaleLinear()
+    return d3
+      .scaleLinear()
       .domain([chartData[0].distance, chartData[chartData.length - 1].distance])
       .range([0, innerW]);
   }, [chartData, innerW]);
@@ -145,18 +172,23 @@ export function AnalysisChart() {
   const yScale = useMemo(() => {
     if (!chartData.length || innerH === 0) return null;
     const elevs = chartData.map((d) => d.elevation);
-    const pad   = Math.max((Math.max(...elevs) - Math.min(...elevs)) * 0.15, 15);
-    return d3.scaleLinear()
+    const pad = Math.max((Math.max(...elevs) - Math.min(...elevs)) * 0.15, 15);
+    return d3
+      .scaleLinear()
       .domain([Math.min(...elevs) - pad, Math.max(...elevs) + pad])
-      .range([innerH, 0]).nice();
+      .range([innerH, 0])
+      .nice();
   }, [chartData, innerH]);
 
   // ── Paths ─────────────────────────────────────────────────────────────
   const colorSegmentPaths = useMemo(() => {
     if (!xScale || !yScale || !chartData.length) return [];
-    const areaGen = d3.area<ChartPoint>()
-      .x((d) => xScale(d.distance)).y0(innerH).y1((d) => yScale(d.elevation))
-      .curve(d3.curveMonotoneX);
+    const areaGen = d3
+      .area<ChartPoint>()
+      .x((d) => xScale(d.distance))
+      .y0(innerH)
+      .y1((d) => yScale(d.elevation))
+      .curve(d3.curveLinear);
     const result: { color: string; path: string }[] = [];
     let i = 0;
     while (i < chartData.length) {
@@ -172,18 +204,22 @@ export function AnalysisChart() {
 
   const linePath = useMemo(() => {
     if (!xScale || !yScale || !chartData.length) return '';
-    return d3.line<ChartPoint>()
-      .x((d) => xScale(d.distance)).y((d) => yScale(d.elevation))
-      .curve(d3.curveMonotoneX)(chartData) ?? '';
+    return (
+      d3
+        .line<ChartPoint>()
+        .x((d) => xScale(d.distance))
+        .y((d) => yScale(d.elevation))
+        .curve(d3.curveLinear)(chartData) ?? ''
+    );
   }, [chartData, xScale, yScale]);
 
   const gradientStops = useMemo(() => {
     if (!chartData.length) return [{ offset: 0, color: '#10b981' }];
-    const min   = chartData[0].distance;
+    const min = chartData[0].distance;
     const range = totalDist;
     return chartData.map((d) => ({
       offset: range > 0 ? ((d.distance - min) / range) * 100 : 0,
-      color:  d.color,
+      color: d.color,
     }));
   }, [chartData, totalDist]);
 
@@ -203,16 +239,20 @@ export function AnalysisChart() {
   const clientXToDist = (clientX: number): number | null => {
     if (!svgRef.current || !xScale) return null;
     const rect = svgRef.current.getBoundingClientRect();
-    const x    = clientX - rect.left - margin.left;
+    const x = clientX - rect.left - margin.left;
     return xScale.invert(Math.max(0, Math.min(innerW, x)));
   };
 
   const nearestPoint = (dist: number): ChartPoint | null => {
     if (!chartData.length) return null;
-    let best = chartData[0], bestDiff = Math.abs(best.distance - dist);
+    let best = chartData[0],
+      bestDiff = Math.abs(best.distance - dist);
     for (const d of chartData) {
       const diff = Math.abs(d.distance - dist);
-      if (diff < bestDiff) { best = d; bestDiff = diff; }
+      if (diff < bestDiff) {
+        best = d;
+        bestDiff = diff;
+      }
     }
     return best;
   };
@@ -227,16 +267,21 @@ export function AnalysisChart() {
       const cur = zoomRangeRef.current;
       if (isResizing.current === 'left')
         confirmRef.current(Math.min(dist, cur.end - 0.01), cur.end);
-      else
-        confirmRef.current(cur.start, Math.max(dist, cur.start + 0.01));
+      else confirmRef.current(cur.start, Math.max(dist, cur.start + 0.01));
       return;
     }
 
     // Tooltip + map sync
     const pt = nearestPoint(dist);
     if (pt && xScale && yScale) {
-      setTooltip({ svgX: xScale(pt.distance), svgY: yScale(pt.elevation),
-                   dist: pt.distance, ele: pt.elevation, slope: pt.slope, color: pt.color });
+      setTooltip({
+        svgX: xScale(pt.distance),
+        svgY: yScale(pt.elevation),
+        dist: pt.distance,
+        ele: pt.elevation,
+        slope: pt.slope,
+        color: pt.color,
+      });
       setHoverByDistance(pt.distance);
     }
 
@@ -255,11 +300,11 @@ export function AnalysisChart() {
   const onMouseDown = (e: React.MouseEvent<SVGSVGElement>) => {
     const dist = clientXToDist(e.clientX);
     if (dist === null) return;
-    isDragging.current         = true;
+    isDragging.current = true;
     wasSignificantDrag.current = false;
-    dragStartPxRef.current     = e.clientX;
-    dragStartRef.current       = dist;
-    dragEndRef.current         = dist;
+    dragStartPxRef.current = e.clientX;
+    dragStartRef.current = dist;
+    dragEndRef.current = dist;
     setDragPreview(null);
   };
 
@@ -269,39 +314,36 @@ export function AnalysisChart() {
     if (!isDragging.current) setDragPreview(null);
   };
 
-  // Click on a chart point → select corresponding weather point on map (shows popup)
+  // Click on a chart point → show popup on map for exact location
   const onChartClick = (e: React.MouseEvent<SVGSVGElement>) => {
     if (wasSignificantDrag.current) return; // was a drag, not a click
     const dist = clientXToDist(e.clientX);
-    if (dist === null || !weatherPoints.length) return;
-    let bestIdx = 0;
-    let bestDiff = Math.abs(weatherPoints[0].point.distanceFromStart - dist);
-    for (let i = 1; i < weatherPoints.length; i++) {
-      const diff = Math.abs(weatherPoints[i].point.distanceFromStart - dist);
-      if (diff < bestDiff) { bestDiff = diff; bestIdx = i; }
-    }
-    setSelectedPointIdx(bestIdx);
+    if (dist === null) return;
+
+    // Set the clicked distance so the map can show the exact interpolated popup
+    setClickedChartPointDist(dist);
+    // Clear nearest weather point selection
+    setSelectedPointIdx(null);
   };
 
   // ── Derived coords ────────────────────────────────────────────────────
-  const selLeft  = zoomRange && xScale ? xScale(zoomRange.start) : null;
-  const selRight = zoomRange && xScale ? xScale(zoomRange.end)   : null;
+  const selLeft = zoomRange && xScale ? xScale(zoomRange.start) : null;
+  const selRight = zoomRange && xScale ? xScale(zoomRange.end) : null;
 
   const dragPxStart = dragPreview && xScale ? xScale(dragPreview.start) : null;
-  const dragPxWidth = dragPreview && xScale
-    ? xScale(dragPreview.end) - xScale(dragPreview.start) : null;
+  const dragPxWidth =
+    dragPreview && xScale ? xScale(dragPreview.end) - xScale(dragPreview.start) : null;
 
-  const refLineX = selectedPoint && xScale && !zoomRange
-    ? xScale(selectedPoint.distanceFromStart) : null;
+  const refLineX =
+    selectedPoint && xScale && !zoomRange ? xScale(selectedPoint.distanceFromStart) : null;
 
   // Tooltip viewport X accounts for scroll offset so it stays visible
-  const tooltipVpX    = tooltip !== null ? tooltip.svgX + margin.left - scrollLeft : 0;
+  const tooltipVpX = tooltip !== null ? tooltip.svgX + margin.left - scrollLeft : 0;
   const tooltipOnRight = tooltip !== null && tooltipVpX < vpSize.w / 2;
 
   // ── Render ────────────────────────────────────────────────────────────
   return (
     <div className="border-border bg-card rounded-xl border p-4 shadow-sm select-none md:p-6">
-
       {/* Header */}
       <div className="mb-4 flex items-center justify-between md:mb-6">
         <div className="flex items-center gap-2 md:gap-3">
@@ -319,8 +361,12 @@ export function AnalysisChart() {
             )}
           </div>
           {zoomRange !== null && (
-            <Button variant="secondary" size="sm" onClick={resetZoom}
-              className="h-6 gap-1 px-1.5 text-[9px] font-bold tracking-tight uppercase md:h-7 md:gap-1.5 md:px-2 md:text-[10px]">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={resetZoom}
+              className="h-6 gap-1 px-1.5 text-[9px] font-bold tracking-tight uppercase md:h-7 md:gap-1.5 md:px-2 md:text-[10px]"
+            >
               <RefreshCcw className="h-2.5 w-2.5 md:h-3 md:w-3" />
               {t('chart.resetZoom')}
             </Button>
@@ -337,17 +383,16 @@ export function AnalysisChart() {
       </div>
 
       {/* Chart area */}
-      <div
-        ref={outerRef}
-        className={`relative mb-4 w-full md:mb-6 ${isMobile ? 'h-32' : 'h-56'}`}
-      >
+      <div ref={outerRef} className={`relative mb-4 w-full md:mb-6 ${isMobile ? 'h-32' : 'h-56'}`}>
         {/* Tooltip — desktop: positioned in viewport space using tooltipVpX */}
         {tooltip && !isMobile && (
           <div
             className="pointer-events-none absolute top-1 z-10"
-            style={tooltipOnRight
-              ? { left: Math.max(0, tooltipVpX + 12) }
-              : { right: Math.max(0, vpSize.w - tooltipVpX + 12) }}
+            style={
+              tooltipOnRight
+                ? { left: Math.max(0, tooltipVpX + 12) }
+                : { right: Math.max(0, vpSize.w - tooltipVpX + 12) }
+            }
           >
             <div className="border-border bg-background/95 flex items-center gap-3 rounded-xl border p-2 shadow-xl backdrop-blur-sm md:gap-4 md:p-3">
               <div className="flex flex-col gap-0.5">
@@ -363,8 +408,10 @@ export function AnalysisChart() {
                   {t('slope')}
                 </span>
                 <div className="flex items-center gap-1.5">
-                  <div className="h-1.5 w-1.5 rounded-full shadow-sm md:h-2 md:w-2"
-                    style={{ backgroundColor: tooltip.color }} />
+                  <div
+                    className="h-1.5 w-1.5 rounded-full shadow-sm md:h-2 md:w-2"
+                    style={{ backgroundColor: tooltip.color }}
+                  />
                   <span className="text-foreground font-mono text-[10px] font-black md:text-xs">
                     {tooltip.slope}%
                   </span>
@@ -387,8 +434,13 @@ export function AnalysisChart() {
               </span>
               <span className="text-muted-foreground text-[8px]">·</span>
               <div className="flex items-center gap-0.5">
-                <div className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: tooltip.color }} />
-                <span className="text-foreground font-mono text-[9px] font-black">{tooltip.slope}%</span>
+                <div
+                  className="h-1.5 w-1.5 rounded-full"
+                  style={{ backgroundColor: tooltip.color }}
+                />
+                <span className="text-foreground font-mono text-[9px] font-black">
+                  {tooltip.slope}%
+                </span>
               </div>
             </div>
           </div>
@@ -399,7 +451,7 @@ export function AnalysisChart() {
           ref={scrollRef}
           className="h-full w-full overflow-x-auto"
           style={{ scrollbarWidth: zoomFactor > 1 ? 'thin' : 'none' }}
-          onScroll={(e) => setScrollLeft((e.currentTarget).scrollLeft)}
+          onScroll={(e) => setScrollLeft(e.currentTarget.scrollLeft)}
         >
           {/* Inner div expands when zoomed */}
           <div
@@ -414,7 +466,14 @@ export function AnalysisChart() {
               onMouseDown={isMobile ? undefined : onMouseDown}
               onMouseLeave={onMouseLeave}
               onClick={isMobile ? undefined : onChartClick}
-              onDoubleClick={isMobile ? undefined : () => { resetZoom(); setDragPreview(null); }}
+              onDoubleClick={
+                isMobile
+                  ? undefined
+                  : () => {
+                      resetZoom();
+                      setDragPreview(null);
+                    }
+              }
             >
               <defs>
                 <linearGradient id="elev-stroke" x1="0" y1="0" x2="1" y2="0">
@@ -428,69 +487,201 @@ export function AnalysisChart() {
               </defs>
 
               <g transform={`translate(${margin.left},${margin.top})`}>
-
                 {/* Y gridlines */}
-                {!isMobile && yTicks.map((tick) => (
-                  <line key={tick.v} x1={0} x2={innerW} y1={tick.y} y2={tick.y}
-                    stroke="currentColor" strokeOpacity={0.07} strokeWidth={1} />
-                ))}
+                {!isMobile &&
+                  yTicks.map((tick) => (
+                    <line
+                      key={tick.v}
+                      x1={0}
+                      x2={innerW}
+                      y1={tick.y}
+                      y2={tick.y}
+                      stroke="currentColor"
+                      strokeOpacity={0.07}
+                      strokeWidth={1}
+                    />
+                  ))}
 
                 {/* Slope-coloured area fill */}
                 {colorSegmentPaths.map((seg, i) => (
-                  <path key={i} d={seg.path} fill={seg.color} fillOpacity={0.25} clipPath="url(#elev-clip)" />
+                  <path
+                    key={i}
+                    d={seg.path}
+                    fill={seg.color}
+                    fillOpacity={0.25}
+                    clipPath="url(#elev-clip)"
+                  />
                 ))}
 
                 {/* Stroke */}
-                <path d={linePath} fill="none" stroke="url(#elev-stroke)"
-                  strokeWidth={isMobile ? 2 : 2.5} clipPath="url(#elev-clip)" />
+                <path
+                  d={linePath}
+                  fill="none"
+                  stroke="url(#elev-stroke)"
+                  strokeWidth={isMobile ? 2 : 2.5}
+                  clipPath="url(#elev-clip)"
+                />
 
                 {/* Map-hover reference line */}
                 {refLineX !== null && (
-                  <line x1={refLineX} x2={refLineX} y1={0} y2={innerH}
-                    stroke="hsl(var(--primary))" strokeWidth={1.5} strokeDasharray="4 3" />
+                  <line
+                    x1={refLineX}
+                    x2={refLineX}
+                    y1={0}
+                    y2={innerH}
+                    stroke="hsl(var(--primary))"
+                    strokeWidth={1.5}
+                    strokeDasharray="4 3"
+                  />
                 )}
 
                 {/* Drag-select preview */}
                 {dragPxStart !== null && dragPxWidth !== null && dragPxWidth > 0 && (
-                  <rect x={dragPxStart} y={0} width={dragPxWidth} height={innerH}
-                    fill="hsl(var(--primary))" fillOpacity={0.2}
-                    stroke="hsl(var(--primary))" strokeOpacity={0.5} strokeWidth={1} />
+                  <rect
+                    x={dragPxStart}
+                    y={0}
+                    width={dragPxWidth}
+                    height={innerH}
+                    fill="hsl(var(--primary))"
+                    fillOpacity={0.2}
+                    stroke="hsl(var(--primary))"
+                    strokeOpacity={0.5}
+                    strokeWidth={1}
+                  />
                 )}
 
                 {/* White overlay on non-selected parts */}
                 {selLeft !== null && selLeft > 0 && (
-                  <rect x={0} y={0} width={selLeft} height={innerH} fill="white" fillOpacity={0.72} />
+                  <rect
+                    x={0}
+                    y={0}
+                    width={selLeft}
+                    height={innerH}
+                    fill="white"
+                    fillOpacity={0.72}
+                  />
                 )}
                 {selRight !== null && selRight < innerW && (
-                  <rect x={selRight} y={0} width={innerW - selRight} height={innerH} fill="white" fillOpacity={0.72} />
+                  <rect
+                    x={selRight}
+                    y={0}
+                    width={innerW - selRight}
+                    height={innerH}
+                    fill="white"
+                    fillOpacity={0.72}
+                  />
                 )}
 
                 {/* Selection border lines + resize handles */}
                 {selLeft !== null && (
                   <>
-                    <line x1={selLeft} x2={selLeft} y1={0} y2={innerH}
-                      stroke="hsl(var(--primary))" strokeWidth={2} />
-                    <g transform={`translate(${selLeft},${innerH / 2})`}
+                    <line
+                      x1={selLeft}
+                      x2={selLeft}
+                      y1={0}
+                      y2={innerH}
+                      stroke="hsl(var(--primary))"
+                      strokeWidth={2}
+                    />
+                    <g
+                      transform={`translate(${selLeft},${innerH / 2})`}
                       style={{ cursor: 'ew-resize' }}
-                      onMouseDown={(e) => { e.stopPropagation(); isResizing.current = 'left'; }}>
-                      <rect x={-9} y={-18} width={18} height={36} rx={5} fill="hsl(var(--primary))" />
-                      <line x1={-3} x2={3} y1={-6} y2={-6} stroke="white" strokeWidth={1.5} strokeLinecap="round" />
-                      <line x1={-3} x2={3} y1={0}  y2={0}  stroke="white" strokeWidth={1.5} strokeLinecap="round" />
-                      <line x1={-3} x2={3} y1={6}  y2={6}  stroke="white" strokeWidth={1.5} strokeLinecap="round" />
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                        isResizing.current = 'left';
+                      }}
+                    >
+                      <rect
+                        x={-9}
+                        y={-18}
+                        width={18}
+                        height={36}
+                        rx={5}
+                        fill="hsl(var(--primary))"
+                      />
+                      <line
+                        x1={-3}
+                        x2={3}
+                        y1={-6}
+                        y2={-6}
+                        stroke="white"
+                        strokeWidth={1.5}
+                        strokeLinecap="round"
+                      />
+                      <line
+                        x1={-3}
+                        x2={3}
+                        y1={0}
+                        y2={0}
+                        stroke="white"
+                        strokeWidth={1.5}
+                        strokeLinecap="round"
+                      />
+                      <line
+                        x1={-3}
+                        x2={3}
+                        y1={6}
+                        y2={6}
+                        stroke="white"
+                        strokeWidth={1.5}
+                        strokeLinecap="round"
+                      />
                     </g>
                   </>
                 )}
                 {selRight !== null && (
                   <>
-                    <line x1={selRight} x2={selRight} y1={0} y2={innerH}
-                      stroke="hsl(var(--primary))" strokeWidth={2} />
-                    <g transform={`translate(${selRight},${innerH / 2})`}
+                    <line
+                      x1={selRight}
+                      x2={selRight}
+                      y1={0}
+                      y2={innerH}
+                      stroke="hsl(var(--primary))"
+                      strokeWidth={2}
+                    />
+                    <g
+                      transform={`translate(${selRight},${innerH / 2})`}
                       style={{ cursor: 'ew-resize' }}
-                      onMouseDown={(e) => { e.stopPropagation(); isResizing.current = 'right'; }}>
-                      <rect x={-9} y={-18} width={18} height={36} rx={5} fill="hsl(var(--primary))" />
-                      <line x1={-3} x2={3} y1={-6} y2={-6} stroke="white" strokeWidth={1.5} strokeLinecap="round" />
-                      <line x1={-3} x2={3} y1={0}  y2={0}  stroke="white" strokeWidth={1.5} strokeLinecap="round" />
-                      <line x1={-3} x2={3} y1={6}  y2={6}  stroke="white" strokeWidth={1.5} strokeLinecap="round" />
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                        isResizing.current = 'right';
+                      }}
+                    >
+                      <rect
+                        x={-9}
+                        y={-18}
+                        width={18}
+                        height={36}
+                        rx={5}
+                        fill="hsl(var(--primary))"
+                      />
+                      <line
+                        x1={-3}
+                        x2={3}
+                        y1={-6}
+                        y2={-6}
+                        stroke="white"
+                        strokeWidth={1.5}
+                        strokeLinecap="round"
+                      />
+                      <line
+                        x1={-3}
+                        x2={3}
+                        y1={0}
+                        y2={0}
+                        stroke="white"
+                        strokeWidth={1.5}
+                        strokeLinecap="round"
+                      />
+                      <line
+                        x1={-3}
+                        x2={3}
+                        y1={6}
+                        y2={6}
+                        stroke="white"
+                        strokeWidth={1.5}
+                        strokeLinecap="round"
+                      />
                     </g>
                   </>
                 )}
@@ -498,10 +689,24 @@ export function AnalysisChart() {
                 {/* Hover crosshair + dot */}
                 {tooltip && (
                   <>
-                    <line x1={tooltip.svgX} x2={tooltip.svgX} y1={0} y2={innerH}
-                      stroke="currentColor" strokeOpacity={0.25} strokeWidth={1} strokeDasharray="3 3" />
-                    <circle cx={tooltip.svgX} cy={tooltip.svgY} r={4}
-                      fill={tooltip.color} stroke="white" strokeWidth={1.5} />
+                    <line
+                      x1={tooltip.svgX}
+                      x2={tooltip.svgX}
+                      y1={0}
+                      y2={innerH}
+                      stroke="currentColor"
+                      strokeOpacity={0.25}
+                      strokeWidth={1}
+                      strokeDasharray="3 3"
+                    />
+                    <circle
+                      cx={tooltip.svgX}
+                      cy={tooltip.svgY}
+                      r={4}
+                      fill={tooltip.color}
+                      stroke="white"
+                      strokeWidth={1.5}
+                    />
                   </>
                 )}
 
@@ -510,8 +715,16 @@ export function AnalysisChart() {
                   <g transform={`translate(0,${innerH})`}>
                     <line x1={0} x2={innerW} stroke="currentColor" strokeOpacity={0.1} />
                     {xTicks.map((tick) => (
-                      <text key={tick.v} x={tick.x} dy="1.4em" textAnchor="middle"
-                        fontSize={10} fill="currentColor" fillOpacity={0.55} fontWeight={500}>
+                      <text
+                        key={tick.v}
+                        x={tick.x}
+                        dy="1.4em"
+                        textAnchor="middle"
+                        fontSize={10}
+                        fill="currentColor"
+                        fillOpacity={0.55}
+                        fontWeight={500}
+                      >
                         {tick.label}
                       </text>
                     ))}
@@ -519,13 +732,22 @@ export function AnalysisChart() {
                 )}
 
                 {/* Y axis */}
-                {!isMobile && yTicks.map((tick) => (
-                  <text key={tick.v} x={-6} y={tick.y} dy="0.32em" textAnchor="end"
-                    fontSize={10} fill="currentColor" fillOpacity={0.55} fontWeight={500}>
-                    {tick.label}
-                  </text>
-                ))}
-
+                {!isMobile &&
+                  yTicks.map((tick) => (
+                    <text
+                      key={tick.v}
+                      x={-6}
+                      y={tick.y}
+                      dy="0.32em"
+                      textAnchor="end"
+                      fontSize={10}
+                      fill="currentColor"
+                      fillOpacity={0.55}
+                      fontWeight={500}
+                    >
+                      {tick.label}
+                    </text>
+                  ))}
               </g>
             </svg>
           </div>
@@ -540,10 +762,14 @@ export function AnalysisChart() {
           </div>
           <div>
             <p className="text-muted-foreground mb-0.5 text-[8px] leading-none font-black tracking-widest uppercase md:mb-1 md:text-[9px]">
-              {t('chart.ascent')}
+              {zoomRange !== null ? t('chart.ascent') : t('chart.highestPoint')}
             </p>
             <p className="text-foreground text-xs leading-none font-black md:text-sm">
-              +{formatElevation(visibleStats.gain, unitSystem)}
+              {zoomRange !== null ? '+' : ''}
+              {formatElevation(
+                zoomRange !== null ? visibleStats.gain : visibleStats.max,
+                unitSystem,
+              )}
             </p>
           </div>
         </div>
@@ -553,15 +779,18 @@ export function AnalysisChart() {
           </div>
           <div>
             <p className="text-muted-foreground mb-0.5 text-[8px] leading-none font-black tracking-widest uppercase md:mb-1 md:text-[9px]">
-              {t('chart.descent')}
+              {zoomRange !== null ? t('chart.descent') : t('chart.lowestPoint')}
             </p>
             <p className="text-foreground text-xs leading-none font-black md:text-sm">
-              -{formatElevation(visibleStats.loss, unitSystem)}
+              {zoomRange !== null ? '-' : ''}
+              {formatElevation(
+                zoomRange !== null ? visibleStats.loss : visibleStats.min,
+                unitSystem,
+              )}
             </p>
           </div>
         </div>
       </div>
-
     </div>
   );
 }
