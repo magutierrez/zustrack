@@ -57,6 +57,11 @@ export function AnalysisChart() {
   const confirmRef = useRef(confirmSelection);
   useEffect(() => { confirmRef.current = confirmSelection; }, [confirmSelection]);
 
+  // Resize-handle refs
+  const isResizing = useRef<'left' | 'right' | null>(null);
+  const zoomRangeRef = useRef(zoomRange);
+  useEffect(() => { zoomRangeRef.current = zoomRange; }, [zoomRange]);
+
   // ResizeObserver
   useEffect(() => {
     const el = containerRef.current;
@@ -71,6 +76,12 @@ export function AnalysisChart() {
   // Window mouseup — fires even if mouse released outside SVG
   useEffect(() => {
     const onUp = () => {
+      // End resize
+      if (isResizing.current) {
+        isResizing.current = null;
+        return;
+      }
+      // End drag-select
       if (!isDragging.current) return;
       isDragging.current = false;
       const s = dragStartRef.current;
@@ -196,6 +207,19 @@ export function AnalysisChart() {
     const dist = clientXToDist(e.clientX);
     if (dist === null) return;
 
+    // Handle resize — update selection live, suppress tooltip
+    if (isResizing.current && zoomRangeRef.current) {
+      const cur = zoomRangeRef.current;
+      if (isResizing.current === 'left') {
+        const newStart = Math.min(dist, cur.end - 0.01);
+        confirmRef.current(newStart, cur.end);
+      } else {
+        const newEnd = Math.max(dist, cur.start + 0.01);
+        confirmRef.current(cur.start, newEnd);
+      }
+      return;
+    }
+
     const pt = nearestPoint(dist);
     if (pt && xScale && yScale) {
       setTooltip({
@@ -209,7 +233,7 @@ export function AnalysisChart() {
       setHoverByDistance(pt.distance);
     }
 
-    if (isDragging.current && dist !== null) {
+    if (isDragging.current) {
       dragEndRef.current = dist;
       const s = dragStartRef.current!;
       setDragPreview({ start: Math.min(s, dist), end: Math.max(s, dist) });
@@ -443,18 +467,50 @@ export function AnalysisChart() {
               <rect x={selRight} y={0} width={innerW - selRight} height={innerH} fill="white" fillOpacity={0.72} />
             )}
 
-            {/* Selection border lines */}
+            {/* Selection border lines + resize handles */}
             {selLeft !== null && (
-              <line
-                x1={selLeft} x2={selLeft} y1={0} y2={innerH}
-                stroke="hsl(var(--primary))" strokeWidth={2}
-              />
+              <>
+                <line
+                  x1={selLeft} x2={selLeft} y1={0} y2={innerH}
+                  stroke="hsl(var(--primary))" strokeWidth={2}
+                />
+                {/* Left handle */}
+                <g
+                  transform={`translate(${selLeft},${innerH / 2})`}
+                  style={{ cursor: 'ew-resize' }}
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                    isResizing.current = 'left';
+                  }}
+                >
+                  <rect x={-9} y={-18} width={18} height={36} rx={5} fill="hsl(var(--primary))" />
+                  <line x1={-3} x2={3} y1={-6} y2={-6} stroke="white" strokeWidth={1.5} strokeLinecap="round" />
+                  <line x1={-3} x2={3} y1={0}  y2={0}  stroke="white" strokeWidth={1.5} strokeLinecap="round" />
+                  <line x1={-3} x2={3} y1={6}  y2={6}  stroke="white" strokeWidth={1.5} strokeLinecap="round" />
+                </g>
+              </>
             )}
             {selRight !== null && (
-              <line
-                x1={selRight} x2={selRight} y1={0} y2={innerH}
-                stroke="hsl(var(--primary))" strokeWidth={2}
-              />
+              <>
+                <line
+                  x1={selRight} x2={selRight} y1={0} y2={innerH}
+                  stroke="hsl(var(--primary))" strokeWidth={2}
+                />
+                {/* Right handle */}
+                <g
+                  transform={`translate(${selRight},${innerH / 2})`}
+                  style={{ cursor: 'ew-resize' }}
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                    isResizing.current = 'right';
+                  }}
+                >
+                  <rect x={-9} y={-18} width={18} height={36} rx={5} fill="hsl(var(--primary))" />
+                  <line x1={-3} x2={3} y1={-6} y2={-6} stroke="white" strokeWidth={1.5} strokeLinecap="round" />
+                  <line x1={-3} x2={3} y1={0}  y2={0}  stroke="white" strokeWidth={1.5} strokeLinecap="round" />
+                  <line x1={-3} x2={3} y1={6}  y2={6}  stroke="white" strokeWidth={1.5} strokeLinecap="round" />
+                </g>
+              </>
             )}
 
             {/* Hover crosshair + dot */}
