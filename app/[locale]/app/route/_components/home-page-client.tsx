@@ -163,6 +163,7 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
         </main>
       </div>
 
+      {/* eslint-disable-next-line react/no-unknown-property */}
       <style jsx>{`
         .custom-scrollbar::-webkit-scrollbar {
           width: 4px;

@@ -18,10 +18,10 @@ import type { RoutePoint } from '@/lib/types';
 interface RoutePlayerProps {
   points: RoutePoint[];
   onStop: () => void;
-  map: any;
+  mapRef: any;
 }
 
-export function RoutePlayer({ points, onStop, map }: RoutePlayerProps) {
+export function RoutePlayer({ points, onStop, mapRef }: RoutePlayerProps) {
   const t = useTranslations('RouteMap.player');
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState(1);
@@ -47,7 +47,7 @@ export function RoutePlayer({ points, onStop, map }: RoutePlayerProps) {
 
   const updateMapCamera = useCallback(
     (fractionalIdx: number, forceUiUpdate = false) => {
-      const mapInstance = map?.getMap();
+      const mapInstance = mapRef.current?.getMap();
       if (!mapInstance || points.length < 2) return;
 
       const idx = Math.floor(fractionalIdx);
@@ -109,11 +109,11 @@ export function RoutePlayer({ points, onStop, map }: RoutePlayerProps) {
         lastUiUpdateRef.current = now;
       }
     },
-    [map, points],
+    [mapRef, points],
   );
 
   const animate = useCallback(
-    (time: number) => {
+    function animateCallback(time: number) {
       if (!lastTimeRef.current) lastTimeRef.current = time;
       // Cap deltaTime to 100ms to avoid a huge jump when the tab was in background
       const deltaTime = Math.min(time - lastTimeRef.current, 100);
@@ -132,7 +132,7 @@ export function RoutePlayer({ points, onStop, map }: RoutePlayerProps) {
       updateMapCamera(currentIndexRef.current);
 
       lastTimeRef.current = time;
-      requestRef.current = requestAnimationFrame(animate);
+      requestRef.current = requestAnimationFrame(animateCallback);
     },
     [points, updateMapCamera],
   );
@@ -208,7 +208,7 @@ export function RoutePlayer({ points, onStop, map }: RoutePlayerProps) {
         />
       </Source>
 
-      <div className="z-[160] animate-in fade-in slide-in-from-bottom-4 absolute bottom-10 lg:bottom-20 left-1/2 w-[95%] max-w-lg -translate-x-1/2">
+      <div className="animate-in fade-in slide-in-from-bottom-4 absolute bottom-10 left-1/2 z-[160] w-[95%] max-w-lg -translate-x-1/2 lg:bottom-20">
         <div className="bg-background/95 border-border rounded-2xl border p-4 shadow-2xl backdrop-blur-md">
           <div className="mb-4 flex items-center justify-between px-1">
             <div className="flex items-center gap-2">

@@ -186,6 +186,7 @@ export default function RouteMap({
   const { resetToFullRouteView } = useMapView(mapRef, points, selectedRange);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
@@ -472,6 +473,7 @@ export default function RouteMap({
             if (distDiff > 0.1) slope = (eleDiff / distDiff) * 100;
           }
 
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           setManualPopupInfo({
             point: { ...wp.point, slope },
             weather: wp.weather,
@@ -534,6 +536,7 @@ export default function RouteMap({
         solarIntensity: 'moderate',
       };
 
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setManualPopupInfo({
         point: { ...interpolatedPoint, slope },
         weather: weatherInfo.weather,
@@ -631,7 +634,7 @@ export default function RouteMap({
         )}
 
         {isPlayerActive && (
-          <RoutePlayer points={playerPoints} map={mapRef.current} onStop={handleStopPlayer} />
+          <RoutePlayer points={playerPoints} mapRef={mapRef} onStop={handleStopPlayer} />
         )}
       </Map>
 

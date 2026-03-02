@@ -19,6 +19,7 @@ export function useEditableRouteName(routeId: string | null) {
 
   // Keep editValue in sync when the name changes from outside (e.g. route reload)
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!isEditing) setEditValue(currentName);
   }, [currentName, isEditing]);
 
@@ -52,7 +53,16 @@ export function useEditableRouteName(routeId: string | null) {
     setIsEditing(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
-  }, [editValue, currentName, gpxData, routeId, setGpxData, setGpxFileName, updateRouteName, cancelEditing]);
+  }, [
+    editValue,
+    currentName,
+    gpxData,
+    routeId,
+    setGpxData,
+    setGpxFileName,
+    updateRouteName,
+    cancelEditing,
+  ]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {

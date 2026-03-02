@@ -87,6 +87,7 @@ export function AnalysisChart() {
   useEffect(() => {
     if (!zoomRange && scrollRef.current) {
       scrollRef.current.scrollLeft = 0;
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setScrollLeft(0);
     }
   }, [zoomRange]);

@@ -344,7 +344,6 @@ function AppMockup() {
 /* ─── FEATURES ────────────────────────────────────────────── */
 function Features() {
   const t = useTranslations('Landing.features');
-  const tv = useTranslations('Landing.visuals');
 
   const features = [
     {

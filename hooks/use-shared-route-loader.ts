@@ -25,6 +25,7 @@ export function useSharedRouteLoader(session: Session | null, routeId: string | 
 
   // Parse the hash fragment on the client (fragments never reach the server)
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setHashPayload(parseHashPayload());
   }, []);
 

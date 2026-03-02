@@ -38,9 +38,10 @@ export default tseslint.config(
       ...nextPlugin.configs.recommended.rules,
       ...nextPlugin.configs['core-web-vitals'].rules,
 
-      'no-console': 'warn',
+      'react/prop-types': 'off',
+      'no-console': ['error', { allow: ['warn', 'error'] }],
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-explicit-any': 'off',
       'react-hooks/exhaustive-deps': 'warn',
     },
   },

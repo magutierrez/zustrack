@@ -19,7 +19,6 @@ import { useRouteStore } from '@/store/route-store';
 import { getSlopeColorHex } from '@/lib/slope-colors';
 
 export function MobileElevationChart() {
-  const t = useTranslations('WeatherTimeline');
   const tHazards = useTranslations('Hazards');
   const { unitSystem } = useSettings();
 

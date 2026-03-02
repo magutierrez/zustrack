@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-assignment */
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import type { RouteWeatherPoint } from './types';
@@ -709,7 +710,6 @@ export function getDifficultyBadgeVariant(
 ): 'outline' | 'secondary' | 'destructive' | 'default' {
   return DIFFICULTY_BADGE_VARIANTS[level] ?? 'outline';
 }
-
 
 export function formatISOToConfig(isoTime: string): { date: string; time: string } {
   const d = new Date(isoTime);

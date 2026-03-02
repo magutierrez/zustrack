@@ -8,14 +8,11 @@ export function useMapTerrain(
   mapStyle: any,
   isPlayerActive: boolean,
 ) {
-  const isPlayerActiveRef = useRef(isPlayerActive);
-  isPlayerActiveRef.current = isPlayerActive;
-
   const syncTerrain = useCallback(() => {
     const map = mapRef.current?.getMap();
     if (!map || !map.isStyleLoaded()) return;
 
-    if (isPlayerActiveRef.current) {
+    if (isPlayerActive) {
       const key = process.env.NEXT_PUBLIC_MAPTILER_KEY;
       if (!map.getSource('terrain-dem')) {
         map.addSource('terrain-dem', {
@@ -30,7 +27,7 @@ export function useMapTerrain(
       if (map.getTerrain()) map.setTerrain(null);
       if (map.getSource('terrain-dem')) map.removeSource('terrain-dem');
     }
-  }, [mapRef]);
+  }, [mapRef, isPlayerActive]);
 
   useEffect(() => {
     const map = mapRef.current?.getMap();
@@ -44,7 +41,6 @@ export function useMapTerrain(
     return () => {
       map.off('style.load', onStyleLoad);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapRef, syncTerrain]);
 
   useEffect(() => {
@@ -59,7 +55,7 @@ export function useMapTerrain(
         map.off('idle', syncTerrain);
       };
     }
-  }, [mapStyle, isPlayerActive, syncTerrain, mapRef]);
+  }, [mapStyle, syncTerrain, mapRef]);
 
   return { syncTerrain };
 }
