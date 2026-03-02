@@ -5,7 +5,6 @@ import { useTheme } from 'next-themes';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Settings2,
-  BarChart2,
   Activity,
   Filter,
   Layers,
@@ -14,15 +13,13 @@ import {
   Wind,
   CloudRain,
 } from 'lucide-react';
-import { motion, useInView } from 'motion/react';
+import { useInView } from 'motion/react';
 import Map, { Source, Layer, MapRef } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
 
 export function AppMockup() {
   const t = useTranslations('Landing.mockup');
-  const tv = useTranslations('Landing.visuals');
-  const th = useTranslations('HomePage');
   const [mounted, setMounted] = useState(false);
   const mapRef = useRef<MapRef>(null);
   const { resolvedTheme } = useTheme();
@@ -306,9 +303,9 @@ export function AppMockup() {
       </div>
 
       {/* Main App Layout Mockup (Two Columns) */}
-      <div className="bg-background flex h-[600px] flex-col lg:flex-row">
+      <div className="bg-background flex h-[600px] flex-col overflow-y-auto md:h-auto lg:h-[600px] lg:flex-row lg:overflow-hidden">
         {/* Left Column: Config & Analysis (Sidebar) */}
-        <div className="border-border custom-scrollbar bg-background flex w-full flex-col gap-6 overflow-y-auto border-r p-6 lg:w-[45%]">
+        <div className="border-border custom-scrollbar bg-background flex w-full shrink-0 flex-col gap-4 p-4 md:gap-6 md:p-6 lg:w-[45%] lg:overflow-y-auto lg:border-r">
           {/* Activity Config Section Mockup */}
           <div className="border-border bg-card rounded-xl border p-4 shadow-sm">
             <div className="mb-4 flex items-center justify-between">
@@ -427,9 +424,9 @@ export function AppMockup() {
         </div>
 
         {/* Right Column: Map (RouteMap component mockup) */}
-        <div className="bg-muted relative h-full w-full overflow-hidden lg:w-[55%]">
+        <div className="bg-muted relative h-[400px] w-full flex-shrink-0 overflow-hidden lg:h-full lg:w-[55%]">
           {/* Map floating controls */}
-          <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
+          <div className="absolute top-4 right-4 z-10 hidden flex-col gap-2 lg:flex">
             <div className="bg-background border-border flex h-10 w-10 items-center justify-center rounded-md border shadow-sm">
               <Layers className="text-foreground h-5 w-5" />
             </div>
@@ -503,7 +500,7 @@ export function AppMockup() {
           )}
 
           {/* Map bottom stats overly (similar to app's route-map overlay) */}
-          <div className="no-scrollbar absolute right-4 bottom-4 left-4 z-10 flex gap-2 overflow-x-auto pb-2">
+          <div className="no-scrollbar absolute right-4 bottom-4 left-4 z-10 flex flex-col gap-2 overflow-x-auto pb-2 sm:pb-0 lg:flex-row">
             {[
               {
                 icon: <Thermometer className="h-4 w-4 text-orange-500" />,
@@ -523,12 +520,16 @@ export function AppMockup() {
             ].map((s, i) => (
               <div
                 key={i}
-                className="border-border bg-background/90 flex min-w-fit items-center gap-3 rounded-lg border px-4 py-2 shadow-sm backdrop-blur-md"
+                className="border-border bg-background/90 flex min-w-[110px] items-center gap-3 rounded-lg border px-3 py-2 shadow-sm backdrop-blur-md sm:min-w-fit sm:px-4"
               >
-                <div className="bg-muted rounded-full p-1.5">{s.icon}</div>
-                <div>
-                  <div className="text-foreground text-sm font-bold">{s.val}</div>
-                  <div className="text-muted-foreground text-[10px]">{s.sub}</div>
+                <div className="bg-muted shrink-0 rounded-full p-1.5">{s.icon}</div>
+                <div className="min-w-0">
+                  <div className="text-foreground truncate text-xs font-bold sm:text-sm">
+                    {s.val}
+                  </div>
+                  <div className="text-muted-foreground truncate text-[9px] sm:text-[10px]">
+                    {s.sub}
+                  </div>
                 </div>
               </div>
             ))}

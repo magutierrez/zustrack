@@ -551,7 +551,9 @@
   },
   "Landing": {
     "nav": {
-      "access": "Acceder"
+      "access": "Acceder",
+      "language": "Idioma",
+      "appearance": "Apariencia"
     },
     "mockup": {
       "config": "Configuración",
