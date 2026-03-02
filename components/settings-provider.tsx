@@ -11,7 +11,9 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const savedSystem = localStorage.getItem('unitSystem') as UnitSystem;
     const savedWind = localStorage.getItem('windUnit') as WindUnit;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (savedSystem) setUnitSystemState(savedSystem);
+     
     if (savedWind) setWindUnitState(savedWind);
     setMounted(true);
   }, []);

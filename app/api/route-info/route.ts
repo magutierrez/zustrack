@@ -172,6 +172,7 @@ export async function POST(request: NextRequest) {
           minWayDist = dist;
           closestWay = element;
         }
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         if (dist < 3) nearbyInfraCount++;
       }
 

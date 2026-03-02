@@ -14,13 +14,10 @@ export function useElevationChart() {
   const setChartHoverPoint = useRouteStore((s) => s.setChartHoverPoint);
   const setSelectedRange = useRouteStore((s) => s.setSelectedRange);
 
-  // The active cursor: chart hover takes priority, fallback to map hover
+  // Chart hover takes priority over map hover for the reference line
   const selectedPoint = chartHoverPoint ?? mapHoverPoint;
 
-  const [refAreaLeft, setRefAreaLeft] = useState<number | null>(null);
-  const [refAreaRight, setRefAreaRight] = useState<number | null>(null);
-  const [left, setLeft] = useState<number | 'dataMin'>('dataMin');
-  const [right, setRight] = useState<number | 'dataMax'>('dataMax');
+  const [zoomRange, setZoomRange] = useState<{ start: number; end: number } | null>(null);
 
   const displayData = useMemo(() => {
     const rawData =
@@ -31,157 +28,147 @@ export function useElevationChart() {
             elevation: wp.point.ele || 0,
           }));
 
-    return rawData.map((d) => ({
-      ...d,
-      elevation: Math.round(d.elevation),
-    }));
-  }, [elevationData, weatherPoints]);
+    if (!rawData.length) return [];
 
-  const stats = useMemo(() => {
-    if (!displayData.length) return { min: 0, max: 0 };
-    const elevations = displayData.map((d) => d.elevation);
-    return { min: Math.min(...elevations), max: Math.max(...elevations) };
-  }, [displayData]);
+    // Resample to 100m (0.1km) steps
+    const step = 0.1;
+    const maxDist = rawData[rawData.length - 1].distance;
+    const resampled = [];
+
+    let currentIdx = 0;
+    for (let d = 0; d <= maxDist; d += step) {
+      while (currentIdx < rawData.length - 1 && rawData[currentIdx + 1].distance < d) {
+        currentIdx++;
+      }
+
+      const p1 = rawData[currentIdx];
+      const p2 = rawData[currentIdx + 1] || p1;
+
+      let elevation = p1.elevation;
+      if (p2.distance > p1.distance) {
+        const ratio = (d - p1.distance) / (p2.distance - p1.distance);
+        elevation = p1.elevation + ratio * (p2.elevation - p1.elevation);
+      }
+
+      resampled.push({
+        distance: Math.round(d * 10) / 10,
+        elevation: Math.round(elevation),
+      });
+    }
+
+    // Ensure the last point is included if it doesn't align exactly with the step
+    if (resampled.length === 0 || resampled[resampled.length - 1].distance < maxDist) {
+      resampled.push({
+        distance: maxDist,
+        elevation: Math.round(rawData[rawData.length - 1].elevation),
+      });
+    }
+
+    return resampled;
+  }, [elevationData, weatherPoints]);
 
   const chartData = useMemo(() => {
     const n = displayData.length;
 
-    // ── Raw point-to-point slopes ──────────────────────────────────────────
-    const rawSlopes = new Array<number>(n).fill(0);
-    for (let i = 1; i < n; i++) {
-      const distDiff = (displayData[i].distance - displayData[i - 1].distance) * 1000;
-      const eleDiff = displayData[i].elevation - displayData[i - 1].elevation;
-      if (distDiff > 0.1) rawSlopes[i] = (eleDiff / distDiff) * 100;
-    }
-
-    // ── 1 km sliding-window smooth (500 m each side) ───────────────────────
-    const halfWindowKm = 0.5;
-    const smoothSlopes = new Array<number>(n).fill(0);
-    let sl = 0, sr = -1, wSum = 0, wCount = 0;
-    for (let i = 0; i < n; i++) {
-      const center = displayData[i].distance;
-      while (sr + 1 < n && displayData[sr + 1].distance <= center + halfWindowKm) {
-        sr++; wSum += rawSlopes[sr]; wCount++;
+    return displayData.map((d, idx) => {
+      let slope = 0;
+      // Calculate slope based on the 100m segment leading up to this point
+      if (idx > 0) {
+        const prev = displayData[idx - 1];
+        const distDiff = (d.distance - prev.distance) * 1000;
+        const eleDiff = d.elevation - prev.elevation;
+        if (distDiff > 0.1) slope = (eleDiff / distDiff) * 100;
+      } else if (n > 1) {
+        // First point uses the slope of the first segment
+        const next = displayData[1];
+        const distDiff = (next.distance - d.distance) * 1000;
+        const eleDiff = next.elevation - d.elevation;
+        if (distDiff > 0.1) slope = (eleDiff / distDiff) * 100;
       }
-      while (sl <= sr && displayData[sl].distance < center - halfWindowKm) {
-        wSum -= rawSlopes[sl]; sl++; wCount--;
-      }
-      smoothSlopes[i] = wCount > 0 ? wSum / wCount : 0;
-    }
 
-    return displayData.map((d, idx) => ({
-      ...d,
-      elevation: isNaN(d.elevation) ? 0 : d.elevation,
-      slope: Math.round(smoothSlopes[idx] * 10) / 10,
-      color: getSlopeColorHex(smoothSlopes[idx]),
-    }));
+      return {
+        ...d,
+        elevation: isNaN(d.elevation) ? 0 : d.elevation,
+        slope: Math.round(slope * 10) / 10,
+        color: getSlopeColorHex(slope),
+      };
+    });
   }, [displayData]);
 
-  const gradientId = useMemo(
-    () => `slope-${left}-${right}-${chartData.length}`,
-    [left, right, chartData.length],
-  );
-
-  const gradientStops = useMemo(() => {
-    if (!chartData.length) return [];
+  const visibleStats = useMemo(() => {
+    if (!chartData.length) return { min: 0, max: 0, gain: 0, loss: 0, distance: 0 };
 
     const actualMin = chartData[0].distance;
     const actualMax = chartData[chartData.length - 1].distance;
-    const domainMin = left === 'dataMin' ? actualMin : left;
-    const domainMax = right === 'dataMax' ? actualMax : right;
-    const domainRange = domainMax - domainMin;
+    const domainMin = zoomRange?.start ?? actualMin;
+    const domainMax = zoomRange?.end ?? actualMax;
 
-    const stops: { offset: string; color: string }[] = [];
-    const firstIndex = chartData.findIndex((d) => d.distance >= domainMin);
-    const lastIndex = [...chartData].reverse().findIndex((d) => d.distance <= domainMax);
-    const actualLastIndex = chartData.length - 1 - lastIndex;
+    const visible = chartData.filter((d) => d.distance >= domainMin && d.distance <= domainMax);
+    if (!visible.length) return { min: 0, max: 0, gain: 0, loss: 0, distance: 0 };
 
-    for (
-      let i = Math.max(0, firstIndex - 1);
-      i <= Math.min(chartData.length - 1, actualLastIndex + 1);
-      i++
-    ) {
-      const d = chartData[i];
-      const percentage = domainRange > 0 ? ((d.distance - domainMin) / domainRange) * 100 : 0;
-      stops.push({
-        offset: `${Math.max(0, Math.min(100, percentage))}%`,
-        color: d.color || '#10b981',
-      });
+    const elevations = visible.map((d) => d.elevation);
+    let gain = 0,
+      loss = 0;
+    for (let i = 1; i < visible.length; i++) {
+      const diff = visible[i].elevation - visible[i - 1].elevation;
+      if (diff > 0) gain += diff;
+      else loss += Math.abs(diff);
     }
 
-    return stops.length
-      ? stops
-      : [
-          { offset: '0%', color: '#10b981' },
-          { offset: '100%', color: '#10b981' },
-        ];
-  }, [chartData, left, right]);
+    return {
+      min: Math.min(...elevations),
+      max: Math.max(...elevations),
+      gain: Math.round(gain),
+      loss: Math.round(loss),
+      distance: domainMax - domainMin,
+    };
+  }, [chartData, zoomRange]);
 
+  // Recharts-compatible handlers (used by MobileElevationChart)
   const handleMouseMove = (e: any) => {
-    const activeDistance: number | undefined =
-      e?.activeLabel ?? e?.activePayload?.[0]?.payload?.distance;
-
-    if (activeDistance !== undefined && allPoints.length > 1) {
-      const interpolatedPoint = interpolatePointOnRoute(allPoints, activeDistance);
-      if (interpolatedPoint) {
-        setChartHoverPoint(interpolatedPoint);
-      }
-    }
-
-    if (refAreaLeft !== null && e?.activeLabel !== undefined) {
-      setRefAreaRight(e.activeLabel);
+    const dist = e?.activePayload?.[0]?.payload?.distance ?? e?.activeLabel;
+    if (dist != null && allPoints.length > 1) {
+      const pt = interpolatePointOnRoute(allPoints, Number(dist));
+      if (pt) setChartHoverPoint(pt);
     }
   };
 
   const handleMouseLeave = () => {
     setChartHoverPoint(null);
-    setRefAreaLeft(null);
-    setRefAreaRight(null);
   };
 
-  const zoom = () => {
-    if (refAreaLeft === refAreaRight || refAreaRight === null || refAreaLeft === null) {
-      setRefAreaLeft(null);
-      setRefAreaRight(null);
+  const setHoverByDistance = (dist: number | null) => {
+    if (dist === null) {
+      setChartHoverPoint(null);
       return;
     }
-
-    let [start, end] = [refAreaLeft, refAreaRight];
-    if (start > end) [start, end] = [end, start];
-
-    const filteredData = chartData.filter((d) => d.distance >= start && d.distance <= end);
-    if (filteredData.length > 0) {
-      setLeft(start);
-      setRight(end);
-      setSelectedRange({ start, end });
+    if (allPoints.length > 1) {
+      const pt = interpolatePointOnRoute(allPoints, dist);
+      if (pt) setChartHoverPoint(pt);
     }
+  };
 
-    setRefAreaLeft(null);
-    setRefAreaRight(null);
+  const confirmSelection = (start: number, end: number) => {
+    const [s, e] = start <= end ? [start, end] : [end, start];
+    setZoomRange({ start: s, end: e });
+    setSelectedRange({ start: s, end: e });
   };
 
   const resetZoom = () => {
-    setLeft('dataMin');
-    setRight('dataMax');
-    setRefAreaLeft(null);
-    setRefAreaRight(null);
+    setZoomRange(null);
     setSelectedRange(null);
   };
 
   return {
     chartData,
-    stats,
-    gradientId,
-    gradientStops,
+    visibleStats,
     selectedPoint,
-    left,
-    right,
-    refAreaLeft,
-    refAreaRight,
-    setRefAreaLeft,
+    zoomRange,
+    setHoverByDistance,
+    confirmSelection,
+    resetZoom,
+    // Recharts-compatible (MobileElevationChart)
     handleMouseMove,
     handleMouseLeave,
-    zoom,
-    resetZoom,
   };
 }

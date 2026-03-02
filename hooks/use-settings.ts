@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, createContext, useContext } from 'react';
+import { createContext, useContext } from 'react';
 
 export type UnitSystem = 'metric' | 'us' | 'uk' | 'imperial';
 export type WindUnit = 'kmh' | 'mph' | 'knots' | 'ms';

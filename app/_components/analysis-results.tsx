@@ -31,7 +31,6 @@ export function AnalysisResults({
   // Read all state from store
   const weatherPoints = useRouteStore((s) => s.weatherPoints);
   const gpxData = useRouteStore((s) => s.gpxData);
-  const activeFilter = useRouteStore((s) => s.activeFilter);
   const setActiveFilter = useRouteStore((s) => s.setActiveFilter);
   const selectedPointIndex = useRouteStore((s) => s.selectedPointIndex);
   const setSelectedPointIndex = useRouteStore((s) => s.setSelectedPointIndex);

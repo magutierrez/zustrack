@@ -1,4 +1,8 @@
-export const LogoIcon = ({ className = 'w-8 h-8', ...props }) => {
+interface LogoIconProps extends React.SVGProps<SVGSVGElement> {
+  className?: string;
+}
+
+export const LogoIcon = ({ className = 'w-8 h-8', ...props }: LogoIconProps) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

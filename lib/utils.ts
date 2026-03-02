@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-assignment */
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import type { RouteWeatherPoint } from './types';
@@ -708,4 +709,14 @@ export function getDifficultyBadgeVariant(
   level: DifficultyLevel,
 ): 'outline' | 'secondary' | 'destructive' | 'default' {
   return DIFFICULTY_BADGE_VARIANTS[level] ?? 'outline';
+}
+
+export function formatISOToConfig(isoTime: string): { date: string; time: string } {
+  const d = new Date(isoTime);
+  const hours = String(d.getHours()).padStart(2, '0');
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  return { date: `${year}-${month}-${day}`, time: `${hours}:${minutes}` };
 }

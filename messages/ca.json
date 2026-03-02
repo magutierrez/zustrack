@@ -291,7 +291,9 @@
       "slopeHard": "Difícil",
       "resetZoom": "Restablir zoom",
       "highestPoint": "Punt més alt",
-      "lowestPoint": "Punt més baix"
+      "lowestPoint": "Punt més baix",
+      "ascent": "Ascens",
+      "descent": "Descens"
     },
     "windEffect": {
       "tailwind": "A favor",
@@ -549,12 +551,34 @@
   },
   "Landing": {
     "nav": {
-      "access": "Accedir"
+      "access": "Accedir",
+      "language": "Idioma",
+      "appearance": "Aparença"
+    },
+    "mockup": {
+      "config": "Configuració",
+      "activity": "Activitat",
+      "cycling": "Ciclisme",
+      "date": "Data sortida",
+      "dateValue": "Avui, 09:00",
+      "analyzeBtn": "Analitzar Ruta",
+      "tabElev": "Elevació",
+      "tabTerrain": "Terreny",
+      "tabWeather": "Clima",
+      "profile": "Perfil",
+      "gain": "Desnivell: +820m",
+      "summary": "Resum de la ruta",
+      "distLabel": "Distància",
+      "timeLabel": "Temps Est.",
+      "altLabel": "Altitud Max",
+      "avgLabel": "Mitjana",
+      "windLabel": "Vent",
+      "rainLabel": "Pluja"
     },
     "hero": {
-      "badge": "Anàlisi meteorològica de ruta · Open-Meteo API",
-      "title1": "Coneix cada quilòmetre",
-      "title2": "abans de sortir",
+      "badge": "Anàlisi meteorològica de ruta i molt més",
+      "title1": "Analitza la teva pròxima ruta.",
+      "title2": "Domina el camí",
       "subtitleBefore": "Puja la teva ruta GPX o importa des de Strava. zustrack analitza el temps, el terreny i els riscos",
       "subtitleStrong": "punt a punt",
       "subtitleAfter": "— temperatura, vent, pluja, pendents, cobertura mòbil i molt més.",

@@ -14,6 +14,8 @@ interface RouteState {
   exactSelectedPoint: any | null;
   /** Set by chart hover → map reads it to show the cursor dot */
   chartHoverPoint: any | null;
+  /** Set by chart click → map reads it to show the exact popup */
+  clickedChartPointDist: number | null;
   focusPoint: { lat: number; lon: number; name?: string; silent?: boolean } | null;
   showWaterSources: boolean;
   showNoCoverageZones: boolean;
@@ -59,7 +61,10 @@ interface RouteState {
   setSelectedRange: (range: { start: number; end: number } | null) => void;
   setExactSelectedPoint: (point: any | null) => void;
   setChartHoverPoint: (point: any | null) => void;
-  setFocusPoint: (point: { lat: number; lon: number; name?: string; silent?: boolean } | null) => void;
+  setClickedChartPointDist: (dist: number | null) => void;
+  setFocusPoint: (
+    point: { lat: number; lon: number; name?: string; silent?: boolean } | null,
+  ) => void;
   setShowWaterSources: (show: boolean) => void;
   setShowNoCoverageZones: (show: boolean) => void;
   setShowEscapePoints: (show: boolean) => void;
@@ -110,6 +115,7 @@ const initialState = {
   selectedRange: null as { start: number; end: number } | null,
   exactSelectedPoint: null,
   chartHoverPoint: null,
+  clickedChartPointDist: null as number | null,
   focusPoint: null as { lat: number; lon: number; name?: string; silent?: boolean } | null,
   showWaterSources: false,
   showNoCoverageZones: false,
@@ -146,7 +152,11 @@ const initialState = {
   isFindingWindow: false,
 };
 
-const getSmartDefaultSpeed = (activity: 'cycling' | 'walking' | null, elevationGain: number, distance: number) => {
+const getSmartDefaultSpeed = (
+  activity: 'cycling' | 'walking' | null,
+  elevationGain: number,
+  distance: number,
+) => {
   if (activity === 'walking') {
     // Hiking logic
     const slope = distance > 0 ? (elevationGain / (distance * 1000)) * 100 : 0;
@@ -155,7 +165,7 @@ const getSmartDefaultSpeed = (activity: 'cycling' | 'walking' | null, elevationG
     if (slope > 2) return 4; // Moderate
     return 5; // Flat/easy
   }
-  
+
   // Cycling logic
   const slope = distance > 0 ? (elevationGain / (distance * 1000)) * 100 : 0;
   if (slope > 5) return 15; // Mountain/Steep
@@ -170,6 +180,7 @@ export const useRouteStore = create<RouteState>()((set) => ({
   setSelectedRange: (range) => set({ selectedRange: range }),
   setExactSelectedPoint: (point) => set({ exactSelectedPoint: point }),
   setChartHoverPoint: (point) => set({ chartHoverPoint: point }),
+  setClickedChartPointDist: (dist) => set({ clickedChartPointDist: dist }),
   setFocusPoint: (point) => set({ focusPoint: point }),
   setShowWaterSources: (show) => set({ showWaterSources: show }),
   setShowNoCoverageZones: (show) => set({ showNoCoverageZones: show }),
@@ -177,11 +188,18 @@ export const useRouteStore = create<RouteState>()((set) => ({
   setSelectedPointIndex: (index) => set({ selectedPointIndex: index }),
   setConfig: (config) => set({ config }),
 
-  setFetchedRoute: ({ rawGpxContent, gpxFileName, activityType, distance, elevationGain, elevationLoss }) =>
+  setFetchedRoute: ({
+    rawGpxContent,
+    gpxFileName,
+    activityType,
+    distance,
+    elevationGain,
+    elevationLoss,
+  }) =>
     set((state) => {
       // Calculate smart speed based on activity and terrain
       const newSpeed = getSmartDefaultSpeed(activityType, elevationGain, distance);
-      
+
       return {
         fetchedRawGpxContent: rawGpxContent,
         fetchedGpxFileName: gpxFileName,
@@ -206,8 +224,12 @@ export const useRouteStore = create<RouteState>()((set) => ({
         ...initialState.config,
         date: getDefaultDate(),
         // Keep using smart speed if we have activity info, otherwise fallback to defaults
-        speed: state.fetchedActivityType 
-          ? getSmartDefaultSpeed(state.fetchedActivityType, state.initialElevationGain, state.initialDistance)
+        speed: state.fetchedActivityType
+          ? getSmartDefaultSpeed(
+              state.fetchedActivityType,
+              state.initialElevationGain,
+              state.initialDistance,
+            )
           : 25,
       },
     })),

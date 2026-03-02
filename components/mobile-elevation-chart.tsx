@@ -19,13 +19,13 @@ import { useRouteStore } from '@/store/route-store';
 import { getSlopeColorHex } from '@/lib/slope-colors';
 
 export function MobileElevationChart() {
-  const t = useTranslations('WeatherTimeline');
   const tHazards = useTranslations('Hazards');
   const { unitSystem } = useSettings();
 
   const mobileHazardRange = useRouteStore((s) => s.mobileHazardRange);
   const setMobileHazardRange = useRouteStore((s) => s.setMobileHazardRange);
   const elevationData = useRouteStore((s) => s.elevationData);
+  const setClickedChartPointDist = useRouteStore((s) => s.setClickedChartPointDist);
 
   const { chartData, selectedPoint, handleMouseMove, handleMouseLeave } = useElevationChart();
 
@@ -82,6 +82,11 @@ export function MobileElevationChart() {
             data={activeData}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
+            onClick={(e) => {
+              if (e && e.activePayload && e.activePayload.length) {
+                setClickedChartPointDist(e.activePayload[0].payload.distance);
+              }
+            }}
             margin={{ top: 4, right: 8, left: 0, bottom: 0 }}
           >
             <defs>

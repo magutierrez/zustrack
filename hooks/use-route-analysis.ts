@@ -2,23 +2,11 @@
 
 import { useCallback, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import {
-  parseGPX,
-  sampleRoutePoints,
-  calculateBearing,
-  getWindEffect,
-  reverseGPXData,
-} from '@/lib/gpx-parser';
-import type { RouteWeatherPoint, WeatherData } from '@/lib/types';
-import { computeMudRiskScore, scoreToRiskLevel } from '@/lib/mud-risk';
-import { computeSnowCondition } from '@/lib/snowshoe';
-import {
-  getSunPosition,
-  getSolarExposure,
-  getSolarIntensity,
-  calculateSmartSpeed,
-  calculateElevationGainLoss,
-} from '@/lib/utils';
+import { parseGPX, sampleRoutePoints, calculateBearing, reverseGPXData } from '@/lib/gpx-parser';
+import type { WeatherData } from '@/lib/types';
+import { calculateElevationGainLoss } from '@/lib/utils';
+import { fetchWithRetry } from '@/lib/fetch-utils';
+import { calculateRouteTimings, enrichWeatherPoint } from '@/lib/weather-enrichment';
 import { getRouteInfoFromDb, saveRouteInfoToDb } from '@/lib/db';
 import { useRouteStore } from '@/store/route-store';
 
@@ -288,28 +276,6 @@ export function useRouteAnalysis() {
       setWeatherPoints([]);
       setIsWeatherAnalyzed(false);
 
-      const fetchWithRetry = async (
-        url: string,
-        options: RequestInit,
-        maxRetries = 3,
-      ): Promise<Response> => {
-        let lastError: Error | null = null;
-        for (let i = 0; i < maxRetries; i++) {
-          try {
-            const response = await fetch(url, options);
-            if (response.status === 429) {
-              await new Promise((resolve) => setTimeout(resolve, Math.pow(2, i) * 1000));
-              continue;
-            }
-            return response;
-          } catch (err) {
-            lastError = err instanceof Error ? err : new Error('Unknown error');
-            await new Promise((resolve) => setTimeout(resolve, Math.pow(2, i) * 1000));
-          }
-        }
-        throw lastError || new Error('Retry limit reached');
-      };
-
       try {
         const sampled = sampleRoutePoints(currentGpxData.points, 48);
         const startTime = new Date(`${analysisConfig.date}T${analysisConfig.time}:00`);
@@ -318,29 +284,12 @@ export function useRouteAnalysis() {
           throw new Error('Invalid start time configuration');
         }
 
-        const pointsWithTime: any[] = [];
-        let currentElapsedTime = 0;
-
-        sampled.forEach((point, idx) => {
-          if (idx === 0) {
-            pointsWithTime.push({ ...point, estimatedTime: new Date(startTime.getTime()) });
-          } else {
-            const prevPoint = sampled[idx - 1];
-            const segmentDist = point.distanceFromStart - prevPoint.distanceFromStart;
-            const segmentEleGain = Math.max(0, (point.ele || 0) - (prevPoint.ele || 0));
-            const speedAtSegment = calculateSmartSpeed(
-              analysisConfig.speed,
-              segmentDist,
-              segmentEleGain,
-              analysisConfig.activityType,
-            );
-            currentElapsedTime += segmentDist / speedAtSegment;
-            pointsWithTime.push({
-              ...point,
-              estimatedTime: new Date(startTime.getTime() + currentElapsedTime * 3600000),
-            });
-          }
-        });
+        const pointsWithTime = calculateRouteTimings(
+          sampled,
+          startTime,
+          analysisConfig.speed,
+          analysisConfig.activityType,
+        );
 
         const response = await fetchWithRetry('/api/weather', {
           method: 'POST',
@@ -363,82 +312,10 @@ export function useRouteAnalysis() {
         const weatherDataObj = await response.json();
         const weatherData: WeatherData[] = weatherDataObj.weather;
 
-        const routeWeatherPoints: RouteWeatherPoint[] = pointsWithTime.map((point, idx) => {
-          const nextIdx = Math.min(idx + 1, pointsWithTime.length - 1);
-          const prevIdx = Math.max(0, idx - 1);
-          const nextPoint = pointsWithTime[nextIdx];
-          const prevPoint = pointsWithTime[prevIdx];
-
-          const bearing = calculateBearing(point.lat, point.lon, nextPoint.lat, nextPoint.lon);
-          const weather = weatherData[idx];
-          const windResult = getWindEffect(bearing, weather.windDirection);
-
-          const info = currentRouteInfoData.reduce(
-            (prev, curr) =>
-              Math.abs(curr.distanceFromStart - point.distanceFromStart) <
-              Math.abs(prev.distanceFromStart - point.distanceFromStart)
-                ? curr
-                : prev,
-            currentRouteInfoData[0] || {},
-          );
-
-          const ele = point.ele !== undefined && point.ele !== 0 ? point.ele : info.elevation || 0;
-
-          const distDiff = (nextPoint.distanceFromStart - prevPoint.distanceFromStart) * 1000;
-          const eleDiff =
-            (nextPoint.ele !== undefined
-              ? nextPoint.ele
-              : currentRouteInfoData.find(
-                  (d: any) => d.distanceFromStart === nextPoint.distanceFromStart,
-                )?.elevation || 0) -
-            (prevPoint.ele !== undefined
-              ? prevPoint.ele
-              : currentRouteInfoData.find(
-                  (d: any) => d.distanceFromStart === prevPoint.distanceFromStart,
-                )?.elevation || 0);
-          const slopeRad = distDiff > 0 ? Math.atan(eleDiff / distDiff) : 0;
-          const slopeDeg = (slopeRad * 180) / Math.PI;
-          const aspectDeg = eleDiff > 0 ? (bearing + 180) % 360 : bearing;
-
-          const sunPos = getSunPosition(point.estimatedTime, point.lat, point.lon);
-          const solarExposure = getSolarExposure(weather, sunPos, Math.abs(slopeDeg), aspectDeg);
-          const solarIntensity = getSolarIntensity(weather.directRadiation, solarExposure);
-
-          const slopePercent = distDiff > 0 ? (eleDiff / distDiff) * 100 : 0;
-          const snowCond = computeSnowCondition({
-            snowDepthCm: weather.snowDepthCm ?? 0,
-            recent48hSnowfallCm: weather.recent48hSnowfallCm ?? 0,
-            freezeThawCycle: weather.freezeThawCycle ?? false,
-            temperature: weather.temperature,
-            slopeDeg,
-          });
-          const mudScore = computeMudRiskScore({
-            past72hPrecipMm: weather.past72hPrecipMm ?? 0,
-            surface: info.surface,
-            temperature: weather.temperature,
-            windSpeed: weather.windSpeed,
-            cloudCover: weather.cloudCover ?? 0,
-            isShaded: solarExposure === 'shade',
-            slopePercent,
-          });
-
-          return {
-            point: { ...point, ele },
-            weather,
-            windEffect: windResult.effect,
-            windEffectAngle: windResult.angle,
-            bearing,
-            pathType: info.pathType,
-            surface: info.surface,
-            solarExposure,
-            solarIntensity,
-            escapePoint: info.escapePoint,
-            mobileCoverage: info.mobileCoverage,
-            waterSources: info.waterSources,
-            mudRisk: scoreToRiskLevel(mudScore),
-            mudRiskScore: mudScore,
-            snowCondition: snowCond,
-          };
+        const routeWeatherPoints = pointsWithTime.map((point, idx) => {
+          const nextPoint = pointsWithTime[Math.min(idx + 1, pointsWithTime.length - 1)];
+          const prevPoint = pointsWithTime[Math.max(0, idx - 1)];
+          return enrichWeatherPoint(point, nextPoint, prevPoint, weatherData[idx], currentRouteInfoData);
         });
 
         setWeatherPoints(routeWeatherPoints);

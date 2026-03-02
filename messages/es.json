@@ -291,7 +291,9 @@
       "slopeHard": "Difícil",
       "resetZoom": "Restablecer zoom",
       "highestPoint": "Punto más alto",
-      "lowestPoint": "Punto más bajo"
+      "lowestPoint": "Punto más bajo",
+      "ascent": "Ascenso",
+      "descent": "Descenso"
     },
     "windEffect": {
       "tailwind": "A favor",
@@ -549,12 +551,34 @@
   },
   "Landing": {
     "nav": {
-      "access": "Acceder"
+      "access": "Acceder",
+      "language": "Idioma",
+      "appearance": "Apariencia"
+    },
+    "mockup": {
+      "config": "Configuración",
+      "activity": "Actividad",
+      "cycling": "Ciclismo",
+      "date": "Fecha salida",
+      "dateValue": "Hoy, 09:00",
+      "analyzeBtn": "Analizar Ruta",
+      "tabElev": "Elevación",
+      "tabTerrain": "Terreno",
+      "tabWeather": "Clima",
+      "profile": "Perfil",
+      "gain": "Desnivel: +820m",
+      "summary": "Resumen de la ruta",
+      "distLabel": "Distancia",
+      "timeLabel": "Tiempo Est.",
+      "altLabel": "Altitud Max",
+      "avgLabel": "Media",
+      "windLabel": "Viento",
+      "rainLabel": "Lluvia"
     },
     "hero": {
-      "badge": "Análisis meteorológico de ruta · Open-Meteo API",
-      "title1": "Conoce cada kilómetro",
-      "title2": "antes de salir",
+      "badge": "Análisis meteorológico de ruta y mucho más",
+      "title1": "Analiza tu próxima ruta.",
+      "title2": "Domina el camino",
       "subtitleBefore": "Sube tu ruta GPX o importa desde Strava. zustrack analiza el tiempo, el terreno y los riesgos",
       "subtitleStrong": "punto a punto",
       "subtitleAfter": "— temperatura, viento, lluvia, pendientes, cobertura móvil y mucho más.",

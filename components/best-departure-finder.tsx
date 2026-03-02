@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Clock, Star, Wind, Thermometer, CloudRain, Moon, Info, CheckCircle2 } from 'lucide-react';
+import { Clock, CloudRain, Info, Moon, Star, Thermometer, Wind } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn, formatTemperature, formatWindSpeed } from '@/lib/utils';

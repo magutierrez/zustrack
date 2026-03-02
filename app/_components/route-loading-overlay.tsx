@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { SpecialLoading } from './special-loading';
 
 interface RouteLoadingOverlayProps {
   isVisible: boolean;
@@ -12,9 +13,8 @@ export function RouteLoadingOverlay({ isVisible }: RouteLoadingOverlayProps) {
   if (!isVisible) return null;
 
   return (
-    <div className="bg-background/80 absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 backdrop-blur-sm">
-      <div className="border-primary h-12 w-12 animate-spin rounded-full border-4 border-t-transparent" />
-      <p className="text-muted-foreground text-center text-sm">{t('obtainingData')}</p>
+    <div className="bg-background/80 absolute inset-0 z-10 flex items-center justify-center backdrop-blur-md">
+      <SpecialLoading message={t('obtainingData')} />
     </div>
   );
 }

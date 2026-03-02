@@ -1,4 +1,4 @@
-/* Tipos GeoJSON y TWKB (basados en tu index.d.ts) */
+/* eslint-disable no-useless-assignment */
 
 export type Position = number[];
 export type BBox = number[];

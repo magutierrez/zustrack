@@ -89,17 +89,6 @@ export interface RouteWeatherPoint {
   snowCondition?: SnowCondition;
 }
 
-export interface RouteSegmentMetadata {
-  name: string;
-  value: number; // distance or percentage
-  color: string;
-}
-
-export interface RouteStats {
-  pathTypes: RouteSegmentMetadata[];
-  surfaces: RouteSegmentMetadata[];
-}
-
 export interface RouteConfig {
   date: string;
   time: string;

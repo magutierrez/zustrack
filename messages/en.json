@@ -291,7 +291,9 @@
       "slopeHard": "Hard",
       "resetZoom": "Reset zoom",
       "highestPoint": "Highest point",
-      "lowestPoint": "Lowest point"
+      "lowestPoint": "Lowest point",
+      "ascent": "Ascent",
+      "descent": "Descent"
     },
     "windEffect": {
       "tailwind": "Tailwind",
@@ -549,12 +551,34 @@
   },
   "Landing": {
     "nav": {
-      "access": "Log in"
+      "access": "Log in",
+      "language": "Language",
+      "appearance": "Appearance"
+    },
+    "mockup": {
+      "config": "Configuration",
+      "activity": "Activity",
+      "cycling": "Cycling",
+      "date": "Departure",
+      "dateValue": "Today, 09:00",
+      "analyzeBtn": "Analyze Route",
+      "tabElev": "Elevation",
+      "tabTerrain": "Terrain",
+      "tabWeather": "Weather",
+      "profile": "Profile",
+      "gain": "Gain: +820m",
+      "summary": "Route Summary",
+      "distLabel": "Distance",
+      "timeLabel": "Est. Time",
+      "altLabel": "Max Alt",
+      "avgLabel": "Avg",
+      "windLabel": "Wind",
+      "rainLabel": "Rain"
     },
     "hero": {
-      "badge": "Route weather analysis · Open-Meteo API",
-      "title1": "Know every kilometer",
-      "title2": "before you go",
+      "badge": "Route weather analysis and much more",
+      "title1": "Analyze your next route.",
+      "title2": "Master the way",
       "subtitleBefore": "Upload your GPX route or import from Strava. zustrack analyzes weather, terrain and risks",
       "subtitleStrong": "point by point",
       "subtitleAfter": "— temperature, wind, rain, gradients, mobile coverage and much more.",

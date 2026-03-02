@@ -39,7 +39,7 @@ export async function saveRouteToDb(
   let routeId: string;
   try {
     routeId = crypto.randomUUID();
-  } catch (e) {
+  } catch (_) {
     // Fallback if crypto.randomUUID is not available (e.g., in some non-secure contexts)
     routeId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
       const r = (Math.random() * 16) | 0,

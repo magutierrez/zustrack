@@ -17,9 +17,11 @@ export function useActivityConfig() {
   const [manualMinutes, setManualMinutes] = useState(initialMinutes);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setManualHours(initialHours);
+     
     setManualMinutes(initialMinutes);
-  }, [config.speed, totalDistance]);
+  }, [config.speed, totalDistance, initialHours, initialMinutes]);
 
   const handleDurationChange = useCallback(
     (h: number, m: number) => {
