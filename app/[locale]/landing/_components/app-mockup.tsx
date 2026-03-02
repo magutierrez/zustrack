@@ -23,7 +23,6 @@ export function AppMockup() {
   const tv = useTranslations('Landing.visuals');
   const th = useTranslations('HomePage');
   const [mounted, setMounted] = useState(false);
-  const [initialZoom, setInitialZoom] = useState(11);
   const mapRef = useRef<MapRef>(null);
   const { resolvedTheme } = useTheme();
 
@@ -33,12 +32,15 @@ export function AppMockup() {
 
   useEffect(() => {
     setMounted(true);
-    if (window.innerWidth < 768) {
-      setInitialZoom(9.5); // lower zoom on mobile to center the full route
-    } else if (window.innerWidth < 1024) {
-      setInitialZoom(10); // medium zoom on tablets
-    }
   }, []);
+
+  const initialZoom = mounted
+    ? window.innerWidth < 768
+      ? 9.5
+      : window.innerWidth < 1024
+        ? 10
+        : 11
+    : 11;
 
   // Load realistic route directly from JSON instead of generating it
   const { coords, elevData, center } = useMemo(() => {
