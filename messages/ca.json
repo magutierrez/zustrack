@@ -576,9 +576,9 @@
       "rainLabel": "Pluja"
     },
     "hero": {
-      "badge": "Anàlisi meteorològica de ruta · Open-Meteo API",
-      "title1": "Coneix cada quilòmetre",
-      "title2": "abans de sortir",
+      "badge": "Anàlisi meteorològica de ruta i molt més",
+      "title1": "Analitza la teva pròxima ruta.",
+      "title2": "Domina el camí",
       "subtitleBefore": "Puja la teva ruta GPX o importa des de Strava. zustrack analitza el temps, el terreny i els riscos",
       "subtitleStrong": "punt a punt",
       "subtitleAfter": "— temperatura, vent, pluja, pendents, cobertura mòbil i molt més.",

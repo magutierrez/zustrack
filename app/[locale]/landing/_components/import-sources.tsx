@@ -2,7 +2,6 @@
 
 import { useTranslations } from 'next-intl';
 import { Upload, Activity, Globe, CheckCircle2, Bike, Footprints } from 'lucide-react';
-import { motion } from 'motion/react';
 
 export function ImportSources() {
   const t = useTranslations('Landing.import');
@@ -43,13 +42,7 @@ export function ImportSources() {
 
       <div className="relative mx-auto max-w-6xl px-6">
         <div className="grid items-center gap-16 lg:grid-cols-2 lg:gap-8">
-          <motion.div
-            initial={{ opacity: 0, x: -40 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.6 }}
-            className="flex flex-col justify-center"
-          >
+          <div className="flex flex-col justify-center">
             <span className="mb-4 inline-flex w-fit items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-sm font-medium text-blue-600 dark:border-blue-900/50 dark:bg-blue-900/20 dark:text-blue-400">
               {t('sectionLabel')}
             </span>
@@ -65,13 +58,9 @@ export function ImportSources() {
             </p>
 
             <div className="flex flex-col gap-4">
-              {sources.map((src, i) => (
-                <motion.div
+              {sources.map((src) => (
+                <div
                   key={src.label}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: i * 0.1 }}
                   className="group flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:shadow-md dark:border-white/10 dark:bg-slate-900/50 dark:hover:border-white/20"
                 >
                   <div
@@ -85,24 +74,15 @@ export function ImportSources() {
                     </div>
                     <div className="text-sm text-slate-500 dark:text-slate-400">{src.sub}</div>
                   </div>
-                  <motion.div
-                    className="ml-auto flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-500/10"
-                    whileHover={{ scale: 1.1 }}
-                  >
+                  <div className="ml-auto flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 transition-transform group-hover:scale-110 dark:bg-blue-500/10">
                     <CheckCircle2 className="h-5 w-5 text-blue-500" />
-                  </motion.div>
-                </motion.div>
+                  </div>
+                </div>
               ))}
             </div>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, type: 'spring' }}
-            className="relative w-full max-w-md lg:ml-auto"
-          >
+          <div className="relative w-full max-w-md lg:ml-auto">
             {/* Glow behind the mockup */}
             <div className="absolute -inset-1 rounded-3xl bg-gradient-to-tr from-orange-500 to-pink-500 opacity-20 blur-2xl" />
 
@@ -120,13 +100,9 @@ export function ImportSources() {
               </div>
 
               <div className="flex flex-col gap-3 p-4">
-                {activities.map((a, i) => (
-                  <motion.div
+                {activities.map((a) => (
+                  <div
                     key={a.name}
-                    initial={{ opacity: 0, x: 20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5, delay: 0.4 + i * 0.1 }}
                     className="group flex cursor-pointer items-center gap-4 rounded-xl border border-slate-100 bg-white p-4 transition-all hover:border-orange-200 hover:shadow-lg dark:border-white/5 dark:bg-slate-800/50 dark:hover:border-orange-500/30"
                   >
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500 group-hover:bg-orange-100 group-hover:text-orange-500 dark:bg-slate-700 dark:text-slate-300 dark:group-hover:bg-orange-500/20 dark:group-hover:text-orange-400">
@@ -147,11 +123,11 @@ export function ImportSources() {
                         <span>{a.date}</span>
                       </div>
                     </div>
-                  </motion.div>
+                  </div>
                 ))}
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>

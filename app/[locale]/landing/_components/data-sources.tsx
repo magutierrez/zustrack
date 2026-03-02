@@ -2,7 +2,6 @@
 
 import { useTranslations } from 'next-intl';
 import { CloudRain, Map, Signal, Activity, Sun, Droplets } from 'lucide-react';
-import { motion } from 'motion/react';
 
 export function DataSources() {
   const t = useTranslations('Landing.dataSources');
@@ -58,26 +57,15 @@ export function DataSources() {
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px]" />
 
       <div className="relative mx-auto max-w-7xl px-6">
-        <motion.p
-          initial={{ opacity: 0, y: 10 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="mb-10 text-center text-sm font-semibold tracking-widest text-slate-500 uppercase dark:text-slate-400"
-        >
+        <p className="mb-10 text-center text-sm font-semibold tracking-widest text-slate-500 uppercase dark:text-slate-400">
           {t('label')}
-        </motion.p>
+        </p>
 
         <div className="flex flex-wrap items-center justify-center gap-6">
-          {sources.map((src, i) => (
-            <motion.div
+          {sources.map((src) => (
+            <div
               key={src.name}
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: i * 0.1 }}
-              whileHover={{ y: -5 }}
-              className="group relative flex items-center gap-4 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm transition-all hover:border-slate-300 hover:shadow-xl dark:border-white/10 dark:bg-slate-900/50 dark:hover:border-white/20"
+              className="group relative flex items-center gap-4 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm transition-all hover:border-slate-300 hover:shadow-xl hover:-translate-y-1 dark:border-white/10 dark:bg-slate-900/50 dark:hover:border-white/20"
             >
               {/* Hover glow effect */}
               <div className="absolute inset-0 -z-10 bg-gradient-to-r opacity-0 blur-xl transition-opacity duration-500 group-hover:opacity-20 dark:group-hover:opacity-30" />
@@ -93,7 +81,7 @@ export function DataSources() {
                   {src.sub}
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

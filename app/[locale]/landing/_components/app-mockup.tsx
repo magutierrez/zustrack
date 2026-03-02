@@ -13,7 +13,6 @@ import {
   Thermometer,
   Wind,
 } from 'lucide-react';
-import { useInView } from 'motion/react';
 import Map, { Layer, MapRef, Source } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
@@ -24,26 +23,20 @@ export function AppMockup() {
   const mapRef = useRef<MapRef>(null);
   const { resolvedTheme } = useTheme();
 
-  // Use inView to pause rendering when off-screen to save CPU/RAM
-  const containerRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(containerRef, { once: false, margin: '200px 0px' });
-
   useEffect(() => {
     const timer = setTimeout(() => setMounted(true), 0);
     return () => clearTimeout(timer);
   }, []);
 
   const initialZoom = mounted
-    ? window.innerWidth < 768
+    ? typeof window !== 'undefined' && window.innerWidth < 768
       ? 9.5
-      : window.innerWidth < 1024
+      : typeof window !== 'undefined' && window.innerWidth < 1024
         ? 10
         : 11
     : 11;
 
-  // Load realistic route directly from JSON instead of generating it
   const { coords, elevData, center } = useMemo(() => {
-    // These coordinates and elevation are extracted from public/sample.gpx
     const rawCoords = [
       [-5.84141, 43.35548],
       [-5.83914, 43.35704],
@@ -226,7 +219,7 @@ export function AppMockup() {
     return {
       coords: rawCoords,
       elevData: rawEle,
-      center: { lon: -5.76, lat: 43.42 }, // centered around the middle of the track
+      center: { lon: -5.76, lat: 43.42 },
     };
   }, []);
 
@@ -294,7 +287,6 @@ export function AppMockup() {
 
   return (
     <div
-      ref={containerRef}
       className="bg-background dark:border-border relative mx-auto max-w-5xl overflow-hidden rounded-2xl border border-slate-200 shadow-2xl shadow-slate-300/50 dark:shadow-blue-900/10"
     >
       {/* App Header Mockup */}
@@ -319,9 +311,9 @@ export function AppMockup() {
 
       {/* Main App Layout Mockup (Two Columns) */}
       <div className="bg-background flex h-[600px] flex-col overflow-y-auto md:h-auto lg:h-[600px] lg:flex-row lg:overflow-hidden">
-        {/* Left Column: Config & Analysis (Sidebar) */}
+        {/* Left Column */}
         <div className="border-border custom-scrollbar bg-background flex w-full shrink-0 flex-col gap-4 p-4 md:gap-6 md:p-6 lg:w-[45%] lg:overflow-y-auto lg:border-r">
-          {/* Activity Config Section Mockup */}
+          {/* Activity Config */}
           <div className="border-border bg-card rounded-xl border p-4 shadow-sm">
             <div className="mb-4 flex items-center justify-between">
               <h3 className="text-foreground flex items-center gap-2 text-sm font-semibold">
@@ -349,7 +341,7 @@ export function AppMockup() {
             </div>
           </div>
 
-          {/* Elevation & Terrain Tabs Mockup */}
+          {/* Elevation Tabs */}
           <div className="border-border bg-card flex flex-col overflow-hidden rounded-xl border shadow-sm">
             <div className="border-border bg-muted/20 flex border-b">
               <div className="border-primary text-foreground flex-1 border-b-2 py-3 text-center text-sm font-medium">
@@ -374,7 +366,7 @@ export function AppMockup() {
               </div>
 
               <div className="mt-2 h-32 w-full">
-                {mounted && isInView && (
+                {mounted && (
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={elevData} margin={{ top: 5, right: 0, left: 0, bottom: 0 }}>
                       <defs>
@@ -409,7 +401,7 @@ export function AppMockup() {
             </div>
           </div>
 
-          {/* Summary Route Mockup */}
+          {/* Summary Route */}
           <div className="border-border bg-card rounded-xl border p-4 shadow-sm">
             <h3 className="text-foreground mb-4 flex items-center gap-2 text-sm font-semibold">
               <Activity className="text-primary h-4 w-4" />
@@ -438,48 +430,36 @@ export function AppMockup() {
           </div>
         </div>
 
-        {/* Right Column: Map (RouteMap component mockup) */}
+        {/* Right Column: Map */}
         <div className="bg-muted relative h-[400px] w-full flex-shrink-0 overflow-hidden lg:h-full lg:w-[55%]">
-          {/* Map floating controls */}
-          <div className="absolute top-4 right-4 z-10 hidden flex-col gap-2 lg:flex">
-            <div className="bg-background border-border flex h-10 w-10 items-center justify-center rounded-md border shadow-sm">
-              <Layers className="text-foreground h-5 w-5" />
-            </div>
-            <div className="bg-background border-border flex h-10 w-10 items-center justify-center rounded-md border shadow-sm">
-              <Navigation className="text-foreground h-5 w-5" />
-            </div>
-          </div>
-
-          {mounted && isInView && (
+          {mounted && (
             <Map
               ref={mapRef}
               initialViewState={{
                 longitude: center.lon,
                 latitude: center.lat,
                 zoom: initialZoom,
-                pitch: 0, // No cinematic pitch, realistic flat view
+                pitch: 0,
                 bearing: 0,
               }}
               mapStyle={mapStyle}
-              interactive={false} // Readonly for performance in landing
+              interactive={false}
               style={{ width: '100%', height: '100%' }}
               maxZoom={14}
               attributionControl={false}
             >
               <Source id="route" type="geojson" data={routeGeojson}>
-                {/* Outline */}
                 <Layer
                   id="route-line-casing"
                   type="line"
                   layout={{ 'line-join': 'round', 'line-cap': 'round' }}
                   paint={{ 'line-color': '#ffffff', 'line-width': 6, 'line-opacity': 0.8 }}
                 />
-                {/* Main line */}
                 <Layer
                   id="route-line"
                   type="line"
                   layout={{ 'line-join': 'round', 'line-cap': 'round' }}
-                  paint={{ 'line-color': '#ef4444', 'line-width': 4 }} // Red route like strava
+                  paint={{ 'line-color': '#ef4444', 'line-width': 4 }}
                 />
               </Source>
 
@@ -514,7 +494,7 @@ export function AppMockup() {
             </Map>
           )}
 
-          {/* Map bottom stats overly (similar to app's route-map overlay) */}
+          {/* Stats Overlay */}
           <div className="no-scrollbar absolute right-4 bottom-4 left-4 z-10 flex flex-col gap-2 overflow-x-auto pb-2 sm:pb-0 lg:flex-row">
             {[
               {

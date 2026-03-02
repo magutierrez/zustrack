@@ -576,9 +576,9 @@
       "rainLabel": "Rain"
     },
     "hero": {
-      "badge": "Route weather analysis · Open-Meteo API",
-      "title1": "Know every kilometer",
-      "title2": "before you go",
+      "badge": "Route weather analysis and much more",
+      "title1": "Analyze your next route.",
+      "title2": "Master the way",
       "subtitleBefore": "Upload your GPX route or import from Strava. zustrack analyzes weather, terrain and risks",
       "subtitleStrong": "point by point",
       "subtitleAfter": "— temperature, wind, rain, gradients, mobile coverage and much more.",

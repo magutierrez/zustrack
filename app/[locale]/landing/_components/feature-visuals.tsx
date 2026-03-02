@@ -1,8 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { AlertTriangle, Zap, Map, Mountain, Navigation, Compass } from 'lucide-react';
-import { motion } from 'motion/react';
+import { AlertTriangle, Zap } from 'lucide-react';
 
 export function WeatherVisual() {
   const icons = ['☀️', '⛅', '🌤️', '🌧️', '⛅'];
@@ -13,38 +12,19 @@ export function WeatherVisual() {
   return (
     <div className="flex h-32 items-end justify-between gap-2 p-2">
       {icons.map((icon, i) => (
-        <motion.div
+        <div
           key={i}
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: i * 0.1, type: 'spring' }}
-          whileHover={{ scale: 1.1, y: -5 }}
-          className="group relative flex flex-1 cursor-pointer flex-col items-center gap-1.5"
+          className="group relative flex flex-1 flex-col items-center gap-1.5"
         >
-          {/* Hover glow */}
-          <div className="absolute inset-0 -z-10 rounded-lg bg-blue-500/0 blur-xl transition-colors group-hover:bg-blue-500/5 dark:group-hover:bg-white/5" />
-
-          <span className="text-xl drop-shadow-md transition-transform group-hover:scale-125">
+          <span className="text-xl drop-shadow-md">
             {icon}
           </span>
 
           <div className="relative flex w-full justify-center">
-            <motion.div
-              initial={{ height: 0 }}
-              whileInView={{ height: `${Math.max(12, winds[i] * 2)}px` }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.5 + i * 0.1, duration: 0.8, type: 'spring' }}
-              className="w-full max-w-[12px] rounded-t-sm bg-gradient-to-t from-blue-500 to-sky-300 shadow-[0_0_10px_rgba(56,189,248,0.5)]"
+            <div
+              className="w-full max-w-[12px] rounded-t-sm bg-gradient-to-t from-blue-500 to-sky-300"
+              style={{ height: `${Math.max(12, winds[i] * 2)}px` }}
             />
-            {/* Wind particles effect inside bar */}
-            <div className="absolute inset-0 overflow-hidden rounded-t-sm opacity-50">
-              <motion.div
-                animate={{ y: ['100%', '-100%'] }}
-                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                className="h-1 w-full bg-white/50 blur-[1px]"
-              />
-            </div>
           </div>
 
           <div className="flex flex-col items-center gap-0.5">
@@ -55,7 +35,7 @@ export function WeatherVisual() {
               km {kms[i]}
             </span>
           </div>
-        </motion.div>
+        </div>
       ))}
     </div>
   );
@@ -65,10 +45,8 @@ export function ElevationVisual() {
   const tv = useTranslations('Landing.visuals');
   return (
     <div className="group relative h-32 w-full p-2">
-      <motion.div
-        animate={{ backgroundPosition: ['0px 0px', '20px 20px'] }}
-        transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-        className="absolute inset-0 bg-[linear-gradient(to_right,#3b82f6_1px,transparent_1px),linear-gradient(to_bottom,#3b82f6_1px,transparent_1px)] [mask-image:radial-gradient(ellipse_at_center,black,transparent_80%)] bg-[size:10px_10px] opacity-20"
+      <div
+        className="absolute inset-0 bg-[linear-gradient(to_right,#3b82f6_1px,transparent_1px),linear-gradient(to_bottom,#3b82f6_1px,transparent_1px)] [mask-image:radial-gradient(ellipse_at_center,black,transparent_80%)] bg-[size:10px_10px] opacity-10"
       />
       <svg viewBox="0 0 280 80" className="relative z-10 h-full w-full overflow-visible">
         <defs>
@@ -84,52 +62,32 @@ export function ElevationVisual() {
             </feMerge>
           </filter>
         </defs>
-        <motion.path
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1 }}
+        <path
           d="M0 78 L0 50 Q40 44 70 38 Q100 32 130 24 Q155 18 175 20 Q200 22 220 30 Q245 38 280 34 L280 78Z"
           fill="url(#eg2)"
         />
-        <motion.path
-          initial={{ pathLength: 0 }}
-          whileInView={{ pathLength: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1.5, ease: 'easeOut' }}
+        <path
           d="M0 50 Q40 44 70 38"
           stroke="#22c55e"
           strokeWidth="3"
           fill="none"
           filter="url(#neon)"
         />
-        <motion.path
-          initial={{ pathLength: 0 }}
-          whileInView={{ pathLength: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1.5, delay: 0.5, ease: 'easeOut' }}
+        <path
           d="M70 38 Q100 32 130 24 Q150 19 165 19"
           stroke="#f59e0b"
           strokeWidth="3"
           fill="none"
           filter="url(#neon)"
         />
-        <motion.path
-          initial={{ pathLength: 0 }}
-          whileInView={{ pathLength: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1.5, delay: 1, ease: 'easeOut' }}
+        <path
           d="M165 19 Q170 18 175 20"
           stroke="#ef4444"
           strokeWidth="4"
           fill="none"
           filter="url(#neon)"
         />
-        <motion.path
-          initial={{ pathLength: 0 }}
-          whileInView={{ pathLength: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1.5, delay: 1.5, ease: 'easeOut' }}
+        <path
           d="M175 20 Q200 22 220 30 Q245 38 280 34"
           stroke="#22c55e"
           strokeWidth="3"
@@ -137,12 +95,7 @@ export function ElevationVisual() {
           filter="url(#neon)"
         />
 
-        <motion.g
-          initial={{ scale: 0 }}
-          whileInView={{ scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 2, type: 'spring' }}
-        >
+        <g>
           <circle cx="172" cy="18" r="4" fill="#ef4444" />
           <circle
             cx="172"
@@ -157,7 +110,7 @@ export function ElevationVisual() {
           <text x="172" y="9" textAnchor="middle" fill="white" fontSize="7" fontWeight="bold">
             {tv('elevPeak')}
           </text>
-        </motion.g>
+        </g>
       </svg>
     </div>
   );
@@ -183,26 +136,11 @@ export function HazardVisual() {
   ];
   return (
     <div className="flex h-32 flex-col justify-center gap-3 p-2">
-      {hazards.map((h, i) => (
-        <motion.div
+      {hazards.map((h) => (
+        <div
           key={h.label}
-          initial={{ x: -20, opacity: 0 }}
-          whileInView={{ x: 0, opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: i * 0.2, type: 'spring' }}
-          whileHover={{ scale: 1.02, x: 5 }}
-          className="relative overflow-hidden rounded-xl border border-slate-200 bg-white p-3 shadow-sm transition-all hover:shadow-md dark:border-white/10 dark:bg-slate-800/50"
+          className="group relative overflow-hidden rounded-xl border border-slate-200 bg-white p-3 shadow-sm transition-all hover:shadow-md dark:border-white/10 dark:bg-slate-800/50"
         >
-          {/* Animated hazard stripes background */}
-          <div className="absolute inset-0 opacity-5">
-            <div
-              className="h-full w-[200%] animate-[slide_3s_linear_infinite] bg-[repeating-linear-gradient(-45deg,transparent,transparent_10px,#000_10px,#000_20px)]"
-              style={{
-                backgroundImage: `repeating-linear-gradient(-45deg,transparent,transparent_10px,${h.color}_10px,${h.color}_20px)`,
-              }}
-            />
-          </div>
-
           <div className="relative z-10 mb-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div
@@ -226,20 +164,19 @@ export function HazardVisual() {
           </div>
           <div className="relative z-10 flex items-center gap-3">
             <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700/50">
-              <motion.div
-                initial={{ width: 0 }}
-                whileInView={{ width: `${h.bar}%` }}
-                viewport={{ once: true }}
-                transition={{ duration: 1, delay: 0.5 + i * 0.2, ease: 'easeOut' }}
-                className="h-full rounded-full shadow-[0_0_10px_currentColor]"
-                style={{ backgroundColor: h.color, color: h.color }}
+              <div
+                className="h-full rounded-full"
+                style={{
+                  width: `${h.bar}%`,
+                  backgroundColor: h.color,
+                }}
               />
             </div>
             <span className="text-[10px] font-medium text-slate-500 dark:text-white/50">
               {h.km}
             </span>
           </div>
-        </motion.div>
+        </div>
       ))}
     </div>
   );
@@ -249,11 +186,7 @@ export function EscapeVisual() {
   const tv = useTranslations('Landing.visuals');
   return (
     <div className="relative h-32 w-full overflow-hidden p-2">
-      {/* 3D Map Container */}
-      <motion.div
-        style={{ transformStyle: 'preserve-3d' }}
-        animate={{ rotateX: [20, 30, 20] }}
-        transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+      <div
         className="absolute inset-0 m-4 rounded-2xl border border-emerald-500/20 bg-gradient-to-br from-emerald-50 to-teal-100 shadow-inner dark:from-[#0d2a24] dark:to-[#113a3a]"
       >
         {/* Topographic lines */}
@@ -273,11 +206,7 @@ export function EscapeVisual() {
           viewBox="0 0 280 112"
           preserveAspectRatio="none"
         >
-          <motion.path
-            initial={{ pathLength: 0 }}
-            whileInView={{ pathLength: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 2 }}
+          <path
             d="M10 90 Q60 70 110 55 Q160 40 200 48 Q240 55 270 42"
             fill="none"
             stroke="#3b82f6"
@@ -286,73 +215,45 @@ export function EscapeVisual() {
             className="drop-shadow-[0_2px_4px_rgba(59,130,246,0.5)]"
           />
           {/* Escape paths */}
-          <motion.path
-            initial={{ pathLength: 0 }}
-            whileInView={{ pathLength: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 1, delay: 1 }}
+          <path
             d="M 110 55 L 110 20"
             stroke="#10b981"
             strokeWidth="2"
             strokeDasharray="4 4"
-            className="animate-[dash_1s_linear_infinite]"
           />
-          <motion.path
-            initial={{ pathLength: 0 }}
-            whileInView={{ pathLength: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 1, delay: 1.5 }}
+          <path
             d="M 200 48 L 220 20"
             stroke="#10b981"
             strokeWidth="2"
             strokeDasharray="4 4"
-            className="animate-[dash_1s_linear_infinite]"
           />
         </svg>
 
-        {/* Floating Pins */}
-        <motion.div
-          initial={{ y: -20, opacity: 0 }}
-          whileInView={{ y: 0, opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ type: 'spring', delay: 1.5 }}
-          className="absolute top-[10%] left-[35%] flex flex-col items-center"
-        >
-          <div className="flex h-7 w-7 items-center justify-center rounded-full border border-white bg-gradient-to-b from-emerald-400 to-emerald-600 shadow-[0_5px_15px_rgba(16,185,129,0.5)]">
+        {/* Pins */}
+        <div className="absolute top-[10%] left-[35%] flex flex-col items-center">
+          <div className="flex h-7 w-7 items-center justify-center rounded-full border border-white bg-gradient-to-b from-emerald-400 to-emerald-600 shadow-sm">
             <span className="text-xs">🏠</span>
           </div>
-          <div className="mt-1 rounded-md bg-white/90 px-1.5 py-0.5 text-[8px] font-bold text-slate-800 shadow-sm backdrop-blur-md dark:bg-black/80 dark:text-white">
+          <div className="mt-1 rounded-md bg-white/90 px-1.5 py-0.5 text-[8px] font-bold text-slate-800 dark:bg-black/80 dark:text-white">
             {tv('escapeKm1')}
           </div>
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ y: -20, opacity: 0 }}
-          whileInView={{ y: 0, opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ type: 'spring', delay: 2 }}
-          className="absolute top-[5%] left-[75%] flex flex-col items-center"
-        >
-          <div className="flex h-7 w-7 items-center justify-center rounded-full border border-white bg-gradient-to-b from-amber-400 to-amber-600 shadow-[0_5px_15px_rgba(245,158,11,0.5)]">
+        <div className="absolute top-[5%] left-[75%] flex flex-col items-center">
+          <div className="flex h-7 w-7 items-center justify-center rounded-full border border-white bg-gradient-to-b from-amber-400 to-amber-600 shadow-sm">
             <span className="text-xs">🛣️</span>
           </div>
-          <div className="mt-1 rounded-md bg-white/90 px-1.5 py-0.5 text-[8px] font-bold text-slate-800 shadow-sm backdrop-blur-md dark:bg-black/80 dark:text-white">
+          <div className="mt-1 rounded-md bg-white/90 px-1.5 py-0.5 text-[8px] font-bold text-slate-800 dark:bg-black/80 dark:text-white">
             {tv('escapeKm2')}
           </div>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
-      <motion.div
-        initial={{ scale: 0 }}
-        whileInView={{ scale: 1 }}
-        viewport={{ once: true }}
-        transition={{ delay: 2.5, type: 'spring' }}
-        className="absolute right-2 bottom-2 rounded-xl border border-emerald-500/20 bg-white/90 px-3 py-1.5 shadow-lg backdrop-blur-md dark:bg-slate-800/90"
-      >
+      <div className="absolute right-2 bottom-2 rounded-xl border border-emerald-500/20 bg-white/90 px-3 py-1.5 shadow-md backdrop-blur-md dark:bg-slate-800/90">
         <span className="text-[10px] font-black tracking-wider text-emerald-600 uppercase dark:text-emerald-400">
           {tv('escapePointsFound')}
         </span>
-      </motion.div>
+      </div>
     </div>
   );
 }
@@ -362,26 +263,14 @@ export function CoverageVisual() {
   return (
     <div className="group relative h-32 w-full overflow-hidden p-2">
       <div className="absolute inset-0 m-2 overflow-hidden rounded-2xl border border-slate-700 bg-slate-900">
-        {/* Grid pattern */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:20px_20px] opacity-20" />
-
-        {/* Radar scan effect */}
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
-          className="absolute top-1/2 left-1/2 h-[150%] w-[150%] origin-top-left -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,transparent_0deg,rgba(59,130,246,0.3)_90deg,transparent_90deg)]"
-        />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:20px_20px] opacity-10" />
 
         <svg
           className="absolute inset-0 h-full w-full"
           viewBox="0 0 280 112"
           preserveAspectRatio="none"
         >
-          <motion.path
-            initial={{ pathLength: 0 }}
-            whileInView={{ pathLength: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 2 }}
+          <path
             d="M10 80 Q70 60 120 50 Q170 40 210 55 Q240 65 270 50"
             fill="none"
             stroke="#4b5563"
@@ -390,41 +279,15 @@ export function CoverageVisual() {
           />
         </svg>
 
-        {/* Coverage heatmaps */}
-        <motion.div
-          initial={{ scale: 0, opacity: 0 }}
-          whileInView={{ scale: 1, opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1, delay: 1 }}
-          className="absolute top-[30%] left-[35%] h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full bg-red-500/30 mix-blend-screen blur-md"
-        />
-        <motion.div
-          animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="absolute top-[30%] left-[35%] h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-red-500 shadow-[0_0_10px_red]"
-        />
+        {/* Static heatmaps */}
+        <div className="absolute top-[30%] left-[35%] h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full bg-red-500/20 mix-blend-screen blur-md" />
+        <div className="absolute top-[30%] left-[35%] h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-red-500" />
 
-        <motion.div
-          initial={{ scale: 0, opacity: 0 }}
-          whileInView={{ scale: 1, opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1, delay: 1.5 }}
-          className="absolute top-[40%] left-[70%] h-20 w-20 -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-500/30 mix-blend-screen blur-md"
-        />
-        <motion.div
-          animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
-          transition={{ duration: 2.5, repeat: Infinity, delay: 0.5 }}
-          className="absolute top-[40%] left-[70%] h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-500 shadow-[0_0_10px_blue]"
-        />
+        <div className="absolute top-[40%] left-[70%] h-20 w-20 -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-500/20 mix-blend-screen blur-md" />
+        <div className="absolute top-[40%] left-[70%] h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-500" />
       </div>
 
-      <motion.div
-        initial={{ x: 20, opacity: 0 }}
-        whileInView={{ x: 0, opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ delay: 2, type: 'spring' }}
-        className="absolute top-4 right-4 flex items-center gap-1.5 rounded-lg border border-white/10 bg-black/80 px-2 py-1 backdrop-blur-md"
-      >
+      <div className="absolute top-4 right-4 flex items-center gap-1.5 rounded-lg border border-white/10 bg-black/80 px-2 py-1 backdrop-blur-md">
         <span className="relative flex h-2 w-2">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75"></span>
           <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500"></span>
@@ -432,7 +295,7 @@ export function CoverageVisual() {
         <span className="text-[9px] font-bold tracking-widest text-white uppercase">
           {tv('coverageZones')}
         </span>
-      </motion.div>
+      </div>
     </div>
   );
 }
@@ -454,35 +317,21 @@ export function WindowVisual() {
         <Zap className="h-3 w-3 text-amber-500" />
       </div>
 
-      {windows.map((w, i) => (
-        <motion.div
-          key={w.time}
-          initial={{ x: 20, opacity: 0 }}
-          whileInView={{ x: 0, opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: i * 0.1, type: 'spring' }}
-          className="group flex items-center gap-3"
-        >
+      {windows.map((w) => (
+        <div key={w.time} className="group flex items-center gap-3">
           <span className="w-10 text-[10px] font-medium text-slate-600 dark:text-white/60">
             {w.time}
           </span>
-          <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-slate-100 shadow-inner dark:bg-slate-800/80">
-            <motion.div
-              initial={{ width: 0 }}
-              whileInView={{ width: `${w.score}%` }}
-              viewport={{ once: true }}
-              transition={{ duration: 1, delay: 0.5 + i * 0.1, ease: 'easeOut' }}
+          <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800/80">
+            <div
               className="relative h-full rounded-full"
               style={{
+                width: `${w.score}%`,
                 background: w.good
                   ? 'linear-gradient(90deg, #22c55e, #4ade80)'
                   : 'linear-gradient(90deg, #ef4444, #f87171)',
-                boxShadow: `0 0 10px ${w.good ? 'rgba(34,197,94,0.5)' : 'rgba(239,68,68,0.5)'}`,
               }}
-            >
-              {/* Highlight shine */}
-              <div className="absolute top-0 right-0 left-0 h-[1px] bg-white/30" />
-            </motion.div>
+            />
           </div>
           <span
             className="w-8 text-right text-[11px] font-black"
@@ -490,7 +339,7 @@ export function WindowVisual() {
           >
             {w.score}
           </span>
-        </motion.div>
+        </div>
       ))}
     </div>
   );

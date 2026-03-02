@@ -6,7 +6,7 @@
 @theme inline {
     --color-background: var(--background);
     --color-foreground: var(--foreground);
-    --font-sans: 'Inter', var(--font-sans); /* Sugerencia de tipografía integrada */
+    --font-sans: 'Inter', var(--font-sans);
     --font-heading: 'Plus Jakarta Sans', var(--font-heading);
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
@@ -41,47 +41,46 @@
     --radius-md: calc(var(--radius) - 2px);
     --radius-lg: var(--radius);
     --radius-xl: calc(var(--radius) + 4px);
+
+    @keyframes fade-in-up {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    --animate-fade-in-up: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 :root {
-    --radius: 0.75rem; /* Un poco más redondo para interfaces amigables (12px) */
-
-    /* LIGH MODE: Grises con un ligero tono azul (hue 260) y Primary Azul Vibrante */
+    --radius: 0.75rem;
     --background: oklch(0.99 0.005 260);
     --foreground: oklch(0.15 0.02 260);
-
     --card: oklch(1 0 0);
     --card-foreground: oklch(0.15 0.02 260);
-
     --popover: oklch(1 0 0);
     --popover-foreground: oklch(0.15 0.02 260);
-
-    /* El "Tech Blue" de Zustrack */
     --primary: oklch(0.55 0.22 260);
     --primary-foreground: oklch(0.98 0 0);
-
     --secondary: oklch(0.95 0.01 260);
     --secondary-foreground: oklch(0.25 0.02 260);
-
     --muted: oklch(0.96 0.01 260);
     --muted-foreground: oklch(0.55 0.02 260);
-
     --accent: oklch(0.95 0.01 260);
     --accent-foreground: oklch(0.15 0.02 260);
-
-    --destructive: oklch(0.6 0.2 25); /* Un rojo un poco más vibrante/alerta */
-
+    --destructive: oklch(0.6 0.2 25);
     --border: oklch(0.92 0.01 260);
     --input: oklch(0.92 0.01 260);
-    --ring: oklch(0.55 0.22 260); /* El anillo de focus es de tu azul primario */
-
-    /* Charts de Montaña: Naranja (Ruta), Verde (Naturaleza), Azul, Rojo, Amarillo */
-    --chart-1: oklch(0.65 0.2 40);  /* Naranja Track */
-    --chart-2: oklch(0.7 0.15 160); /* Verde Bosque */
-    --chart-3: oklch(0.55 0.22 260);/* Azul Brand */
-    --chart-4: oklch(0.6 0.2 25);   /* Rojo Alerta */
-    --chart-5: oklch(0.8 0.15 90);  /* Amarillo Sol */
-
+    --ring: oklch(0.55 0.22 260);
+    --chart-1: oklch(0.65 0.2 40);
+    --chart-2: oklch(0.7 0.15 160);
+    --chart-3: oklch(0.55 0.22 260);
+    --chart-4: oklch(0.6 0.2 25);
+    --chart-5: oklch(0.8 0.15 90);
     --sidebar: oklch(0.98 0.005 260);
     --sidebar-foreground: oklch(0.15 0.02 260);
     --sidebar-primary: oklch(0.55 0.22 260);
@@ -93,42 +92,30 @@
 }
 
 .dark {
-    /* DARK MODE: Fondo azul oscuro profundo ("Slate"), no negro puro */
     --background: oklch(0.15 0.02 260);
     --foreground: oklch(0.98 0.005 260);
-
-    --card: oklch(0.18 0.02 260); /* Un poco más claro que el fondo para que floten */
+    --card: oklch(0.18 0.02 260);
     --card-foreground: oklch(0.98 0.005 260);
-
     --popover: oklch(0.18 0.02 260);
     --popover-foreground: oklch(0.98 0.005 260);
-
-    /* Azul un poco más claro/luminoso para que contraste bien en oscuro */
     --primary: oklch(0.60 0.22 260);
     --primary-foreground: oklch(0.10 0.02 260);
-
     --secondary: oklch(0.22 0.02 260);
     --secondary-foreground: oklch(0.98 0.005 260);
-
     --muted: oklch(0.20 0.02 260);
     --muted-foreground: oklch(0.65 0.02 260);
-
     --accent: oklch(0.22 0.02 260);
     --accent-foreground: oklch(0.98 0.005 260);
-
     --destructive: oklch(0.6 0.2 25);
-
     --border: oklch(0.25 0.02 260);
     --input: oklch(0.25 0.02 260);
     --ring: oklch(0.60 0.22 260);
-
     --chart-1: oklch(0.65 0.2 40);
     --chart-2: oklch(0.7 0.15 160);
     --chart-3: oklch(0.60 0.22 260);
     --chart-4: oklch(0.6 0.2 25);
     --chart-5: oklch(0.8 0.15 90);
-
-    --sidebar: oklch(0.13 0.02 260); /* Sidebar un tono más oscuro que el fondo general */
+    --sidebar: oklch(0.13 0.02 260);
     --sidebar-foreground: oklch(0.98 0.005 260);
     --sidebar-primary: oklch(0.60 0.22 260);
     --sidebar-primary-foreground: oklch(0.10 0.02 260);
@@ -143,14 +130,13 @@
         @apply border-border outline-ring/50;
     }
     body {
-        /* bg-muted/30 se usaba a veces para dar contraste, con esta paleta ya tienes contraste nativo */
         @apply bg-background text-foreground;
     }
 }
 
 @layer utilities {
     .custom-scrollbar::-webkit-scrollbar {
-        width: 6px; /* 4px es casi intocable con el ratón, 6px es más usable */
+        width: 6px;
         height: 6px;
     }
     .custom-scrollbar::-webkit-scrollbar-track {
@@ -182,7 +168,6 @@
         scrollbar-color: var(--border) transparent;
     }
     .backy {
-        /* Actualizado para usar la paleta Slate de la marca en lugar de colores quemados */
         background-image: linear-gradient(153.68deg, oklch(0.18 0.02 260) 0%, oklch(0.13 0.02 260) 100%);
     }
 }

@@ -18,7 +18,6 @@ import {
   CoverageVisual,
   WindowVisual,
 } from './feature-visuals';
-import { motion } from 'motion/react';
 
 export function Features() {
   const t = useTranslations('Landing.features');
@@ -85,40 +84,15 @@ export function Features() {
     t('extra8'),
   ];
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.5, ease: 'easeOut' as const },
-    },
-  };
-
   return (
-    <section id="features" className="relative overflow-hidden py-24 lg:py-32">
+    <section id="features" className="relative py-24 lg:py-32">
       {/* Background Decorators */}
       <div className="pointer-events-none absolute inset-y-0 right-0 -z-10 w-1/2 bg-gradient-to-l from-slate-50 to-transparent dark:from-slate-900/50" />
       <div className="absolute top-1/4 -right-64 -z-10 h-96 w-96 rounded-full bg-blue-500/5 blur-3xl dark:bg-blue-500/10" />
       <div className="absolute bottom-1/4 -left-64 -z-10 h-96 w-96 rounded-full bg-purple-500/5 blur-3xl dark:bg-purple-500/10" />
 
       <div className="relative mx-auto max-w-7xl px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
-          transition={{ duration: 0.6 }}
-          className="mb-16 flex flex-col items-center text-center md:mb-24"
-        >
+        <div className="mb-16 flex flex-col items-center text-center md:mb-24">
           <span className="mb-4 inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-sm font-medium text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
             {t('sectionLabel')}
           </span>
@@ -126,54 +100,35 @@ export function Features() {
             {t('title')}
           </h2>
           <p className="max-w-2xl text-lg text-slate-600 dark:text-slate-400">{t('subtitle')}</p>
-        </motion.div>
+        </div>
 
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: '-50px' }}
-          className="grid gap-8 md:grid-cols-2 lg:grid-cols-3"
-        >
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           {features.map((f) => (
-            <motion.div key={f.title} variants={itemVariants}>
+            <div key={f.title}>
               <FeatureCard {...f} />
-            </motion.div>
+            </div>
           ))}
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="mt-16 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-200/50 dark:border-white/10 dark:bg-slate-900/50 dark:shadow-none"
-        >
+        <div className="mt-16 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-200/50 dark:border-white/10 dark:bg-slate-900/50 dark:shadow-none">
           <div className="border-b border-slate-100 bg-slate-50/50 px-8 py-5 dark:border-white/5 dark:bg-white/2">
             <h3 className="text-sm font-bold tracking-widest text-slate-900 uppercase dark:text-white">
               {t('extrasLabel')}
             </h3>
           </div>
           <div className="grid grid-cols-2 gap-4 p-8 sm:grid-cols-3 md:grid-cols-4">
-            {extras.map((item, i) => (
-              <motion.div
-                key={item}
-                initial={{ opacity: 0, x: -10 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: i * 0.05 }}
-                className="group flex items-center gap-3"
-              >
+            {extras.map((item) => (
+              <div key={item} className="group flex items-center gap-3">
                 <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600 transition-colors group-hover:bg-blue-600 group-hover:text-white dark:bg-blue-500/20 dark:text-blue-400 dark:group-hover:bg-blue-500 dark:group-hover:text-white">
                   <CheckCircle2 className="h-4 w-4" />
                 </div>
                 <span className="text-sm font-medium text-slate-700 transition-colors group-hover:text-slate-900 dark:text-slate-300 dark:group-hover:text-white">
                   {item}
                 </span>
-              </motion.div>
+              </div>
             ))}
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
@@ -201,12 +156,7 @@ function FeatureCard({
       <div className="relative border-b border-slate-100 bg-slate-50/50 p-6 dark:border-white/5 dark:bg-black/20">
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent dark:via-white/10" />
         <div className="overflow-hidden rounded-xl shadow-sm ring-1 ring-slate-900/5 dark:shadow-none dark:ring-white/10">
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-          >
-            {visual}
-          </motion.div>
+          {visual}
         </div>
       </div>
 

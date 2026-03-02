@@ -576,9 +576,9 @@
       "rainLabel": "Lluvia"
     },
     "hero": {
-      "badge": "Análisis meteorológico de ruta · Open-Meteo API",
-      "title1": "Conoce cada kilómetro",
-      "title2": "antes de salir",
+      "badge": "Análisis meteorológico de ruta y mucho más",
+      "title1": "Analiza tu próxima ruta.",
+      "title2": "Domina el camino",
       "subtitleBefore": "Sube tu ruta GPX o importa desde Strava. zustrack analiza el tiempo, el terreno y los riesgos",
       "subtitleStrong": "punto a punto",
       "subtitleAfter": "— temperatura, viento, lluvia, pendientes, cobertura móvil y mucho más.",
