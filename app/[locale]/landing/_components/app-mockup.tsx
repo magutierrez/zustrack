@@ -4,23 +4,26 @@ import { useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  Settings2,
   Activity,
+  CloudRain,
   Filter,
   Layers,
   Navigation,
+  Settings2,
   Thermometer,
   Wind,
-  CloudRain,
 } from 'lucide-react';
 import { useInView } from 'motion/react';
-import Map, { Source, Layer, MapRef } from 'react-map-gl/maplibre';
+import Map, { Layer, MapRef, Source } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
+import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
 
 export function AppMockup() {
   const t = useTranslations('Landing.mockup');
+  const tv = useTranslations('Landing.visuals');
+  const th = useTranslations('HomePage');
   const [mounted, setMounted] = useState(false);
+  const [initialZoom, setInitialZoom] = useState(11);
   const mapRef = useRef<MapRef>(null);
   const { resolvedTheme } = useTheme();
 
@@ -30,6 +33,11 @@ export function AppMockup() {
 
   useEffect(() => {
     setMounted(true);
+    if (window.innerWidth < 768) {
+      setInitialZoom(9.5); // lower zoom on mobile to center the full route
+    } else if (window.innerWidth < 1024) {
+      setInitialZoom(10); // medium zoom on tablets
+    }
   }, []);
 
   // Load realistic route directly from JSON instead of generating it
@@ -441,7 +449,7 @@ export function AppMockup() {
               initialViewState={{
                 longitude: center.lon,
                 latitude: center.lat,
-                zoom: 11,
+                zoom: initialZoom,
                 pitch: 0, // No cinematic pitch, realistic flat view
                 bearing: 0,
               }}
