@@ -13,7 +13,6 @@ import { Session } from 'next-auth';
 
 import { Header } from '@/app/_components/header';
 import { ShareButton } from '@/app/_components/share-button';
-import { EmptyState } from '@/app/_components/empty-state';
 import { ActivityConfigSection } from '@/app/_components/activity-config-section';
 import { RouteLoadingOverlay } from '@/app/_components/route-loading-overlay';
 import { AnalysisResults } from '@/app/_components/analysis-results';
@@ -104,7 +103,7 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
             {isLoading && !gpxData ? (
               <AnalysisSkeleton />
             ) : !gpxData ? (
-              <EmptyState />
+              <AnalysisSkeleton />
             ) : isRouteInfoLoading ? (
               <AnalysisSkeleton />
             ) : (
@@ -125,10 +124,7 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
                     onAnalyzeBestWindow={handleSelectAndAnalyze}
                   />
                 ) : (
-                  <div className="border-border bg-card/50 text-muted-foreground flex h-60 flex-col items-center justify-center rounded-lg border border-dashed p-6 text-center">
-                    <h2 className="mb-2 text-xl font-semibold">{tHomePage('analyzeFirst')}</h2>
-                    <p className="max-w-md text-sm">{tHomePage('clickAnalyze')}</p>
-                  </div>
+                  <AnalysisSkeleton />
                 )}
               </div>
             )}
