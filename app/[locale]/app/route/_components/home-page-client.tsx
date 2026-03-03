@@ -124,7 +124,10 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
                     onAnalyzeBestWindow={handleSelectAndAnalyze}
                   />
                 ) : (
-                  <AnalysisSkeleton />
+                  <div className="border-border bg-card/50 text-muted-foreground flex h-60 flex-col items-center justify-center rounded-lg border border-dashed p-6 text-center">
+                    <h2 className="mb-2 text-xl font-semibold">{tHomePage('analyzeFirst')}</h2>
+                    <p className="max-w-md text-sm">{tHomePage('clickAnalyze')}</p>
+                  </div>
                 )}
               </div>
             )}
