@@ -1,5 +1,3 @@
-'use client';
-
 // Prerendered per locale (generateStaticParams in layout). ISR: regenerate every hour.
 export const revalidate = 3600;
 
