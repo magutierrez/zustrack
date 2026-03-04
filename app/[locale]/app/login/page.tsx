@@ -1,3 +1,7 @@
+// OAuth provider availability is determined by env vars baked in at build time.
+// ISR 1 h is conservative but safe for a login page.
+export const revalidate = 3600;
+
 import { LoginPageClient } from './_components/login-page-client';
 
 function getAvailableProviders() {

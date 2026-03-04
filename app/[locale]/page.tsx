@@ -1,5 +1,8 @@
 'use client';
 
+// Prerendered per locale (generateStaticParams in layout). ISR: regenerate every hour.
+export const revalidate = 3600;
+
 import { Nav } from './landing/_components/nav';
 import { Hero } from './landing/_components/hero';
 import { Features } from './landing/_components/features';

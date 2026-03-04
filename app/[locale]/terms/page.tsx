@@ -1,3 +1,6 @@
+// Static: legal text only changes on deploy. Cache forever (until next build).
+export const revalidate = false;
+
 import { useTranslations } from 'next-intl';
 import { Mountain, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
