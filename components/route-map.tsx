@@ -73,7 +73,6 @@ export default function RouteMap({
   const tMap = useTranslations('HomePage');
   const isMobile = useIsMobile();
   const mapRef = useRef<MapRef>(null);
-  const lastMapHoverRef = useRef<number>(0);
 
   // Read all state from the store
   const gpxData = useRouteStore((s) => s.gpxData);
@@ -644,7 +643,10 @@ export default function RouteMap({
         selectedRange={selectedRange}
         activeFilter={activeFilter}
         onStartPlayer={() => setIsPlayerActive(true)}
-        onClearSelection={clearSelection}
+        onClearSelection={() => {
+          clearSelection();
+          resetToFullRouteView();
+        }}
       />
 
       {/* Mobile: popup fixed at top */}
