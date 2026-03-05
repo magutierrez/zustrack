@@ -38,7 +38,7 @@ export function Header({ session, mobileMenuContent, extraActions }: HeaderProps
 
   const userInitial = session?.user?.name
     ? session.user.name.charAt(0).toUpperCase()
-    : (session?.user?.email || session?.user?.id || 'U').charAt(0).toUpperCase();
+    : (session?.user?.email || session?.user?.id || '').charAt(0).toUpperCase();
 
   return (
     <header className="border-border bg-background sticky top-0 z-40 flex h-14 items-center justify-between border-b px-4 lg:px-6">
@@ -75,36 +75,30 @@ export function Header({ session, mobileMenuContent, extraActions }: HeaderProps
           </Sheet>
         )}
 
-        {session?.user ? (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-                <Avatar className="h-9 w-9">
-                  <AvatarImage
-                    src={session.user.image || undefined}
-                    alt={session.user.name || 'User'}
-                  />
-                  <AvatarFallback>{userInitial}</AvatarFallback>
-                </Avatar>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
-              <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
-                <Settings className="mr-2 h-4 w-4" />
-                <span>{t('settings')}</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => signOut({ redirectTo: '/app/login' })}>
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>{t('logout')}</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        ) : (
-          <Button asChild>
-            <Link href="/login">{t('loginDescription')}</Link>
-          </Button>
-        )}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+              <Avatar className="h-9 w-9">
+                <AvatarImage
+                  src={session?.user?.image || undefined}
+                  alt={session?.user?.name || 'User'}
+                />
+                <AvatarFallback>{userInitial}</AvatarFallback>
+              </Avatar>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56" align="end" forceMount>
+            <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
+              <Settings className="mr-2 h-4 w-4" />
+              <span>{t('settings')}</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => signOut({ redirectTo: '/app/login' })}>
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>{t('logout')}</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <SettingsModal isOpen={isSettingsOpen} onOpenChange={setIsSettingsOpen} />

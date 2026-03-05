@@ -28,7 +28,7 @@ export function UserMenu({ userName, userEmail, userImage }: UserMenuProps) {
 
   const userInitial = userName
     ? userName.charAt(0).toUpperCase()
-    : userEmail?.charAt(0).toUpperCase() || 'U';
+    : userEmail?.charAt(0).toUpperCase() || '';
 
   return (
     <>

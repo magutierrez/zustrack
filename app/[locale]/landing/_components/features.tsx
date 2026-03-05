@@ -88,8 +88,6 @@ export function Features() {
     <section id="features" className="relative py-24 lg:py-32">
       {/* Background Decorators */}
       <div className="pointer-events-none absolute inset-y-0 right-0 -z-10 w-1/2 bg-gradient-to-l from-slate-50 to-transparent dark:from-slate-900/50" />
-      <div className="absolute top-1/4 -right-64 -z-10 h-96 w-96 rounded-full bg-blue-500/5 blur-3xl dark:bg-blue-500/10" />
-      <div className="absolute bottom-1/4 -left-64 -z-10 h-96 w-96 rounded-full bg-purple-500/5 blur-3xl dark:bg-purple-500/10" />
 
       <div className="relative mx-auto max-w-7xl px-6">
         <div className="mb-16 flex flex-col items-center text-center md:mb-24">
