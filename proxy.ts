@@ -14,9 +14,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // Detect locale segment at the start of the path
-  const locale = routing.locales.find(
-    (l) => pathname.startsWith(`/${l}/`) || pathname === `/${l}`
-  );
+  const locale = routing.locales.find((l) => pathname.startsWith(`/${l}/`) || pathname === `/${l}`);
 
   // No locale prefix yet → let intl middleware redirect to add it (e.g. / → /en/)
   // Auth will be checked on the next request once the locale is in the URL

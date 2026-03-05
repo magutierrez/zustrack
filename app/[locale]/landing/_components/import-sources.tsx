@@ -1,10 +1,8 @@
-'use client';
-
-import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 import { Upload, Activity, Globe, CheckCircle2, Bike, Footprints } from 'lucide-react';
 
-export function ImportSources() {
-  const t = useTranslations('Landing.import');
+export async function ImportSources() {
+  const t = await getTranslations('Landing.import');
 
   const sources = [
     {

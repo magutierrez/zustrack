@@ -1,0 +1,173 @@
+# zustrack
+
+> Point-by-point meteorological and physical analysis for cyclists and hikers along GPX tracks.
+
+## Project
+
+Next.js 16 (App Router) + TypeScript strict mode. No backend database — all user data lives in the browser via Dexie.js (IndexedDB). Weather and terrain data are fetched on demand through API routes and discarded on page leave.
+
+## Stack
+
+- **Framework**: Next.js 16 App Router, React 19
+- **Language**: TypeScript strict (no `any` in new code)
+- **State**: Zustand (`store/route-store.ts`) — single global store, no prop drilling
+- **Styling**: Tailwind CSS v4 + Shadcn/UI. Use `cn()` from `lib/utils.ts` for class merging
+- **Map**: MapLibre GL via react-map-gl (SSR disabled, always dynamic import)
+- **Charts**: D3.js v7 for the main elevation profile; Recharts for the mobile chart
+- **i18n**: next-intl v4 — locales `en`, `es`, `ca`. All UI strings via `useTranslations()` (client) or `getTranslations()` (server). Keys in `messages/{locale}.json`
+- **Auth**: NextAuth v5 — Strava, Google, Facebook, Twitter (`auth.ts`)
+- **DB**: Dexie.js (`lib/db.ts`) — `saved_routes` table keyed by `user_email`. Client-only, never import in Server Components or API routes
+- **Routing**: All pages locale-scoped under `app/[locale]/`. Middleware in `proxy.ts`
+
+## Data Flow
+
+1. User uploads GPX or imports from Strava / Wikiloc
+2. `lib/gpx-parser.ts` parses and samples route points client-side → `GPXData`
+3. `POST /api/weather` fetches meteorological data (Open-Meteo primary → WeatherAPI → Tomorrow.io fallback) per sampled point
+4. `POST /api/route-info` queries Overpass OSM for escape points / infrastructure and OpenCellID for mobile coverage
+5. `lib/weather-enrichment.ts` merges results into `RouteWeatherPoint[]`
+6. Store is populated; map + timeline + elevation chart render reactively
+
+## Key Types (`lib/types.ts`)
+
+```ts
+RoutePoint          // lat, lon, ele?, distanceFromStart (km), estimatedTime?
+WeatherData         // temperature, weatherCode, windSpeed, precipitation, ...
+RouteWeatherPoint   // point + weather + windEffect + pathType + surface + mudRisk + snowCondition + ...
+GPXData             // points[], name, totalDistance, totalElevationGain, totalElevationLoss
+RouteConfig         // date, time, speed
+ViabilityResult     // score, rating ('go'|'caution'|'danger'), threats[]
+MudRiskLevel        // 'none'|'low'|'medium'|'high'
+SnowCondition       // 'none'|'boots'|'snowshoes'|'crampons'|'mountaineering'
+```
+
+All new interfaces go in `lib/types.ts`.
+
+## Zustand Store (`store/route-store.ts`)
+
+Single store, read directly in components — no prop drilling.
+
+Key state fields:
+| Field | Set by | Read by |
+|---|---|---|
+| `weatherPoints` | `useRouteAnalysis` | map, timeline, elevation chart |
+| `elevationData` | `useRouteAnalysis` | elevation chart |
+| `gpxData` | `useRouteAnalysis` | map, player |
+| `exactSelectedPoint` | map hover | elevation chart (reference line) |
+| `chartHoverPoint` | chart/hazard hover | map (cursor dot) |
+| `selectedPointIndex` | map click / chart click | map (popup) |
+| `selectedRange` | elevation chart drag | map (highlight), player |
+| `activeFilter` | weather timeline | map (colour filter) |
+| `focusPoint` | escape point click | map (`flyTo`) |
+| `mobileHazardRange` | hazard tap (mobile) | mobile elevation chart |
+
+Key actions: `setChartHoverPoint`, `setExactSelectedPoint`, `setSelectedPointIndex`, `setSelectedRange`, `setFocusPoint`, `clearSelection`, `reset`.
+
+## API Routes
+
+| Route | Method | Purpose |
+|---|---|---|
+| `/api/weather` | POST | Weather per route point. Body: `{ points, date, time, speed }`. Returns `RouteWeatherPoint[]` |
+| `/api/weather/best-window` | POST | Scan 7 days to find best departure window |
+| `/api/route-info` | POST | OSM terrain + escape points + mobile coverage. Body: `{ points }` |
+| `/api/strava/activities` | GET | List authenticated user's Strava activities |
+| `/api/strava/routes` | GET | List authenticated user's Strava routes |
+| `/api/strava/gpx` | GET | Download GPX from Strava activity (`?id=`) |
+| `/api/wikiloc` | GET | Import route from Wikiloc (`?url=`) |
+| `/api/auth/[...nextauth]` | * | NextAuth handler |
+
+## Key Libraries (`lib/`)
+
+| File | Purpose |
+|---|---|
+| `types.ts` | All TypeScript interfaces |
+| `gpx-parser.ts` | GPX parsing, bearing, point sampling, polyline/TWKB decode |
+| `weather-providers.ts` | Strategy pattern: `WeatherProvider` interface. Fallback chain: Open-Meteo → WeatherAPI → Tomorrow.io |
+| `weather-enrichment.ts` | `enrichWeatherPoint()`, `calculateRouteTimings()` |
+| `geometry.ts` | Haversine distance, slope, bearing, `interpolatePointOnRoute()`, `projectOntoSegment()` |
+| `utils.ts` | `cn()`, IBP index, Naismith rule, solar position/intensity, `formatElevation()`, `formatDistance()` |
+| `mud-risk.ts` | Mud risk score from surface + precipitation + evaporation + slope |
+| `snowshoe.ts` | Snow equipment recommendation |
+| `viability-score.ts` | Composite Go/Caution/Danger viability rating |
+| `slope-colors.ts` | `getSlopeColorHex(slope)` — colour scale for gradient |
+| `route-colors.ts` | Map route colour by active filter |
+| `route-sharing.ts` | `parseHashPayload()`, `decodeSharedRoute()` for URL-based route sharing |
+| `fetch-utils.ts` | `fetchWithRetry()` |
+| `db.ts` | Dexie.js client. **Never import in Server Components or API routes** |
+| `tkwb-parser.ts` | Full GeoJSON TWKB encode/decode (Wikiloc API) |
+| `twkb-parser.ts` | Simple TWKB decoder (gpx-parser internal use) |
+
+## Key Hooks (`hooks/`)
+
+| File | Purpose |
+|---|---|
+| `use-route-analysis.ts` | Orchestrator: parse → route-info → weather → enrich → store. Entry point for all analysis |
+| `use-elevation-chart.ts` | Chart data (slope smoothing, colour), zoom range, hover sync with map |
+| `use-route-hazards.ts` | Computes hazard segments from `weatherPoints` |
+| `use-advice-metrics.ts` | Memoized viability, mud risk, snow, physiology for route-advice panel |
+| `use-analysis-metrics.ts` | IBP, Naismith, hydration metrics |
+| `use-settings.ts` | Unit system (metric/imperial) + wind unit from `SettingsContext` |
+| `use-saved-routes.ts` | Dexie.js CRUD for saved routes |
+| `use-shared-route-loader.ts` | Hash URL + IndexedDB route loading |
+| `use-route-segments.ts` | Segments grouped by path type or surface |
+| `use-weather-summary.ts` | Aggregated weather summary for the route |
+| `use-activity-config.ts` | Smart speed defaults based on activity type and terrain |
+
+## Key Components
+
+| Component | Purpose |
+|---|---|
+| `components/route-map.tsx` | MapLibre GL wrapper. Map hover → `exactSelectedPoint`. Map click → `selectedPointIndex` → popup |
+| `components/route-map/map-popup.tsx` | Weather popup rendered at lat/lon on map |
+| `components/route-map/route-layers.tsx` | MapLibre layers: route line, highlight, range, markers |
+| `components/weather-timeline.tsx` | Horizontal scrollable weather point cards |
+| `components/weather-timeline/elevation-profile.tsx` | D3.js elevation chart with drag-select zoom, resize handles, slope colours |
+| `components/mobile-elevation-chart.tsx` | Recharts-based elevation chart for mobile bottom bar |
+| `components/route-advice.tsx` | Main analysis output panel (viability, mud, snow, physiology) |
+| `components/route-hazards.tsx` | Hazard segment list with map focus |
+| `components/best-departure-finder.tsx` | 7-day optimal weather window UI |
+| `components/gpx-upload.tsx` | Drag-and-drop GPX file upload |
+| `components/strava-import.tsx` | Browse and import Strava activities |
+| `components/wikiloc-import.tsx` | Import from Wikiloc URL |
+
+## Map ↔ Chart Synchronisation
+
+- **Map hover → chart**: map sets `exactSelectedPoint` → elevation chart draws dashed reference line at that distance
+- **Chart hover → map**: chart sets `chartHoverPoint` → map renders a dot at that coordinate
+- **Chart click → map popup**: chart sets `selectedPointIndex` → map's `popupInfo` memo resolves to `weatherPoints[index]` → `MapPopup` renders at that lat/lon
+- **Chart drag-select**: sets `selectedRange` → map highlights that slice of the route; elevation chart zooms and scrolls to the selection
+
+## Adding Features
+
+**New weather provider**: implement `WeatherProvider` in `lib/weather-providers.ts`, add to the fallback chain in `app/api/weather/route.ts`.
+
+**New risk engine**: create `lib/<feature>.ts`, call it from the enrichment pipeline in `hooks/use-route-analysis.ts`, add the result field to `RouteWeatherPoint` in `lib/types.ts`.
+
+**New UI string**: add to all three `messages/{en,es,ca}.json`. Use `useTranslations('Namespace')` in the component.
+
+**New map layer**: add to `components/route-map/route-layers.tsx` and toggle state in the store.
+
+## Environment Variables
+
+```
+AUTH_SECRET
+AUTH_STRAVA_ID / AUTH_STRAVA_SECRET
+AUTH_GOOGLE_ID / AUTH_GOOGLE_SECRET
+AUTH_FACEBOOK_ID / AUTH_FACEBOOK_SECRET
+AUTH_TWITTER_ID / AUTH_TWITTER_SECRET
+WEATHERAPI_API_KEY
+TOMORROW_IO_API_KEY
+NEXT_PUBLIC_MAPTILER_KEY
+OPENCELLID_API_KEY   # optional
+```
+
+## Commands
+
+```bash
+npm run dev     # HTTPS dev server (self-signed) with Turbo
+npm run build   # Production build
+npm run tsc     # Type-check only (no emit) — use instead of lint
+npm run format  # Prettier write
+```
+
+No test runner. Test fixtures in `/testing/`.

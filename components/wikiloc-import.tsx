@@ -59,7 +59,7 @@ export function WikilocImport({ onRouteLoaded }: WikilocImportProps) {
       <div className="flex flex-col gap-3">
         <Label className="text-muted-foreground text-sm font-semibold">{t('wikilocTitle')}</Label>
         <p className="text-muted-foreground text-xs">{t('wikilocDescription')}</p>
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 lg:flex-row">
           <div className="relative flex-1">
             <Search className="text-muted-foreground absolute top-2.5 left-3 h-4 w-4" />
             <Input
@@ -75,7 +75,12 @@ export function WikilocImport({ onRouteLoaded }: WikilocImportProps) {
               }}
             />
           </div>
-          <Button onClick={handleImport} disabled={isLoading || !url.trim()} className="shrink-0">
+          <Button
+            onClick={handleImport}
+            disabled={isLoading || !url.trim()}
+            className="shrink-0"
+            variant="outline"
+          >
             {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : t('importWikiloc')}
           </Button>
         </div>

@@ -79,7 +79,7 @@ export function SavedRoutesList({ onLoadRoute, selectedRouteId }: SavedRoutesLis
       </div>
 
       <ScrollArea className="h-[350px]">
-        <div className="flex w-full flex-col gap-2 pr-4">
+        <div className="flex w-full flex-col gap-2 lg:pr-4">
           {routes.map((route) => (
             <div
               key={route.id}
@@ -125,7 +125,7 @@ export function SavedRoutesList({ onLoadRoute, selectedRouteId }: SavedRoutesLis
                   </div>
                 </div>
               ) : (
-                <div className="flex w-full items-start justify-between gap-3">
+                <div className="flex w-full flex-col items-start justify-between gap-3 lg:flex-row">
                   <button
                     className="block min-w-0 flex-1 text-left"
                     onClick={() => onLoadRoute(route.gpx_content, route.name, route.id)}
@@ -166,7 +166,7 @@ export function SavedRoutesList({ onLoadRoute, selectedRouteId }: SavedRoutesLis
                     </div>
                   </button>
 
-                  <div className="flex shrink-0 items-center gap-3">
+                  <div className="flex w-full shrink-0 items-center justify-between gap-3 lg:w-auto lg:justify-normal">
                     {(() => {
                       try {
                         let points = route.elevation_points;
@@ -207,7 +207,7 @@ export function SavedRoutesList({ onLoadRoute, selectedRouteId }: SavedRoutesLis
                             </svg>
                           </div>
                         );
-                      } catch (e) {
+                      } catch (_) {
                         return null;
                       }
                     })()}

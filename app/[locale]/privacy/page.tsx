@@ -1,11 +1,16 @@
-import { useTranslations } from 'next-intl';
-import { Mountain, ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+export const revalidate = false;
 
-export default function PrivacyPage() {
-  const t = useTranslations('Privacy');
+import { ArrowLeft, Mountain } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Link } from '@/i18n/navigation';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
+
+export default async function PrivacyPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
+  const t = await getTranslations({ locale, namespace: 'Privacy' });
 
   return (
     <div className="bg-background flex min-h-screen flex-col items-center p-4 md:p-8">

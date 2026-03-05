@@ -16,18 +16,29 @@ declare module 'next-auth' {
 }
 
 async function refreshStravaToken(refreshToken: string) {
-  const res = await fetch('https://www.strava.com/oauth/token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      client_id: process.env.AUTH_STRAVA_ID,
-      client_secret: process.env.AUTH_STRAVA_SECRET,
-      grant_type: 'refresh_token',
-      refresh_token: refreshToken,
-    }),
+  const body = new URLSearchParams({
+    client_id: process.env.AUTH_STRAVA_ID ?? '',
+    client_secret: process.env.AUTH_STRAVA_SECRET ?? '',
+    grant_type: 'refresh_token',
+    refresh_token: refreshToken,
   });
 
-  if (!res.ok) throw new Error(`Strava token refresh failed: ${res.status}`);
+  const res = await fetch('https://www.strava.com/oauth/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: body.toString(),
+    cache: 'no-store',
+  });
+
+  if (!res.ok) {
+    let detail = '';
+    try {
+      detail = await res.text();
+    } catch {
+      /* empty */
+    }
+    throw new Error(`Strava token refresh failed: ${res.status} — ${detail}`);
+  }
   return res.json() as Promise<{
     access_token: string;
     refresh_token: string;

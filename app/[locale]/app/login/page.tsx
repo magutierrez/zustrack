@@ -1,4 +1,7 @@
+import { setRequestLocale } from 'next-intl/server';
 import { LoginPageClient } from './_components/login-page-client';
+
+export const revalidate = false;
 
 function getAvailableProviders() {
   return {
@@ -9,7 +12,10 @@ function getAvailableProviders() {
   };
 }
 
-export default function LoginPage() {
+export default async function LoginPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
   const providers = getAvailableProviders();
   return <LoginPageClient providers={providers} />;
 }

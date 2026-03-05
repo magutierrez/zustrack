@@ -1,10 +1,8 @@
-'use client';
-
-import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 import { CloudRain, Map, Signal, Activity, Sun, Droplets } from 'lucide-react';
 
-export function DataSources() {
-  const t = useTranslations('Landing.dataSources');
+export async function DataSources() {
+  const t = await getTranslations('Landing.dataSources');
 
   const sources = [
     {
