@@ -1,4 +1,3 @@
-// Static: legal text only changes on deploy. Cache forever (until next build).
 export const revalidate = false;
 
 import { ArrowLeft, Mountain } from 'lucide-react';

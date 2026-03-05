@@ -1,8 +1,8 @@
 'use client';
 
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { LogoIcon } from '@/app/_components/logo-icon';
+import { Link } from '@/i18n/navigation';
 
 export function Footer() {
   const t = useTranslations('Landing.footer');
