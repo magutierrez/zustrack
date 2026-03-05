@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
+export const revalidate = false;
 export const dynamic = 'force-static';
 
 export default async function TermsPage({ params }: { params: Promise<{ locale: string }> }) {
