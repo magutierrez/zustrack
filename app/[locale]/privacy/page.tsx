@@ -1,10 +1,38 @@
 export const revalidate = false;
 
+import type { Metadata } from 'next';
 import { ArrowLeft, Mountain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from '@/i18n/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { routing } from '@/i18n/routing';
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://www.zustrack.com';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: 'Privacy' });
+  const canonicalUrl = `${BASE_URL}/${locale}/privacy`;
+  const alternateLanguages = Object.fromEntries(
+    routing.locales.map((lang) => [lang, `${BASE_URL}/${lang}/privacy`]),
+  );
+  return {
+    title: t('title'),
+    alternates: {
+      canonical: canonicalUrl,
+      languages: {
+        ...alternateLanguages,
+        'x-default': `${BASE_URL}/en/privacy`,
+      },
+    },
+  };
+}
 
 export default async function PrivacyPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;

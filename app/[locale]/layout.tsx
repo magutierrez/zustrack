@@ -57,6 +57,22 @@ const META = {
       'predicció ruta gpx, temps ciclistes, meteorologia senderisme, analitzador gpx, planificació ruta, importar strava, forecast outdoor, condicions trail, vent ciclisme',
     ogLocale: 'ca_ES',
   },
+  fr: {
+    title: 'zustrack — Analysez votre prochain itinéraire. Maîtrisez la route',
+    description:
+      'Importez votre itinéraire GPX ou depuis Strava. Prévisions météo point par point, profil altimétrique, analyse du terrain, détection des risques et couverture mobile pour le cyclisme et la randonnée.',
+    keywords:
+      'prévisions météo gpx, météo route cyclisme, météo randonnée, planificateur itinéraire, analyseur gpx, import strava météo, prévisions outdoor, conditions trail, vent cyclisme',
+    ogLocale: 'fr_FR',
+  },
+  it: {
+    title: 'zustrack — Analizza il tuo prossimo percorso. Padroneggia la strada',
+    description:
+      'Carica il tuo percorso GPX o importa da Strava. Previsioni meteo punto per punto, profilo altimetrico, analisi del terreno, rilevamento rischi e copertura mobile per ciclismo ed escursionismo.',
+    keywords:
+      'previsioni meteo gpx, meteo percorso ciclismo, meteo escursionismo, pianificatore percorso, analizzatore gpx, import strava meteo, previsioni outdoor, condizioni trail, vento ciclismo',
+    ogLocale: 'it_IT',
+  },
 } satisfies Record<
   string,
   { title: string; description: string; keywords: string; ogLocale: string }
