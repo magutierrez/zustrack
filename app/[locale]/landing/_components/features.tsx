@@ -1,6 +1,4 @@
-'use client';
-
-import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 import {
   CloudRain,
   Mountain,
@@ -19,8 +17,8 @@ import {
   WindowVisual,
 } from './feature-visuals';
 
-export function Features() {
-  const t = useTranslations('Landing.features');
+export async function Features() {
+  const t = await getTranslations('Landing.features');
 
   const features = [
     {

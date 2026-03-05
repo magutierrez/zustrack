@@ -1,12 +1,10 @@
-'use client';
-
 import { Link } from '@/i18n/navigation';
-import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 import { ArrowRight, ChevronRight } from 'lucide-react';
-import { AppMockup } from './app-mockup';
+import { AppMockup } from './app-mockup-loader';
 
-export function Hero() {
-  const t = useTranslations('Landing.hero');
+export async function Hero() {
+  const t = await getTranslations('Landing.hero');
 
   return (
     <section className="relative overflow-hidden pt-32 pb-24 lg:pt-48 lg:pb-32">

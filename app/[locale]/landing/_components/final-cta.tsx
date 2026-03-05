@@ -1,11 +1,9 @@
-'use client';
-
 import { Link } from '@/i18n/navigation';
-import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 import { Bike, Footprints, ArrowRight } from 'lucide-react';
 
-export function FinalCTA() {
-  const t = useTranslations('Landing.cta');
+export async function FinalCTA() {
+  const t = await getTranslations('Landing.cta');
 
   return (
     <section className="relative overflow-hidden py-32 lg:py-48">

@@ -1,11 +1,9 @@
-'use client';
-
-import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 import { LogoIcon } from '@/app/_components/logo-icon';
 import { Link } from '@/i18n/navigation';
 
-export function Footer() {
-  const t = useTranslations('Landing.footer');
+export async function Footer() {
+  const t = await getTranslations('Landing.footer');
   return (
     <footer className="border-t border-slate-200 py-10 dark:border-white/5">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 md:flex-row">

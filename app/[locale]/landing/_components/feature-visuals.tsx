@@ -1,6 +1,4 @@
-'use client';
-
-import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 import { AlertTriangle, Zap } from 'lucide-react';
 
 export function WeatherVisual() {
@@ -41,8 +39,8 @@ export function WeatherVisual() {
   );
 }
 
-export function ElevationVisual() {
-  const tv = useTranslations('Landing.visuals');
+export async function ElevationVisual() {
+  const tv = await getTranslations('Landing.visuals');
   return (
     <div className="group relative h-32 w-full p-2">
       <div
@@ -116,8 +114,8 @@ export function ElevationVisual() {
   );
 }
 
-export function HazardVisual() {
-  const tv = useTranslations('Landing.visuals');
+export async function HazardVisual() {
+  const tv = await getTranslations('Landing.visuals');
   const hazards = [
     {
       label: tv('hazard1Label'),
@@ -182,8 +180,8 @@ export function HazardVisual() {
   );
 }
 
-export function EscapeVisual() {
-  const tv = useTranslations('Landing.visuals');
+export async function EscapeVisual() {
+  const tv = await getTranslations('Landing.visuals');
   return (
     <div className="relative h-32 w-full overflow-hidden p-2">
       <div
@@ -258,8 +256,8 @@ export function EscapeVisual() {
   );
 }
 
-export function CoverageVisual() {
-  const tv = useTranslations('Landing.visuals');
+export async function CoverageVisual() {
+  const tv = await getTranslations('Landing.visuals');
   return (
     <div className="group relative h-32 w-full overflow-hidden p-2">
       <div className="absolute inset-0 m-2 overflow-hidden rounded-2xl border border-slate-700 bg-slate-900">
@@ -300,8 +298,8 @@ export function CoverageVisual() {
   );
 }
 
-export function WindowVisual() {
-  const tv = useTranslations('Landing.visuals');
+export async function WindowVisual() {
+  const tv = await getTranslations('Landing.visuals');
   const windows = [
     { time: '08:00', score: 92, good: true },
     { time: '10:00', score: 71, good: true },

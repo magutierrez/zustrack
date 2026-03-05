@@ -1,10 +1,8 @@
-'use client';
-
-import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 import { Upload, Clock, Map } from 'lucide-react';
 
-export function HowItWorks() {
-  const t = useTranslations('Landing.howItWorks');
+export async function HowItWorks() {
+  const t = await getTranslations('Landing.howItWorks');
   const steps = [
     {
       icon: <Upload className="h-6 w-6" />,
