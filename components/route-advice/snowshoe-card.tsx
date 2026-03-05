@@ -1,11 +1,12 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Snowflake } from 'lucide-react';
+import { Snowflake, MapPin } from 'lucide-react';
 import type { SnowCondition } from '@/lib/types';
 import type { SnowSegment } from '@/lib/snowshoe';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { useRouteStore } from '@/store/route-store';
 
 const SNOW_CONDITIONS: SnowCondition[] = ['boots', 'snowshoes', 'crampons', 'mountaineering'];
 
@@ -55,6 +56,7 @@ export function SnowshoeCard({
   maxSnowDepthCm,
 }: SnowshoeCardProps) {
   const t = useTranslations('Advice');
+  const setSelectedRange = useRouteStore((s) => s.setSelectedRange);
 
   const equipmentKey = `snowEquip.${overallCondition}` as Parameters<typeof t>[0];
   const adviceKey =
@@ -111,7 +113,10 @@ export function SnowshoeCard({
           {segments.length > 0 && (
             <ul className="mt-0.5 flex flex-col gap-1">
               {segments.map((seg, i) => (
-                <li key={i} className="text-muted-foreground flex items-center gap-1.5 text-xs">
+                <li
+                  key={i}
+                  className="text-muted-foreground flex flex-wrap items-center gap-1.5 text-xs"
+                >
                   <span
                     className={cn(
                       'inline-block h-2 w-2 flex-shrink-0 rounded-full',
@@ -123,6 +128,13 @@ export function SnowshoeCard({
                   </span>
                   <span>·</span>
                   {t('mudKmRange', { start: seg.startKm, end: seg.endKm })}
+                  <button
+                    onClick={() => setSelectedRange({ start: seg.startKm, end: seg.endKm })}
+                    className="text-primary hover:text-primary/80 ml-auto flex items-center gap-0.5 transition-colors"
+                  >
+                    <MapPin className="h-3 w-3" />
+                    <span>{t('viewOnMap')}</span>
+                  </button>
                 </li>
               ))}
             </ul>

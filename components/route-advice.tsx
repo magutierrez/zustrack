@@ -310,25 +310,32 @@ export function RouteAdvice({
         </Card>
       </div>
 
-      {/* Snow / Snowshoe Card — only rendered when there is meaningful snow */}
-      {hasSnow && (
-        <SnowshoeCard
-          overallCondition={overallSnowCondition}
-          segments={snowSegments}
-          activityType={activityType}
-          maxSnowDepthCm={maxSnowDepthCm}
-        />
-      )}
+      <div
+        className={cn(
+          'grid grid-cols-1 gap-3',
+          hasSnow && hasMudData && mudInputs && 'sm:grid-cols-2',
+        )}
+      >
+        {/* Snow / Snowshoe Card — only rendered when there is meaningful snow */}
+        {hasSnow && (
+          <SnowshoeCard
+            overallCondition={overallSnowCondition}
+            segments={snowSegments}
+            activityType={activityType}
+            maxSnowDepthCm={maxSnowDepthCm}
+          />
+        )}
 
-      {/* Mud Risk Card */}
-      {hasMudData && mudInputs && (
-        <MudRiskCard
-          overallRisk={overallMudRisk}
-          segments={mudSegments}
-          activityType={activityType}
-          inputs={mudInputs}
-        />
-      )}
+        {/* Mud Risk Card */}
+        {hasMudData && mudInputs && (
+          <MudRiskCard
+            overallRisk={overallMudRisk}
+            segments={mudSegments}
+            activityType={activityType}
+            inputs={mudInputs}
+          />
+        )}
+      </div>
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         {advices.map((advice, i) => (

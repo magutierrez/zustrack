@@ -168,6 +168,7 @@
     "mudNone": "Dry track expected. No significant mud risk.",
     "mudLow": "Light mud possible on unpaved sections after recent rain.",
     "mudKmRange": "Affected section: km {start}–{end}",
+    "viewOnMap": "View on map",
     "mudLevel": {
       "none": "Dry",
       "low": "Low",

@@ -168,6 +168,7 @@
     "mudNone": "Pista seca. No s'espera fang significatiu.",
     "mudLow": "Possible fang lleuger en trams sense asfaltar després de les darreres pluges.",
     "mudKmRange": "Tram afectat: km {start}–{end}",
+    "viewOnMap": "Veure al mapa",
     "mudLevel": {
       "none": "Sec",
       "low": "Baix",

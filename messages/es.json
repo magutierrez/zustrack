@@ -168,6 +168,7 @@
     "mudNone": "Pista seca. No se espera barro significativo.",
     "mudLow": "Posible barro ligero en tramos sin asfaltar tras las últimas lluvias.",
     "mudKmRange": "Tramo afectado: km {start}–{end}",
+    "viewOnMap": "Ver en mapa",
     "mudLevel": {
       "none": "Seco",
       "low": "Bajo",

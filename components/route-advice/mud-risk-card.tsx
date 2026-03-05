@@ -1,13 +1,22 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Footprints, Info, CloudHail, Layers, Thermometer, MountainSnow } from 'lucide-react';
+import {
+  Footprints,
+  Info,
+  CloudHail,
+  Layers,
+  Thermometer,
+  MountainSnow,
+  MapPin,
+} from 'lucide-react';
 import type { MudRiskLevel } from '@/lib/types';
 import type { MudRiskSegment } from '@/lib/mud-risk';
 import { Card, CardContent } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { MudInfoRow } from './mud-info-row';
+import { useRouteStore } from '@/store/route-store';
 
 export interface MudRiskInputs {
   avgPrecip: number;
@@ -49,6 +58,7 @@ interface MudRiskCardProps {
 
 export function MudRiskCard({ overallRisk, segments, activityType, inputs }: MudRiskCardProps) {
   const t = useTranslations('Advice');
+  const setSelectedRange = useRouteStore((s) => s.setSelectedRange);
   const typeKey = activityType === 'cycling' ? 'cycling' : 'hiking';
 
   const adviceKey =
@@ -165,6 +175,13 @@ export function MudRiskCard({ overallRisk, segments, activityType, inputs }: Mud
                     )}
                   />
                   {t('mudKmRange', { start: seg.startKm, end: seg.endKm })}
+                  <button
+                    onClick={() => setSelectedRange({ start: seg.startKm, end: seg.endKm })}
+                    className="text-primary hover:text-primary/80 ml-auto flex items-center gap-0.5 transition-colors"
+                  >
+                    <MapPin className="h-3 w-3" />
+                    <span>{t('viewOnMap')}</span>
+                  </button>
                 </li>
               ))}
             </ul>

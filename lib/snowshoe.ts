@@ -87,7 +87,7 @@ export function getSnowSegments(
     });
   }
 
-  return segments;
+  return segments.filter((s) => s.endKm - s.startKm >= 0.1);
 }
 
 /** Returns the worst condition found across all points. */

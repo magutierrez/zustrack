@@ -156,5 +156,5 @@ export function getMudRiskSegments(
     });
   }
 
-  return segments;
+  return segments.filter((s) => s.endKm - s.startKm >= 0.1);
 }
