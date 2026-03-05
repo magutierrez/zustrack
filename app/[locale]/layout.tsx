@@ -8,6 +8,8 @@ export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
+export const dynamicParams = false;
+
 // ---------------------------------------------------------------------------
 // SEO metadata — per locale
 // ---------------------------------------------------------------------------
@@ -39,7 +41,10 @@ const META = {
       'predicció ruta gpx, temps ciclistes, meteorologia senderisme, analitzador gpx, planificació ruta, importar strava, forecast outdoor, condicions trail, vent ciclisme',
     ogLocale: 'ca_ES',
   },
-} satisfies Record<string, { title: string; description: string; keywords: string; ogLocale: string }>;
+} satisfies Record<
+  string,
+  { title: string; description: string; keywords: string; ogLocale: string }
+>;
 
 type Locale = keyof typeof META;
 
