@@ -1,10 +1,38 @@
+import type { Metadata } from 'next';
 import { Link } from '@/i18n/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Mountain, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { routing } from '@/i18n/routing';
 
 export const revalidate = false;
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://www.zustrack.com';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: 'Terms' });
+  const canonicalUrl = `${BASE_URL}/${locale}/terms`;
+  const alternateLanguages = Object.fromEntries(
+    routing.locales.map((lang) => [lang, `${BASE_URL}/${lang}/terms`]),
+  );
+  return {
+    title: t('title'),
+    alternates: {
+      canonical: canonicalUrl,
+      languages: {
+        ...alternateLanguages,
+        'x-default': `${BASE_URL}/en/terms`,
+      },
+    },
+  };
+}
 
 export default async function TermsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
