@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { Bike, Footprints, ArrowRight } from 'lucide-react';
 
@@ -33,9 +33,7 @@ export function FinalCTA() {
           </span>
         </h2>
 
-        <p className="mx-auto mb-10 max-w-2xl text-lg text-slate-400 md:text-xl">
-          {t('subtitle')}
-        </p>
+        <p className="mx-auto mb-10 max-w-2xl text-lg text-slate-400 md:text-xl">{t('subtitle')}</p>
 
         <div className="flex flex-col items-center gap-6">
           <Link

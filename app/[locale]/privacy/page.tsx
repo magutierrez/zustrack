@@ -2,7 +2,7 @@ export const revalidate = false;
 
 import { ArrowLeft, Mountain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 

@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { ChevronRight, Menu, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -84,8 +84,8 @@ export function Nav() {
       {/* Mobile Menu Dropdown */}
       <div
         className={cn(
-          "grid transition-all duration-300 ease-in-out md:hidden",
-          isMobileMenuOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+          'grid transition-all duration-300 ease-in-out md:hidden',
+          isMobileMenuOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0',
         )}
       >
         <div className="overflow-hidden border-t border-slate-200 bg-white/95 backdrop-blur-xl dark:border-white/5 dark:bg-[#08090f]/95">
