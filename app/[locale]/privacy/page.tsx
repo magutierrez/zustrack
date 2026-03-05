@@ -1,17 +1,17 @@
+// Static: legal text only changes on deploy. Cache forever (until next build).
+export const revalidate = false;
+
 import { ArrowLeft, Mountain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-export const revalidate = false;
-export const dynamic = 'force-static';
-
 export default async function PrivacyPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-
   setRequestLocale(locale);
-  const t = await getTranslations('Privacy');
+
+  const t = await getTranslations({ locale, namespace: 'Privacy' });
 
   return (
     <div className="bg-background flex min-h-screen flex-col items-center p-4 md:p-8">

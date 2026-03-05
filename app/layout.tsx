@@ -50,9 +50,7 @@ export default async function RootLayout({
       >
         <SessionProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <SettingsProvider>
-              {children}
-            </SettingsProvider>
+            <SettingsProvider>{children}</SettingsProvider>
           </ThemeProvider>
         </SessionProvider>
         <SpeedInsights />

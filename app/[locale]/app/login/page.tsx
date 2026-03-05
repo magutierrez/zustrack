@@ -2,6 +2,7 @@
 // ISR 1 h is conservative but safe for a login page.
 export const revalidate = 3600;
 
+import { setRequestLocale } from 'next-intl/server';
 import { LoginPageClient } from './_components/login-page-client';
 
 function getAvailableProviders() {
@@ -13,7 +14,10 @@ function getAvailableProviders() {
   };
 }
 
-export default function LoginPage() {
+export default async function LoginPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
   const providers = getAvailableProviders();
   return <LoginPageClient providers={providers} />;
 }

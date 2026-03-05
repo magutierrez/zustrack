@@ -1,15 +1,16 @@
-import { setRequestLocale, getTranslations } from 'next-intl/server';
+export const revalidate = false;
 
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Mountain, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-export const revalidate = false;
-export const dynamic = 'force-static';
+export default async function TermsPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  setRequestLocale(locale);
 
-export default async function TermsPage() {
-  const t = await getTranslations('Terms');
+  const t = await getTranslations({ locale, namespace: 'Terms' });
 
   return (
     <div className="bg-background flex min-h-screen flex-col items-center p-4 md:p-8">
