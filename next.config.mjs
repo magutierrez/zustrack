@@ -10,16 +10,6 @@ const nextConfig = {
 
   async headers() {
     return [
-      // {
-      //   source: '/:locale/(landing|privacy|terms)',
-      //   headers: [
-      //     {
-      //       key: 'Cache-Control',
-      //       // 31536000 = 1 año. Vercel limpiará esto automáticamente en el próximo deploy.
-      //       value: 'public, max-age=0, s-maxage=31536000, stale-while-revalidate=86400',
-      //     },
-      //   ],
-      // },
       {
         source: '/og.png',
         headers: [
