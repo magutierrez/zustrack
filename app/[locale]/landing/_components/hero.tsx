@@ -8,13 +8,6 @@ export async function Hero() {
 
   return (
     <section className="relative overflow-hidden pt-32 pb-24 lg:pt-48 lg:pb-32">
-      {/* Background gradients - Static */}
-      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute -top-[20%] -left-[10%] h-[70vw] w-[70vw] rounded-full bg-gradient-to-tr from-blue-600/20 to-purple-500/20 opacity-50 blur-[120px] dark:from-blue-600/30 dark:to-indigo-600/30" />
-        <div className="absolute top-[20%] left-[60%] h-[60vw] w-[60vw] rounded-full bg-gradient-to-bl from-sky-400/20 to-emerald-400/20 opacity-40 blur-[120px] dark:from-sky-400/20 dark:to-teal-500/20" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] bg-[size:24px_24px]" />
-      </div>
-
       <div className="relative mx-auto max-w-7xl px-6">
         <div className="flex flex-col items-center text-center">
           <div className="mb-8">
