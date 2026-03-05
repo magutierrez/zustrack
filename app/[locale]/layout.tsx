@@ -1,8 +1,23 @@
 import type { Metadata } from 'next';
+import { Inter, Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { routing } from '@/i18n/routing';
 import { notFound } from 'next/navigation';
+import { ThemeProvider } from '@/components/theme-provider';
+import { SettingsProvider } from '@/components/settings-provider';
+import { SessionProvider } from 'next-auth/react';
+import { SpeedInsights } from '@vercel/speed-insights/next';
+import { Analytics } from '@vercel/analytics/next';
+import '../globals.css';
+
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  variable: '--font-heading',
+  display: 'swap',
+});
+const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-jetbrains-mono' });
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -54,6 +69,8 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
+  setRequestLocale(locale);
+
   const m = META[(locale as Locale) in META ? (locale as Locale) : 'en'];
   const canonicalUrl = `${BASE_URL}/${locale}`;
 
@@ -169,12 +186,26 @@ export default async function LocaleLayout({
   const jsonLd = buildJsonLd(locale, m);
 
   return (
-    <NextIntlClientProvider messages={messages}>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
-      {children}
-    </NextIntlClientProvider>
+    <html lang={locale} suppressHydrationWarning>
+      <body
+        className={`${inter.variable} ${plusJakartaSans.variable} ${jetbrainsMono.variable} font-sans antialiased`}
+      >
+        <SessionProvider>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <SettingsProvider>
+              <NextIntlClientProvider messages={messages}>
+                <script
+                  type="application/ld+json"
+                  dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+                />
+                {children}
+              </NextIntlClientProvider>
+            </SettingsProvider>
+          </ThemeProvider>
+        </SessionProvider>
+        <SpeedInsights />
+        <Analytics />
+      </body>
+    </html>
   );
 }

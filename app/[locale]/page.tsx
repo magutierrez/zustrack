@@ -1,3 +1,5 @@
+import { use } from 'react';
+
 export const revalidate = false;
 
 import { setRequestLocale } from 'next-intl/server';
@@ -10,8 +12,8 @@ import { DataSources } from './landing/_components/data-sources';
 import { FinalCTA } from './landing/_components/final-cta';
 import { Footer } from './landing/_components/footer';
 
-export default async function LandingPage({ params }: { params: Promise<{ locale: string }> }) {
-  const { locale } = await params;
+export default function LandingPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = use(params);
   setRequestLocale(locale);
 
   return (
