@@ -10,15 +10,18 @@ export async function Hero() {
     <section className="relative overflow-hidden pt-32 pb-24 lg:pt-48 lg:pb-32">
       <div className="relative mx-auto max-w-7xl px-6">
         <div className="flex flex-col items-center text-center">
-          <div className="mb-8">
-            <span className="group relative inline-flex items-center gap-2 rounded-full border border-blue-200/50 bg-white/50 px-4 py-1.5 text-sm font-medium text-blue-800 shadow-sm backdrop-blur-md transition-colors hover:border-blue-300 hover:bg-white/80 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-200 dark:hover:border-blue-500/50 dark:hover:bg-blue-500/20">
+          <div className="mb-8 hidden md:block">
+            <Link
+              href="/app/login"
+              className="group relative inline-flex items-center gap-2 rounded-full border border-blue-200/50 bg-white/50 px-4 py-1.5 text-sm font-medium text-blue-800 shadow-sm backdrop-blur-md transition-colors hover:border-blue-300 hover:bg-white/80 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-200 dark:hover:border-blue-500/50 dark:hover:bg-blue-500/20"
+            >
               <span className="relative flex h-2 w-2">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-500 opacity-75"></span>
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-600 dark:bg-blue-400"></span>
               </span>
               {t('badge')}
               <ChevronRight className="h-4 w-4 text-blue-500 transition-transform group-hover:translate-x-0.5" />
-            </span>
+            </Link>
           </div>
 
           <h1 className="font-heading animate-fade-in-up mb-8 max-w-4xl text-5xl leading-[1.1] font-extrabold tracking-tight text-slate-900 md:text-7xl lg:text-8xl dark:text-white">

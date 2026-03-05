@@ -10,6 +10,7 @@ import { SessionProvider } from 'next-auth/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/next';
 import '../globals.css';
+import React from 'react';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' });
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -17,17 +18,17 @@ const plusJakartaSans = Plus_Jakarta_Sans({
   variable: '--font-heading',
   display: 'swap',
 });
-const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-jetbrains-mono', display: 'swap' });
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-jetbrains-mono',
+  display: 'swap',
+});
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
 export const dynamicParams = false;
-
-// ---------------------------------------------------------------------------
-// SEO metadata — per locale
-// ---------------------------------------------------------------------------
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://www.zustrack.com';
 
@@ -132,10 +133,6 @@ export async function generateMetadata({
     },
   };
 }
-
-// ---------------------------------------------------------------------------
-// JSON-LD structured data
-// ---------------------------------------------------------------------------
 
 function buildJsonLd(locale: string, m: { title: string; description: string }) {
   const canonicalUrl = `${BASE_URL}/${locale}`;
