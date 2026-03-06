@@ -43,7 +43,7 @@ export function SetupPageClient({ session: serverSession }: SetupPageClientProps
   const [activityType, setActivityType] = useState<'cycling' | 'walking'>('cycling');
   const { theme, setTheme } = useTheme();
 
-  const { routes: savedRoutes, saveRoute, refresh } = useSavedRoutes(); // to show saved routes
+  const { saveRoute, refresh } = useSavedRoutes(); // to show saved routes
 
   // Refresh routes list whenever this component is mounted (e.g. navigation from /route)
   useEffect(() => {

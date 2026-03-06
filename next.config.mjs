@@ -8,6 +8,10 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
 
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'recharts', 'date-fns'],
+  },
+
   async headers() {
     return [
       {

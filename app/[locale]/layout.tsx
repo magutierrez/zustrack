@@ -5,8 +5,6 @@ import { getMessages, setRequestLocale } from 'next-intl/server';
 import { routing } from '@/i18n/routing';
 import { notFound } from 'next/navigation';
 import { ThemeProvider } from '@/components/theme-provider';
-import { SettingsProvider } from '@/components/settings-provider';
-import { SessionProvider } from 'next-auth/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/next';
 import '../globals.css';
@@ -203,19 +201,15 @@ export default async function LocaleLayout({
       <body
         className={`${inter.variable} ${plusJakartaSans.variable} ${jetbrainsMono.variable} font-sans antialiased`}
       >
-        <SessionProvider>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <SettingsProvider>
-              <NextIntlClientProvider messages={messages}>
-                <script
-                  type="application/ld+json"
-                  dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-                />
-                {children}
-              </NextIntlClientProvider>
-            </SettingsProvider>
-          </ThemeProvider>
-        </SessionProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <NextIntlClientProvider messages={messages}>
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
+            {children}
+          </NextIntlClientProvider>
+        </ThemeProvider>
         <SpeedInsights />
         <Analytics />
       </body>

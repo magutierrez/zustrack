@@ -66,7 +66,7 @@ export function Nav() {
             </a>
             <Link
               href="/app/login"
-              className="flex items-center gap-1.5 rounded-lg bg-[#3b82f6] px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-blue-500/20 transition-all hover:bg-[#2563eb]"
+              className="flex items-center gap-1.5 rounded-lg bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-blue-500/20 transition-all hover:bg-[#1d4ed8]"
             >
               {t('access')} <ChevronRight className="h-3.5 w-3.5" />
             </Link>
@@ -74,7 +74,7 @@ export function Nav() {
 
           <Link
             href="/app/login"
-            className="flex items-center gap-1 rounded-lg bg-[#3b82f6] px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-all active:scale-95 md:hidden"
+            className="flex items-center gap-1 rounded-lg bg-[#2563eb] px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-all hover:bg-[#1d4ed8] active:scale-95 md:hidden"
           >
             {t('access')} <ChevronRight className="h-3.5 w-3.5" />
           </Link>
