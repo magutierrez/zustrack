@@ -335,7 +335,7 @@ export async function WindowVisual() {
           </div>
           <span
             className="w-8 text-right text-[11px] font-black"
-            style={{ color: w.good ? '#16a34a' : '#dc2626' }}
+            style={{ color: w.good ? '#15803d' : '#dc2626' }}
           >
             {w.score}
           </span>
