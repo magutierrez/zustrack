@@ -7,7 +7,6 @@ import {
   Activity,
   CloudRain,
   Filter,
-  Layers,
   Navigation,
   Settings2,
   Thermometer,
@@ -287,6 +286,7 @@ export function AppMockup() {
 
   return (
     <div
+      aria-hidden="true"
       className="bg-background dark:border-border relative mx-auto max-w-5xl overflow-hidden rounded-2xl border border-slate-200 shadow-2xl shadow-slate-300/50 dark:shadow-blue-900/10"
     >
       {/* App Header Mockup */}

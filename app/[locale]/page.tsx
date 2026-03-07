@@ -19,12 +19,14 @@ export default function LandingPage({ params }: { params: Promise<{ locale: stri
   return (
     <div className="min-h-screen bg-white text-slate-900 dark:bg-[#08090f] dark:text-white">
       <Nav />
-      <Hero />
-      <Features />
-      <HowItWorks />
-      <ImportSources />
-      <DataSources />
-      <FinalCTA />
+      <main>
+        <Hero />
+        <Features />
+        <HowItWorks />
+        <ImportSources />
+        <DataSources />
+        <FinalCTA />
+      </main>
       <Footer />
     </div>
   );

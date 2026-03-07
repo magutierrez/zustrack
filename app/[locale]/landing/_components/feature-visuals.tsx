@@ -29,7 +29,7 @@ export function WeatherVisual() {
             <span className="text-xs font-black tracking-tighter text-slate-800 dark:text-white">
               {temps[i]}
             </span>
-            <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[9px] font-semibold text-slate-500 dark:bg-white/10 dark:text-white/40">
+            <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[9px] font-semibold text-slate-600 dark:bg-white/10 dark:text-white/60">
               km {kms[i]}
             </span>
           </div>
@@ -122,6 +122,7 @@ export async function HazardVisual() {
       km: tv('hazard1Km'),
       level: tv('hazardLevelHigh'),
       color: '#ef4444',
+      badgeColor: '#b91c1c',
       bar: 85,
     },
     {
@@ -129,6 +130,7 @@ export async function HazardVisual() {
       km: tv('hazard2Km'),
       level: tv('hazardLevelMedium'),
       color: '#f59e0b',
+      badgeColor: '#92400e',
       bar: 55,
     },
   ];
@@ -153,7 +155,7 @@ export async function HazardVisual() {
               className="rounded-full px-2 py-0.5 text-[9px] font-black tracking-wider uppercase"
               style={{
                 backgroundColor: `${h.color}15`,
-                color: h.color,
+                color: h.badgeColor,
                 border: `1px solid ${h.color}40`,
               }}
             >
@@ -309,7 +311,7 @@ export async function WindowVisual() {
   return (
     <div className="flex h-32 flex-col justify-center gap-2.5 p-2">
       <div className="mb-1 flex items-center justify-between">
-        <span className="text-[10px] font-bold tracking-widest text-slate-400 uppercase dark:text-white/40">
+        <span className="text-[10px] font-bold tracking-widest text-slate-500 uppercase dark:text-white/50">
           {tv('windowLabel')}
         </span>
         <Zap className="h-3 w-3 text-amber-500" />
@@ -333,7 +335,7 @@ export async function WindowVisual() {
           </div>
           <span
             className="w-8 text-right text-[11px] font-black"
-            style={{ color: w.good ? '#22c55e' : '#ef4444' }}
+            style={{ color: w.good ? '#15803d' : '#dc2626' }}
           >
             {w.score}
           </span>

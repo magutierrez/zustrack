@@ -9,7 +9,7 @@ export async function Footer() {
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 md:flex-row">
         <div className="flex items-center gap-2.5">
           <LogoIcon className="h-6 w-6 text-[#3b82f6]" />
-          <span className="font-heading text-sm font-bold text-slate-500 dark:text-white/70">
+          <span className="font-heading text-sm font-bold text-slate-600 dark:text-white/80">
             zustrack
           </span>
         </div>
@@ -22,19 +22,20 @@ export async function Footer() {
             <Link
               key={l.href}
               href={l.href}
-              className="text-xs text-slate-400 transition-colors hover:text-slate-700 dark:text-white/35 dark:hover:text-white/70"
+              className="text-xs text-slate-500 transition-colors hover:text-slate-700 dark:text-white/55 dark:hover:text-white/80"
             >
               {l.label}
             </Link>
           ))}
         </div>
 
-        <p className="flex flex-col gap-y-3 text-xs text-slate-300 dark:text-white/20">
+        <p className="flex flex-col gap-y-3 text-xs text-slate-500 dark:text-white/50">
           <span> {new Date().getFullYear()} zustrack</span>
           <a
             href="https://github.com/magutierrez/zustrack"
             target="_blank"
             rel="noopener noreferrer"
+            aria-label="GitHub"
           >
             <svg
               className="h-5 w-5"
