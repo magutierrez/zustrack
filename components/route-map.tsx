@@ -8,7 +8,8 @@ import { useTranslations } from 'next-intl';
 import Map, { NavigationControl, MapRef } from 'react-map-gl/maplibre';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { Maximize2, X } from 'lucide-react';
+import { Loader2, Maximize2, Mountain, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 import { useMapLayers } from './route-map/use-map-layers';
@@ -87,10 +88,21 @@ export default function RouteMap({
   const showWaterSources = useRouteStore((s) => s.showWaterSources);
   const showNoCoverageZones = useRouteStore((s) => s.showNoCoverageZones);
   const showEscapePoints = useRouteStore((s) => s.showEscapePoints);
+  const showMountainPeaks = useRouteStore((s) => s.showMountainPeaks);
+  const mountainPeaks = useRouteStore((s) => s.mountainPeaks);
+  const mountainPeaksLoaded = useRouteStore((s) => s.mountainPeaksLoaded);
+  const mountainPeaksLoading = useRouteStore((s) => s.mountainPeaksLoading);
   const focusPoint = useRouteStore((s) => s.focusPoint);
   const clickedChartPointDist = useRouteStore((s) => s.clickedChartPointDist);
   const mapResetRequested = useRouteStore((s) => s.mapResetRequested);
-  const { setSelectedPointIndex, setExactSelectedPoint, clearSelection } = useRouteStore();
+  const {
+    setSelectedPointIndex,
+    setExactSelectedPoint,
+    clearSelection,
+    setShowMountainPeaks,
+    setMountainPeaks,
+    setMountainPeaksLoading,
+  } = useRouteStore();
 
   const points = gpxData?.points || [];
 
@@ -199,6 +211,37 @@ export default function RouteMap({
   useEffect(() => {
     if (mapResetRequested > 0) resetToFullRouteView();
   }, [mapResetRequested, resetToFullRouteView]);
+
+  // Fetch mountain peaks lazily when the toggle is first activated
+  useEffect(() => {
+    if (!showMountainPeaks || mountainPeaksLoaded || mountainPeaksLoading || points.length === 0)
+      return;
+
+    let north = -Infinity, south = Infinity, east = -Infinity, west = Infinity;
+    for (const p of points) {
+      if (p.lat > north) north = p.lat;
+      if (p.lat < south) south = p.lat;
+      if (p.lon > east) east = p.lon;
+      if (p.lon < west) west = p.lon;
+    }
+    // Add ~3 km padding so peaks just outside the track are also shown
+    const PAD = 0.03;
+    const bbox = { north: north + PAD, south: south - PAD, east: east + PAD, west: west - PAD };
+
+    setMountainPeaksLoading(true);
+    fetch('/api/mountain-peaks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bbox }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setMountainPeaks(data.peaks ?? []);
+      })
+      .catch(() => {
+        setMountainPeaksLoading(false);
+      });
+  }, [showMountainPeaks, mountainPeaksLoaded, mountainPeaksLoading, points, setMountainPeaks, setMountainPeaksLoading]);
 
   const handleStopPlayer = useCallback(() => {
     setIsPlayerActive(false);
@@ -620,6 +663,8 @@ export default function RouteMap({
           activityType={activityType ?? undefined}
           showWaterSources={showWaterSources}
           showEscapePoints={showEscapePoints}
+          showMountainPeaks={showMountainPeaks}
+          mountainPeaks={mountainPeaks}
           focusPoint={focusPoint}
           nightPointIndex={nightPointIndex}
         />
@@ -672,6 +717,30 @@ export default function RouteMap({
 
       {/* Layer selector — shifted below fullscreen button on mobile, hidden when popup active */}
       {!(isMobile && activePopupData) && <LayerControl mapType={mapType} setMapType={setMapType} />}
+
+      {/* Mountain peaks toggle — only for hiking, positioned below layer control */}
+      {!(isMobile && activePopupData) && points.length > 0 && activityType === 'walking' && (
+        <div className="absolute top-[calc(3.5rem+2.75rem+0.25rem)] right-3 z-10 lg:top-[calc(3rem+2.75rem+0.25rem)]">
+          <Button
+            variant="secondary"
+            size="icon"
+            className={cn(
+              'h-10 w-10 shadow-md',
+              showMountainPeaks && !mountainPeaksLoading && 'ring-primary ring-2',
+            )}
+            onClick={() => setShowMountainPeaks(!showMountainPeaks)}
+            disabled={mountainPeaksLoading}
+            aria-label={tMap(showMountainPeaks ? 'mountainPeaksHide' : 'mountainPeaksShow')}
+            title={tMap(showMountainPeaks ? 'mountainPeaksHide' : 'mountainPeaksShow')}
+          >
+            {mountainPeaksLoading ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <Mountain className="h-5 w-5" />
+            )}
+          </Button>
+        </div>
+      )}
 
       {/* eslint-disable-next-line react/no-unknown-property */}
       <style jsx global>{`

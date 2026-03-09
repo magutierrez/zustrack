@@ -95,6 +95,13 @@ export interface RouteConfig {
   speed: number;
 }
 
+export interface MountainPeak {
+  lat: number;
+  lng: number;
+  name: string;
+  elevation?: number; // metres
+}
+
 export interface GPXData {
   points: RoutePoint[];
   name: string;

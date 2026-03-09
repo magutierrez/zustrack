@@ -1,9 +1,10 @@
 'use client';
 
-import { Marker } from 'react-map-gl/maplibre';
+import { useState } from 'react';
+import { Marker, Popup } from 'react-map-gl/maplibre';
 import { WindArrow } from '@/components/wind-arrow';
-import { MapPin, Droplets, Signpost, Moon, House } from 'lucide-react';
-import type { RoutePoint, RouteWeatherPoint } from '@/lib/types';
+import { MapPin, Droplets, Mountain, Signpost, Moon, House } from 'lucide-react';
+import type { MountainPeak, RoutePoint, RouteWeatherPoint } from '@/lib/types';
 import type { ActiveFilter } from '@/store/route-store';
 import { useTranslations } from 'next-intl';
 
@@ -19,6 +20,8 @@ interface MapMarkersProps {
   activityType?: 'cycling' | 'walking';
   showWaterSources?: boolean;
   showEscapePoints?: boolean;
+  showMountainPeaks?: boolean;
+  mountainPeaks?: MountainPeak[];
   focusPoint?: { lat: number; lon: number; name?: string; silent?: boolean } | null;
   nightPointIndex?: number | null;
 }
@@ -35,10 +38,14 @@ export function MapMarkers({
   activityType,
   showWaterSources,
   showEscapePoints,
+  showMountainPeaks,
+  mountainPeaks = [],
   focusPoint,
   nightPointIndex = null,
 }: MapMarkersProps) {
   const t = useTranslations('WeatherTimeline');
+  const tMap = useTranslations('RouteMap');
+  const [selectedPeak, setSelectedPeak] = useState<MountainPeak | null>(null);
   const startPoint = points[0];
   const endPoint = points[points.length - 1];
 
@@ -217,7 +224,7 @@ export function MapMarkers({
         <Marker longitude={focusPoint.lon} latitude={focusPoint.lat} anchor="bottom" z-index={200}>
           <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-col items-center">
             <div className="rounded-lg bg-indigo-600 px-2.5 py-1.5 text-[10px] font-black tracking-wider text-white uppercase shadow-xl ring-2 ring-white">
-              {focusPoint.name || 'Evacuación'}
+              {focusPoint.name || tMap('evacuationPoint')}
             </div>
             <div className="relative mt-1">
               <div className="absolute inset-0 animate-ping rounded-full bg-indigo-500 opacity-40" />
@@ -228,6 +235,61 @@ export function MapMarkers({
             <div className="h-3 w-1.5 rounded-full bg-indigo-600" />
           </div>
         </Marker>
+      )}
+
+      {/* Mountain Peaks */}
+      {showMountainPeaks &&
+        mountainPeaks.map((peak) => (
+          <Marker
+            key={`peak-${peak.lat}-${peak.lng}`}
+            longitude={peak.lng}
+            latitude={peak.lat}
+            anchor="bottom"
+          >
+            <div
+              className="flex cursor-pointer flex-col items-center gap-0.5"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedPeak((prev) =>
+                  prev?.lat === peak.lat && prev?.lng === peak.lng ? null : peak,
+                );
+              }}
+            >
+              <div className="bg-card/90 text-foreground max-w-[100px] truncate rounded px-1.5 py-0.5 text-[9px] font-semibold leading-tight whitespace-nowrap shadow">
+                {peak.name}
+                {peak.elevation ? ` ${peak.elevation}m` : ''}
+              </div>
+              <Mountain className="h-4 w-4 text-slate-600 drop-shadow" />
+            </div>
+          </Marker>
+        ))}
+
+      {/* Mountain Peak popup */}
+      {selectedPeak && showMountainPeaks && (
+        <Popup
+          longitude={selectedPeak.lng}
+          latitude={selectedPeak.lat}
+          anchor="bottom"
+          offset={[0, -32] as [number, number]}
+          closeButton={false}
+          closeOnClick={true}
+          onClose={() => setSelectedPeak(null)}
+          className="weather-popup"
+        >
+          <div className="flex flex-col gap-1 px-1 py-0.5">
+            <span className="text-sm font-bold">{selectedPeak.name}</span>
+            {selectedPeak.elevation ? (
+              <div className="flex items-center gap-1.5">
+                <Mountain className="text-muted-foreground h-3.5 w-3.5" />
+                <span className="text-foreground text-sm font-semibold">
+                  {selectedPeak.elevation} m
+                </span>
+              </div>
+            ) : (
+              <span className="text-muted-foreground text-xs">{tMap('noElevationData')}</span>
+            )}
+          </div>
+        </Popup>
       )}
     </>
   );

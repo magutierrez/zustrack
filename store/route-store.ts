@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { GPXData, RouteConfig, RouteWeatherPoint } from '@/lib/types';
+import type { GPXData, MountainPeak, RouteConfig, RouteWeatherPoint } from '@/lib/types';
 
 export type ActiveFilter = {
   key: 'pathType' | 'surface' | 'hazard';
@@ -20,6 +20,10 @@ interface RouteState {
   showWaterSources: boolean;
   showNoCoverageZones: boolean;
   showEscapePoints: boolean;
+  showMountainPeaks: boolean;
+  mountainPeaks: MountainPeak[];
+  mountainPeaksLoaded: boolean;
+  mountainPeaksLoading: boolean;
   selectedPointIndex: number | null;
   isMobileFullscreen: boolean;
   /** When set, mobile elevation chart shows only this hazard segment */
@@ -68,6 +72,9 @@ interface RouteState {
   setShowWaterSources: (show: boolean) => void;
   setShowNoCoverageZones: (show: boolean) => void;
   setShowEscapePoints: (show: boolean) => void;
+  setShowMountainPeaks: (show: boolean) => void;
+  setMountainPeaks: (peaks: MountainPeak[]) => void;
+  setMountainPeaksLoading: (loading: boolean) => void;
   setSelectedPointIndex: (index: number | null) => void;
   setConfig: (config: RouteConfig) => void;
   setFetchedRoute: (data: {
@@ -120,6 +127,10 @@ const initialState = {
   showWaterSources: false,
   showNoCoverageZones: false,
   showEscapePoints: false,
+  showMountainPeaks: false,
+  mountainPeaks: [] as MountainPeak[],
+  mountainPeaksLoaded: false,
+  mountainPeaksLoading: false,
   selectedPointIndex: null as number | null,
   isMobileFullscreen: false,
   mobileHazardRange: null as { startDist: number; endDist: number } | null,
@@ -185,6 +196,9 @@ export const useRouteStore = create<RouteState>()((set) => ({
   setShowWaterSources: (show) => set({ showWaterSources: show }),
   setShowNoCoverageZones: (show) => set({ showNoCoverageZones: show }),
   setShowEscapePoints: (show) => set({ showEscapePoints: show }),
+  setShowMountainPeaks: (show) => set({ showMountainPeaks: show }),
+  setMountainPeaks: (peaks) => set({ mountainPeaks: peaks, mountainPeaksLoaded: true, mountainPeaksLoading: false }),
+  setMountainPeaksLoading: (loading) => set({ mountainPeaksLoading: loading }),
   setSelectedPointIndex: (index) => set({ selectedPointIndex: index }),
   setConfig: (config) => set({ config }),
 
