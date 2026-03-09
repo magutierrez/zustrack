@@ -1,20 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { calculateWaterReliability } from '@/lib/utils';
+import { z } from 'zod';
 
 interface Point {
   lat: number;
   lon: number;
 }
 
+const bodySchema = z.object({
+  points: z
+    .array(z.object({ lat: z.number().min(-90).max(90), lon: z.number().min(-180).max(180) }))
+    .min(1)
+    .max(500),
+  activityType: z.enum(['cycling', 'walking']).optional(),
+});
+
 export const runtime = 'edge';
 
 export async function POST(request: NextRequest) {
   try {
-    const { points }: { points: Point[] } = await request.json();
-
-    if (!points || points.length === 0) {
-      return NextResponse.json({ error: 'No points provided' }, { status: 400 });
+    const parsed = bodySchema.safeParse(await request.json());
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
     }
+    const { points } = parsed.data;
 
     // 1. Calculate Bounding Box with buffer
     const lats = points.map((p) => p.lat);

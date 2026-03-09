@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { MountainPeak } from '@/lib/types';
+import { z } from 'zod';
 
 export const runtime = 'edge';
 
@@ -15,8 +16,21 @@ interface OverpassResponse {
   elements: OverpassNode[];
 }
 
+const bodySchema = z.object({
+  bbox: z.object({
+    north: z.number().min(-90).max(90),
+    south: z.number().min(-90).max(90),
+    east: z.number().min(-180).max(180),
+    west: z.number().min(-180).max(180),
+  }),
+});
+
 export async function POST(request: NextRequest) {
-  const { bbox } = await request.json();
+  const parsed = bodySchema.safeParse(await request.json());
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
+  }
+  const { bbox } = parsed.data;
 
   const query =
     `[out:json][timeout:25];` +
