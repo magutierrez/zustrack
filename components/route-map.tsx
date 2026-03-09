@@ -25,6 +25,7 @@ import { useMapTerrain } from './route-map/use-map-terrain';
 import { RoutePlayer } from './route-map/route-player';
 import { MapOverlayControls } from './route-map/map-overlay-controls';
 import { useRouteStore } from '@/store/route-store';
+import { useAnnotations } from '@/hooks/use-annotations';
 import { findClosestPointIndex, projectOntoSegment, interpolatePointOnRoute } from '@/lib/geometry';
 import { cn } from '@/lib/utils';
 
@@ -95,6 +96,7 @@ export default function RouteMap({
   const focusPoint = useRouteStore((s) => s.focusPoint);
   const clickedChartPointDist = useRouteStore((s) => s.clickedChartPointDist);
   const mapResetRequested = useRouteStore((s) => s.mapResetRequested);
+  const savedRouteId = useRouteStore((s) => s.savedRouteId);
   const {
     setSelectedPointIndex,
     setExactSelectedPoint,
@@ -103,6 +105,8 @@ export default function RouteMap({
     setMountainPeaks,
     setMountainPeaksLoading,
   } = useRouteStore();
+
+  const { annotations, addAnnotation, updateAnnotation, deleteAnnotation } = useAnnotations();
 
   const points = gpxData?.points || [];
 
@@ -604,6 +608,16 @@ export default function RouteMap({
     return popupInfo;
   }, [manualPopupInfo, popupInfo]);
 
+  const activePopupAnnotation = useMemo(() => {
+    if (!activePopupData || annotations.length === 0) return null;
+    const { lat, lon } = activePopupData.point;
+    return (
+      annotations.find(
+        (a) => Math.abs(a.lat - lat) < 0.00001 && Math.abs(a.lon - lon) < 0.00001,
+      ) ?? null
+    );
+  }, [activePopupData, annotations]);
+
   const handleClosePopup = useCallback(() => {
     setManualPopupInfo(null);
     setHoveredPointIdx(null);
@@ -667,6 +681,9 @@ export default function RouteMap({
           mountainPeaks={mountainPeaks}
           focusPoint={focusPoint}
           nightPointIndex={nightPointIndex}
+          annotations={annotations}
+          onAnnotationEdit={updateAnnotation}
+          onAnnotationDelete={deleteAnnotation}
         />
 
         {activePopupData && !isMobile && (
@@ -674,6 +691,18 @@ export default function RouteMap({
             key={`popup-${activePopupData.index}-${activePopupData.point.lat}-${activePopupData.point.lon}`}
             popupInfo={activePopupData}
             onClose={handleClosePopup}
+            savedRouteId={savedRouteId}
+            currentAnnotation={activePopupAnnotation}
+            onSaveAnnotation={(text) =>
+              addAnnotation(
+                activePopupData.point.lat,
+                activePopupData.point.lon,
+                activePopupData.point.distanceFromStart,
+                text,
+              )
+            }
+            onUpdateAnnotation={updateAnnotation}
+            onDeleteAnnotation={deleteAnnotation}
           />
         )}
 
@@ -701,6 +730,18 @@ export default function RouteMap({
           popupInfo={activePopupData}
           onClose={handleClosePopup}
           mobileMode
+          savedRouteId={savedRouteId}
+          currentAnnotation={activePopupAnnotation}
+          onSaveAnnotation={(text) =>
+            addAnnotation(
+              activePopupData.point.lat,
+              activePopupData.point.lon,
+              activePopupData.point.distanceFromStart,
+              text,
+            )
+          }
+          onUpdateAnnotation={updateAnnotation}
+          onDeleteAnnotation={deleteAnnotation}
         />
       )}
 

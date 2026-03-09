@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { Marker, Popup } from 'react-map-gl/maplibre';
 import { WindArrow } from '@/components/wind-arrow';
-import { MapPin, Droplets, Mountain, Signpost, Moon, House } from 'lucide-react';
-import type { MountainPeak, RoutePoint, RouteWeatherPoint } from '@/lib/types';
+import { Check, MapPin, Droplets, MessageSquare, Mountain, Pencil, Signpost, Moon, House, Trash2, X } from 'lucide-react';
+import type { Annotation, MountainPeak, RoutePoint, RouteWeatherPoint } from '@/lib/types';
 import type { ActiveFilter } from '@/store/route-store';
 import { useTranslations } from 'next-intl';
 
@@ -24,6 +24,9 @@ interface MapMarkersProps {
   mountainPeaks?: MountainPeak[];
   focusPoint?: { lat: number; lon: number; name?: string; silent?: boolean } | null;
   nightPointIndex?: number | null;
+  annotations?: Annotation[];
+  onAnnotationEdit?: (id: string, text: string) => void;
+  onAnnotationDelete?: (id: string) => void;
 }
 
 export function MapMarkers({
@@ -42,10 +45,17 @@ export function MapMarkers({
   mountainPeaks = [],
   focusPoint,
   nightPointIndex = null,
+  annotations = [],
+  onAnnotationEdit,
+  onAnnotationDelete,
 }: MapMarkersProps) {
   const t = useTranslations('WeatherTimeline');
   const tMap = useTranslations('RouteMap');
+  const ta = useTranslations('Annotations');
   const [selectedPeak, setSelectedPeak] = useState<MountainPeak | null>(null);
+  const [selectedAnnotation, setSelectedAnnotation] = useState<Annotation | null>(null);
+  const [editingAnnotationId, setEditingAnnotationId] = useState<string | null>(null);
+  const [editingText, setEditingText] = useState('');
   const startPoint = points[0];
   const endPoint = points[points.length - 1];
 
@@ -263,6 +273,113 @@ export function MapMarkers({
             </div>
           </Marker>
         ))}
+
+      {/* Annotation Markers */}
+      {annotations.map((annotation) => (
+        <Marker
+          key={`annotation-${annotation.id}`}
+          longitude={annotation.lon}
+          latitude={annotation.lat}
+          anchor="bottom"
+          style={{ zIndex: 120 }}
+        >
+          <div
+            className="flex cursor-pointer flex-col items-center gap-0.5"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedAnnotation((prev) => (prev?.id === annotation.id ? null : annotation));
+              setEditingAnnotationId(null);
+            }}
+          >
+            <div className="bg-card/90 text-foreground max-w-[100px] truncate rounded px-1.5 py-0.5 text-[9px] font-semibold leading-tight whitespace-nowrap shadow">
+              {annotation.text.length > 20 ? annotation.text.slice(0, 20) + '…' : annotation.text}
+            </div>
+            <div className="rounded-full border-2 border-white bg-amber-500 p-1.5 shadow-md">
+              <MessageSquare className="h-3 w-3 text-white" />
+            </div>
+          </div>
+        </Marker>
+      ))}
+
+      {/* Annotation popup */}
+      {selectedAnnotation && (
+        <Popup
+          longitude={selectedAnnotation.lon}
+          latitude={selectedAnnotation.lat}
+          anchor="bottom"
+          offset={[0, -40] as [number, number]}
+          closeButton={false}
+          closeOnClick={true}
+          onClose={() => {
+            setSelectedAnnotation(null);
+            setEditingAnnotationId(null);
+          }}
+          className="weather-popup"
+          maxWidth="220px"
+        >
+          <div className="flex flex-col gap-2 px-1 py-0.5">
+            {editingAnnotationId === selectedAnnotation.id ? (
+              <>
+                <textarea
+                  className="border-border bg-background text-foreground w-full resize-none rounded border px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-amber-500"
+                  rows={3}
+                  maxLength={500}
+                  value={editingText}
+                  onChange={(e) => setEditingText(e.target.value)}
+                  autoFocus
+                />
+                <div className="flex gap-1">
+                  <button
+                    className="flex flex-1 items-center justify-center gap-1 rounded bg-amber-500 px-2 py-1 text-[10px] font-bold text-white"
+                    onClick={() => {
+                      if (editingText.trim()) {
+                        onAnnotationEdit?.(selectedAnnotation.id, editingText.trim());
+                        setSelectedAnnotation({ ...selectedAnnotation, text: editingText.trim() });
+                      }
+                      setEditingAnnotationId(null);
+                    }}
+                  >
+                    <Check className="h-3 w-3" />
+                    {ta('save')}
+                  </button>
+                  <button
+                    className="flex items-center justify-center rounded px-2 py-1 text-[10px] font-bold"
+                    onClick={() => setEditingAnnotationId(null)}
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="text-foreground text-xs leading-relaxed">{selectedAnnotation.text}</p>
+                <div className="flex gap-1">
+                  <button
+                    className="text-muted-foreground hover:text-foreground flex items-center gap-1 rounded px-1.5 py-1 text-[10px] font-medium transition-colors"
+                    onClick={() => {
+                      setEditingAnnotationId(selectedAnnotation.id);
+                      setEditingText(selectedAnnotation.text);
+                    }}
+                  >
+                    <Pencil className="h-3 w-3" />
+                    {ta('edit')}
+                  </button>
+                  <button
+                    className="text-muted-foreground hover:text-destructive flex items-center gap-1 rounded px-1.5 py-1 text-[10px] font-medium transition-colors"
+                    onClick={() => {
+                      onAnnotationDelete?.(selectedAnnotation.id);
+                      setSelectedAnnotation(null);
+                    }}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                    {ta('delete')}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </Popup>
+      )}
 
       {/* Mountain Peak popup */}
       {selectedPeak && showMountainPeaks && (

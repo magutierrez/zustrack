@@ -1,4 +1,5 @@
 import Dexie, { Table } from 'dexie';
+import type { Annotation } from '@/lib/types';
 
 export interface SavedRoute {
   id: string;
@@ -11,6 +12,7 @@ export interface SavedRoute {
   elevation_loss: number;
   elevation_points?: number[]; // Added for mini-preview
   route_info?: string; // JSON-serialized pathData from /api/route-info
+  annotations?: string; // JSON-serialized Annotation[]
   created_at: string;
 }
 
@@ -120,5 +122,26 @@ export async function saveRouteInfoToDb(routeId: string, pathData: unknown[]): P
     await db.saved_routes.update(routeId, { route_info: JSON.stringify(pathData) });
   } catch (error) {
     console.error('Error saving route info to DB:', error);
+  }
+}
+
+export async function getAnnotationsFromDb(routeId: string): Promise<Annotation[]> {
+  try {
+    const route = await db.saved_routes.get(routeId);
+    if (route?.annotations) {
+      return JSON.parse(route.annotations) as Annotation[];
+    }
+    return [];
+  } catch (error) {
+    console.error('Error reading annotations from DB:', error);
+    return [];
+  }
+}
+
+export async function saveAnnotationsToDb(routeId: string, annotations: Annotation[]): Promise<void> {
+  try {
+    await db.saved_routes.update(routeId, { annotations: JSON.stringify(annotations) });
+  } catch (error) {
+    console.error('Error saving annotations to DB:', error);
   }
 }

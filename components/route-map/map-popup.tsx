@@ -2,17 +2,21 @@
 
 import { Popup } from 'react-map-gl/maplibre';
 import { useTranslations } from 'next-intl';
-import type { RouteWeatherPoint } from '@/lib/types';
+import type { Annotation, RouteWeatherPoint } from '@/lib/types';
 import { WEATHER_CODES } from '@/lib/types';
 import {
   ArrowDown,
   ArrowLeft,
   ArrowRight,
   ArrowUp,
+  Check,
   Loader2,
   Map as MapIcon,
   MapPinned,
+  MessageSquare,
+  Pencil,
   Sun,
+  Trash2,
   X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -23,6 +27,11 @@ interface MapPopupProps {
   popupInfo: RouteWeatherPoint & { index: number; point: any; bearing?: number };
   onClose: () => void;
   mobileMode?: boolean;
+  onSaveAnnotation?: (text: string) => void;
+  onUpdateAnnotation?: (id: string, text: string) => void;
+  onDeleteAnnotation?: (id: string) => void;
+  savedRouteId?: string | null;
+  currentAnnotation?: Annotation | null;
 }
 
 function getWindEffectIcon(effect: string) {
@@ -40,25 +49,37 @@ function getWindEffectIcon(effect: string) {
   }
 }
 
-export function MapPopup({ popupInfo, onClose, mobileMode }: MapPopupProps) {
+export function MapPopup({
+  popupInfo,
+  onClose,
+  mobileMode,
+  onSaveAnnotation,
+  onUpdateAnnotation,
+  onDeleteAnnotation,
+  savedRouteId,
+  currentAnnotation,
+}: MapPopupProps) {
   const [showStreetView, setShowStreetView] = useState(false);
   const [streetViewAvailable, setStreetViewAvailable] = useState<boolean | null>(null);
+  const [showNote, setShowNote] = useState(!!currentAnnotation);
+  const [isEditing, setIsEditing] = useState(false);
+  const [noteText, setNoteText] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
   const t = useTranslations('RouteMap');
   const tw = useTranslations('WeatherCodes');
   const tt = useTranslations('WeatherTimeline');
+  const ta = useTranslations('Annotations');
 
   const isWeatherPoint = popupInfo.index !== -1;
 
   useEffect(() => {
     const checkStreetView = async () => {
       try {
-        // Optimistic check simulation
         setStreetViewAvailable(true);
       } catch (e) {
         setStreetViewAvailable(true);
       }
     };
-
     checkStreetView();
   }, [popupInfo.point]);
 
@@ -122,6 +143,90 @@ export function MapPopup({ popupInfo, onClose, mobileMode }: MapPopupProps) {
     ? tw(popupInfo.weather.weatherCode.toString() as any)
     : WEATHER_CODES[popupInfo.weather.weatherCode]?.description || tt('unknownWeather');
 
+  const noteSection = showNote ? (
+    currentAnnotation && !isEditing ? (
+      // Display existing note inline
+      <div className="bg-amber-500/10 mt-2 rounded-lg px-2.5 py-2">
+        <p className="text-foreground mb-1.5 text-xs leading-relaxed">{currentAnnotation.text}</p>
+        <div className="flex gap-1">
+          <button
+            className="text-muted-foreground hover:text-foreground flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium transition-colors"
+            onClick={() => {
+              setIsEditing(true);
+              setNoteText(currentAnnotation.text);
+            }}
+          >
+            <Pencil className="h-2.5 w-2.5" />
+            {ta('edit')}
+          </button>
+          <button
+            className="text-muted-foreground hover:text-destructive flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium transition-colors"
+            onClick={() => {
+              onDeleteAnnotation?.(currentAnnotation.id);
+              setShowNote(false);
+            }}
+          >
+            <Trash2 className="h-2.5 w-2.5" />
+            {ta('delete')}
+          </button>
+        </div>
+      </div>
+    ) : (
+      // Input for new note or editing existing
+      <div className="mt-2">
+        <textarea
+          className="border-border bg-background text-foreground placeholder:text-muted-foreground w-full resize-none rounded-lg border px-2.5 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-amber-500 disabled:opacity-50"
+          placeholder={ta('placeholder')}
+          maxLength={500}
+          rows={3}
+          value={noteText}
+          onChange={(e) => setNoteText(e.target.value)}
+          disabled={!savedRouteId}
+          autoFocus
+        />
+        {!savedRouteId && (
+          <p className="text-muted-foreground mt-0.5 text-[9px]">{ta('saveRouteFirst')}</p>
+        )}
+        <div className="mt-1.5 flex gap-1.5">
+          <Button
+            variant="secondary"
+            size="sm"
+            className="h-7 flex-1 gap-1 text-[10px] font-bold uppercase"
+            disabled={!savedRouteId || !noteText.trim() || isSaving}
+            onClick={async () => {
+              if (!noteText.trim()) return;
+              setIsSaving(true);
+              if (isEditing && currentAnnotation) {
+                onUpdateAnnotation?.(currentAnnotation.id, noteText.trim());
+                setIsEditing(false);
+              } else {
+                onSaveAnnotation?.(noteText.trim());
+              }
+              setNoteText('');
+              setIsSaving(false);
+              setShowNote(false);
+            }}
+          >
+            {isSaving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+            {ta('save')}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-[10px]"
+            onClick={() => {
+              setIsEditing(false);
+              setNoteText('');
+              setShowNote(!!currentAnnotation);
+            }}
+          >
+            {ta('cancel')}
+          </Button>
+        </div>
+      </div>
+    )
+  ) : null;
+
   const content = (
     <div className="text-foreground text-xs leading-relaxed">
       <div className="border-border mb-3 flex items-center justify-between border-b pb-2">
@@ -141,11 +246,35 @@ export function MapPopup({ popupInfo, onClose, mobileMode }: MapPopupProps) {
             </span>
           )}
         </div>
-        {!isWeatherPoint && (
-          <span className="font-mono text-sm font-bold">
-            {Math.round(popupInfo.point.ele || 0)}m
-          </span>
-        )}
+        <div className="flex items-center gap-1.5">
+          {!isWeatherPoint && (
+            <span className="font-mono text-sm font-bold">
+              {Math.round(popupInfo.point.ele || 0)}m
+            </span>
+          )}
+          {/* Note toggle button */}
+          <button
+            className={`flex h-6 w-6 items-center justify-center rounded-full transition-colors ${
+              currentAnnotation
+                ? 'bg-amber-500 text-white'
+                : showNote
+                  ? 'bg-amber-500/20 text-amber-600'
+                  : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+            }`}
+            title={ta('addNote')}
+            onClick={() => {
+              if (showNote && !currentAnnotation) {
+                setShowNote(false);
+                setNoteText('');
+              } else {
+                setShowNote(true);
+                if (!currentAnnotation) setIsEditing(false);
+              }
+            }}
+          >
+            <MessageSquare className="h-3 w-3" />
+          </button>
+        </div>
       </div>
 
       {isWeatherPoint && (
@@ -233,6 +362,8 @@ export function MapPopup({ popupInfo, onClose, mobileMode }: MapPopupProps) {
         )}
         {t('streetView')}
       </Button>
+
+      {noteSection}
     </div>
   );
 

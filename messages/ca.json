@@ -721,5 +721,14 @@
   "ShareButton": {
     "share": "Compartir ruta",
     "copied": "Enllaç copiat!"
+  },
+  "Annotations": {
+    "addNote": "Afegir nota",
+    "placeholder": "Escriu la teva nota per a aquesta ubicació...",
+    "save": "Desar",
+    "saveRouteFirst": "Desa la ruta primer per afegir notes",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "cancel": "Cancel·lar"
   }
 }

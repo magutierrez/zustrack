@@ -721,5 +721,14 @@
   "ShareButton": {
     "share": "Share route",
     "copied": "Link copied!"
+  },
+  "Annotations": {
+    "addNote": "Add note",
+    "placeholder": "Write your note for this location...",
+    "save": "Save",
+    "saveRouteFirst": "Save route first to add notes",
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel"
   }
 }

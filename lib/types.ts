@@ -5,6 +5,15 @@ declare module 'next-auth' {
   }
 }
 
+export interface Annotation {
+  id: string;
+  lat: number;
+  lon: number;
+  distanceFromStart: number;
+  text: string;
+  createdAt: string; // ISO
+}
+
 export interface RoutePoint {
   lat: number;
   lon: number;

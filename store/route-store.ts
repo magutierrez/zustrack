@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { GPXData, MountainPeak, RouteConfig, RouteWeatherPoint } from '@/lib/types';
+import type { Annotation, GPXData, MountainPeak, RouteConfig, RouteWeatherPoint } from '@/lib/types';
 
 export type ActiveFilter = {
   key: 'pathType' | 'surface' | 'hazard';
@@ -59,6 +59,7 @@ interface RouteState {
   isWeatherAnalyzed: boolean;
   bestWindows: any[];
   isFindingWindow: boolean;
+  annotations: Annotation[];
 
   // ── Actions ─────────────────────────────────────────────────────────────────
   setActiveFilter: (filter: ActiveFilter) => void;
@@ -109,6 +110,7 @@ interface RouteState {
   setIsWeatherAnalyzed: (analyzed: boolean) => void;
   setBestWindows: (windows: any[]) => void;
   setIsFindingWindow: (finding: boolean) => void;
+  setAnnotations: (annotations: Annotation[]) => void;
 }
 
 function getDefaultDate(): string {
@@ -161,6 +163,7 @@ const initialState = {
   isWeatherAnalyzed: false,
   bestWindows: [] as any[],
   isFindingWindow: false,
+  annotations: [] as Annotation[],
 };
 
 const getSmartDefaultSpeed = (
@@ -263,4 +266,5 @@ export const useRouteStore = create<RouteState>()((set) => ({
   setIsWeatherAnalyzed: (analyzed) => set({ isWeatherAnalyzed: analyzed }),
   setBestWindows: (windows) => set({ bestWindows: windows }),
   setIsFindingWindow: (finding) => set({ isFindingWindow: finding }),
+  setAnnotations: (annotations) => set({ annotations }),
 }));
