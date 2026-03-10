@@ -527,14 +527,16 @@ export function analyzeRouteSegments(weatherPoints: RouteWeatherPoint[]): RouteS
  * Unit Conversions
  */
 export function formatDistance(km: number, system: 'metric' | 'us' | 'uk' | 'imperial'): string {
-  if (system === 'metric') return `${km.toFixed(1)} km`;
-  const miles = km * 0.621371;
+  const safe = km ?? 0;
+  if (system === 'metric') return `${safe.toFixed(1)} km`;
+  const miles = safe * 0.621371;
   return `${miles.toFixed(1)} mi`;
 }
 
 export function formatElevation(m: number, system: 'metric' | 'us' | 'uk' | 'imperial'): string {
-  if (system === 'metric' || system === 'uk') return `${Math.round(m)} m`;
-  const feet = m * 3.28084;
+  const safe = m ?? 0;
+  if (system === 'metric' || system === 'uk') return `${Math.round(safe)} m`;
+  const feet = safe * 3.28084;
   return `${Math.round(feet)} ft`;
 }
 

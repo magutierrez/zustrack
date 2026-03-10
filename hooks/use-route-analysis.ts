@@ -185,15 +185,18 @@ export function useRouteAnalysis() {
     setIsWeatherAnalyzed,
   ]);
 
-  // Update elevation data when routeInfoData arrives
+  // Update elevation data when routeInfoData arrives (only if items carry valid distanceFromStart)
   useEffect(() => {
-    if (routeInfoData.length > 0) {
-      const newElevationData = routeInfoData.map((item) => ({
-        distance: item.distanceFromStart,
-        elevation: item.elevation || 0,
-      }));
-      setElevationData(newElevationData);
-    }
+    if (routeInfoData.length === 0) return;
+    const valid = routeInfoData.filter(
+      (item) => typeof item.distanceFromStart === 'number' && isFinite(item.distanceFromStart),
+    );
+    if (valid.length === 0) return; // routeInfoData lacks distances — keep GPX elevation profile
+    const newElevationData = valid.map((item) => ({
+      distance: item.distanceFromStart as number,
+      elevation: item.elevation || 0,
+    }));
+    setElevationData(newElevationData);
   }, [routeInfoData, setElevationData]);
 
   // Recalculate totals when elevationData changes (skipped when metrics are locked via shared URL)

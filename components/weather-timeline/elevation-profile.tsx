@@ -275,14 +275,10 @@ export function AnalysisChart() {
     // Tooltip + map sync
     const pt = nearestPoint(dist);
     if (pt && xScale && yScale) {
-      setTooltip({
-        svgX: xScale(pt.distance),
-        svgY: yScale(pt.elevation),
-        dist: pt.distance,
-        ele: pt.elevation,
-        slope: pt.slope,
-        color: pt.color,
-      });
+      const svgX = xScale(pt.distance);
+      const svgY = yScale(pt.elevation);
+      if (!isFinite(svgX) || !isFinite(svgY)) return;
+      setTooltip({ svgX, svgY, dist: pt.distance, ele: pt.elevation, slope: pt.slope, color: pt.color });
       setHoverByDistance(pt.distance);
     }
 
@@ -339,7 +335,7 @@ export function AnalysisChart() {
     selectedPoint && xScale && !zoomRange ? xScale(selectedPoint.distanceFromStart) : null;
 
   // Tooltip viewport X accounts for scroll offset so it stays visible
-  const tooltipVpX = tooltip !== null ? tooltip.svgX + margin.left - scrollLeft : 0;
+  const tooltipVpX = tooltip !== null && isFinite(tooltip.svgX) ? tooltip.svgX + margin.left - scrollLeft : 0;
   const tooltipOnRight = tooltip !== null && tooltipVpX < vpSize.w / 2;
 
   // ── Render ────────────────────────────────────────────────────────────
