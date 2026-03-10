@@ -24,6 +24,7 @@ interface RouteState {
   mountainPeaks: MountainPeak[];
   mountainPeaksLoaded: boolean;
   mountainPeaksLoading: boolean;
+  show3DTerrain: boolean;
   selectedPointIndex: number | null;
   isMobileFullscreen: boolean;
   /** When set, mobile elevation chart shows only this hazard segment */
@@ -74,6 +75,7 @@ interface RouteState {
   setShowNoCoverageZones: (show: boolean) => void;
   setShowEscapePoints: (show: boolean) => void;
   setShowMountainPeaks: (show: boolean) => void;
+  setShow3DTerrain: (show: boolean) => void;
   setMountainPeaks: (peaks: MountainPeak[]) => void;
   setMountainPeaksLoading: (loading: boolean) => void;
   setSelectedPointIndex: (index: number | null) => void;
@@ -130,6 +132,7 @@ const initialState = {
   showNoCoverageZones: false,
   showEscapePoints: false,
   showMountainPeaks: false,
+  show3DTerrain: false,
   mountainPeaks: [] as MountainPeak[],
   mountainPeaksLoaded: false,
   mountainPeaksLoading: false,
@@ -200,6 +203,7 @@ export const useRouteStore = create<RouteState>()((set) => ({
   setShowNoCoverageZones: (show) => set({ showNoCoverageZones: show }),
   setShowEscapePoints: (show) => set({ showEscapePoints: show }),
   setShowMountainPeaks: (show) => set({ showMountainPeaks: show }),
+  setShow3DTerrain: (show) => set({ show3DTerrain: show }),
   setMountainPeaks: (peaks) => set({ mountainPeaks: peaks, mountainPeaksLoaded: true, mountainPeaksLoading: false }),
   setMountainPeaksLoading: (loading) => set({ mountainPeaksLoading: loading }),
   setSelectedPointIndex: (index) => set({ selectedPointIndex: index }),

@@ -7,12 +7,15 @@ export function useMapTerrain(
   mapRef: RefObject<MapRef | null>,
   mapStyle: any,
   isPlayerActive: boolean,
+  enable3DTerrain: boolean,
 ) {
   const syncTerrain = useCallback(() => {
     const map = mapRef.current?.getMap();
     if (!map || !map.isStyleLoaded()) return;
 
-    if (isPlayerActive) {
+    const shouldEnable = isPlayerActive || enable3DTerrain;
+
+    if (shouldEnable) {
       const key = process.env.NEXT_PUBLIC_MAPTILER_KEY;
       if (!map.getSource('terrain-dem')) {
         map.addSource('terrain-dem', {
@@ -27,7 +30,7 @@ export function useMapTerrain(
       if (map.getTerrain()) map.setTerrain(null);
       if (map.getSource('terrain-dem')) map.removeSource('terrain-dem');
     }
-  }, [mapRef, isPlayerActive]);
+  }, [mapRef, isPlayerActive, enable3DTerrain]);
 
   useEffect(() => {
     const map = mapRef.current?.getMap();

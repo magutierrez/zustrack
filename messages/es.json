@@ -10,6 +10,8 @@
     "collapseMap": "Cerrar",
     "mountainPeaksHide": "Ocultar cimas",
     "mountainPeaksShow": "Mostrar cimas",
+    "terrain3DShow": "Activar terreno 3D",
+    "terrain3DHide": "Desactivar terreno 3D",
     "errors": {
       "insufficientPoints": "El archivo GPX no contiene suficientes puntos.",
       "readError": "Error al leer el archivo GPX. Verifica el formato.",
@@ -377,7 +379,8 @@
       "sett": "Empedrado",
       "paving_stones": "Adoquines",
       "rock": "Roca",
-      "scree": "Pedrera"
+      "scree": "Pedrera",
+      "wood": "Madera"
     }
   },
   "Auth": {

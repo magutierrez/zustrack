@@ -8,7 +8,7 @@ import { useTranslations } from 'next-intl';
 import Map, { NavigationControl, MapRef } from 'react-map-gl/maplibre';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { Loader2, Maximize2, Mountain, X } from 'lucide-react';
+import { Loader2, Maximize2, Mountain, MountainSnow, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -93,6 +93,7 @@ export default function RouteMap({
   const mountainPeaks = useRouteStore((s) => s.mountainPeaks);
   const mountainPeaksLoaded = useRouteStore((s) => s.mountainPeaksLoaded);
   const mountainPeaksLoading = useRouteStore((s) => s.mountainPeaksLoading);
+  const show3DTerrain = useRouteStore((s) => s.show3DTerrain);
   const focusPoint = useRouteStore((s) => s.focusPoint);
   const clickedChartPointDist = useRouteStore((s) => s.clickedChartPointDist);
   const mapResetRequested = useRouteStore((s) => s.mapResetRequested);
@@ -104,6 +105,7 @@ export default function RouteMap({
     setShowMountainPeaks,
     setMountainPeaks,
     setMountainPeaksLoading,
+    setShow3DTerrain,
   } = useRouteStore();
 
   const { annotations, addAnnotation, updateAnnotation, deleteAnnotation } = useAnnotations();
@@ -188,7 +190,7 @@ export default function RouteMap({
     ? `https://api.maptiler.com/maps/satellite/style.json?key=${process.env.NEXT_PUBLIC_MAPTILER_KEY}`
     : mapStyle;
 
-  const { syncTerrain } = useMapTerrain(mapRef, effectiveMapStyle, isPlayerActive);
+  const { syncTerrain } = useMapTerrain(mapRef, effectiveMapStyle, isPlayerActive, show3DTerrain);
 
   const { routeData, highlightedData, rangeHighlightData } = useMapLayers(
     points,
@@ -759,27 +761,41 @@ export default function RouteMap({
       {/* Layer selector — shifted below fullscreen button on mobile, hidden when popup active */}
       {!(isMobile && activePopupData) && <LayerControl mapType={mapType} setMapType={setMapType} />}
 
-      {/* Mountain peaks toggle — only for hiking, positioned below layer control */}
-      {!(isMobile && activePopupData) && points.length > 0 && activityType === 'walking' && (
-        <div className="absolute top-[calc(3.5rem+2.75rem+0.25rem)] right-3 z-10 lg:top-[calc(3rem+2.75rem+0.25rem)]">
+      {/* 3D terrain + mountain peaks toggles */}
+      {!(isMobile && activePopupData) && points.length > 0 && (
+        <div className="absolute top-[calc(3.5rem+2.75rem+0.25rem)] right-3 z-10 lg:top-[calc(3rem+2.75rem+0.25rem)] flex flex-col gap-1">
           <Button
-            variant="secondary"
+            variant={show3DTerrain ? 'default' : 'secondary'}
             size="icon"
-            className={cn(
-              'h-10 w-10 shadow-md',
-              showMountainPeaks && !mountainPeaksLoading && 'ring-primary ring-2',
-            )}
-            onClick={() => setShowMountainPeaks(!showMountainPeaks)}
-            disabled={mountainPeaksLoading}
-            aria-label={tMap(showMountainPeaks ? 'mountainPeaksHide' : 'mountainPeaksShow')}
-            title={tMap(showMountainPeaks ? 'mountainPeaksHide' : 'mountainPeaksShow')}
+            className="h-10 w-10 shadow-md"
+            onClick={() => {
+              const next = !show3DTerrain;
+              setShow3DTerrain(next);
+              mapRef.current?.getMap()?.easeTo({ pitch: next ? 60 : 0, duration: 800 });
+            }}
+            aria-label={tMap(show3DTerrain ? 'terrain3DHide' : 'terrain3DShow')}
+            title={tMap(show3DTerrain ? 'terrain3DHide' : 'terrain3DShow')}
           >
-            {mountainPeaksLoading ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : (
-              <Mountain className="h-5 w-5" />
-            )}
+            <MountainSnow className="h-5 w-5" />
           </Button>
+
+          {activityType === 'walking' && (
+            <Button
+              variant={showMountainPeaks && !mountainPeaksLoading ? 'default' : 'secondary'}
+              size="icon"
+              className="h-10 w-10 shadow-md"
+              onClick={() => setShowMountainPeaks(!showMountainPeaks)}
+              disabled={mountainPeaksLoading}
+              aria-label={tMap(showMountainPeaks ? 'mountainPeaksHide' : 'mountainPeaksShow')}
+              title={tMap(showMountainPeaks ? 'mountainPeaksHide' : 'mountainPeaksShow')}
+            >
+              {mountainPeaksLoading ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <Mountain className="h-5 w-5" />
+              )}
+            </Button>
+          )}
         </div>
       )}
 

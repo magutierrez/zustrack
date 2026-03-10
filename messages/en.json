@@ -10,6 +10,8 @@
     "collapseMap": "Close",
     "mountainPeaksHide": "Hide peaks",
     "mountainPeaksShow": "Show peaks",
+    "terrain3DShow": "Enable 3D terrain",
+    "terrain3DHide": "Disable 3D terrain",
     "errors": {
       "insufficientPoints": "The GPX file does not contain enough points.",
       "readError": "Error reading GPX file. Check the format.",
@@ -377,7 +379,8 @@
       "unknown": "Unknown",
       "sett": "Sett/Cobblestone",
       "rock": "Rock",
-      "scree": "Scree"
+      "scree": "Scree",
+      "wood": "Wood"
     }
   },
   "Auth": {

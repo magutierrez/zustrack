@@ -10,6 +10,8 @@
     "collapseMap": "Tancar",
     "mountainPeaksHide": "Amagar cims",
     "mountainPeaksShow": "Mostrar cims",
+    "terrain3DShow": "Activar terreny 3D",
+    "terrain3DHide": "Desactivar terreny 3D",
     "errors": {
       "insufficientPoints": "L'arxiu GPX no conté suficients punts.",
       "readError": "Error en llegir l'arxiu GPX. Verifica el format.",
@@ -377,7 +379,8 @@
       "sett": "Empedrat",
       "paving_stones": "Adoquins",
       "rock": "Roca",
-      "scree": "Pedrera"
+      "scree": "Pedrera",
+      "wood": "Fusta"
     }
   },
   "Auth": {
