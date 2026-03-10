@@ -9,7 +9,13 @@ interface Point {
 
 const bodySchema = z.object({
   points: z
-    .array(z.object({ lat: z.number().min(-90).max(90), lon: z.number().min(-180).max(180) }))
+    .array(
+      z.object({
+        lat: z.number().min(-90).max(90),
+        lon: z.number().min(-180).max(180),
+        distanceFromStart: z.number().optional(),
+      }),
+    )
     .min(1)
     .max(500),
   activityType: z.enum(['cycling', 'walking']).optional(),
@@ -236,7 +242,7 @@ export async function POST(request: NextRequest) {
         pathType: tags.highway,
         surface: tags.surface || (tags.highway === 'cycleway' ? 'asphalt' : undefined),
         elevation: elevations[idx] !== undefined ? Math.round(elevations[idx]) : 0,
-        distanceFromStart: (p as any).distanceFromStart,
+        distanceFromStart: p.distanceFromStart,
         mobileCoverage: coverage,
         waterSources,
         escapePoint: closestEscape
