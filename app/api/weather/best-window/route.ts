@@ -6,14 +6,28 @@ import {
   metNorwayProvider,
 } from '@/lib/weather-providers';
 import { calculateWindowScore } from '@/lib/utils';
+import { z } from 'zod';
+
+const keyPointSchema = z.object({
+  lat: z.number().min(-90).max(90),
+  lon: z.number().min(-180).max(180),
+  distanceFromStart: z.number().min(0),
+  bearing: z.number().optional(),
+});
+const bodySchema = z.object({
+  keyPoints: z.array(keyPointSchema).min(2).max(500),
+  activityType: z.enum(['cycling', 'walking']).optional(),
+  baseSpeed: z.number().positive(),
+  startTime: z.string().datetime().optional(),
+});
 
 export async function POST(request: NextRequest) {
   try {
-    const { keyPoints, activityType, baseSpeed, startTime } = await request.json();
-
-    if (!keyPoints || keyPoints.length < 2) {
-      return NextResponse.json({ error: 'At least 2 key points are required' }, { status: 400 });
+    const parsed = bodySchema.safeParse(await request.json());
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
     }
+    const { keyPoints, activityType, baseSpeed, startTime } = parsed.data;
 
     // Optimization: For short routes (< 15km), only use 2 points (Start, End) to save API calls
     const totalDistance = keyPoints[keyPoints.length - 1].distanceFromStart;
@@ -114,7 +128,7 @@ export async function POST(request: NextRequest) {
         windowPoints.length === optimizedKeyPoints.length &&
         windowPoints.every((p) => p.weather)
       ) {
-        const { score, reasons } = calculateWindowScore(windowPoints, activityType);
+        const { score, reasons } = calculateWindowScore(windowPoints, activityType ?? 'cycling');
 
         const avgTemp =
           windowPoints.reduce((sum, s) => sum + s.weather.temperature, 0) / windowPoints.length;

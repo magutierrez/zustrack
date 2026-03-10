@@ -5,6 +5,15 @@ declare module 'next-auth' {
   }
 }
 
+export interface Annotation {
+  id: string;
+  lat: number;
+  lon: number;
+  distanceFromStart: number;
+  text: string;
+  createdAt: string; // ISO
+}
+
 export interface RoutePoint {
   lat: number;
   lon: number;
@@ -93,6 +102,13 @@ export interface RouteConfig {
   date: string;
   time: string;
   speed: number;
+}
+
+export interface MountainPeak {
+  lat: number;
+  lng: number;
+  name: string;
+  elevation?: number; // metres
 }
 
 export interface GPXData {

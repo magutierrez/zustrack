@@ -8,6 +8,8 @@
     "uploadFirst": "Puja un arxiu GPX per començar",
     "expandMap": "Mapa a pantalla completa",
     "collapseMap": "Tancar",
+    "mountainPeaksHide": "Amagar cims",
+    "mountainPeaksShow": "Mostrar cims",
     "errors": {
       "insufficientPoints": "L'arxiu GPX no conté suficients punts.",
       "readError": "Error en llegir l'arxiu GPX. Verifica el format.",
@@ -479,7 +481,9 @@
     "backToMap": "Tornar al mapa",
     "elevation": "Elevació",
     "slope": "Pendent",
-    "streetView": "Street View"
+    "streetView": "Street View",
+    "evacuationPoint": "Evacuació",
+    "noElevationData": "Sense dades d'altitud"
   },
   "IBP": {
     "title": "Índex IBP",
@@ -717,5 +721,14 @@
   "ShareButton": {
     "share": "Compartir ruta",
     "copied": "Enllaç copiat!"
+  },
+  "Annotations": {
+    "addNote": "Afegir nota",
+    "placeholder": "Escriu la teva nota per a aquesta ubicació...",
+    "save": "Desar",
+    "saveRouteFirst": "Desa la ruta primer per afegir notes",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "cancel": "Cancel·lar"
   }
 }

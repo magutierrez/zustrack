@@ -1,24 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { openMeteoProvider, weatherApiProvider, tomorrowIoProvider } from '@/lib/weather-providers';
+import { z } from 'zod';
 
-interface WeatherRequest {
-  points: Array<{
-    lat: number;
-    lon: number;
-    estimatedTime: string;
-  }>;
-}
+const pointSchema = z.object({
+  lat: z.number().min(-90).max(90),
+  lon: z.number().min(-180).max(180),
+  estimatedTime: z.string().datetime(),
+});
+const bodySchema = z.object({ points: z.array(pointSchema).min(1).max(500) });
 
 export const runtime = 'edge';
 
 export async function POST(request: NextRequest) {
   try {
-    const body: WeatherRequest = await request.json();
-    const { points } = body;
-
-    if (!points || points.length === 0) {
-      return NextResponse.json({ error: 'No points provided' }, { status: 400 });
+    const parsed = bodySchema.safeParse(await request.json());
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
     }
+    const { points } = parsed.data;
 
     // Group points by unique lat/lon (rounded to reduce API calls)
     const uniqueLocationsMap = new Map<

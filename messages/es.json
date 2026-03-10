@@ -8,6 +8,8 @@
     "uploadFirst": "Sube un archivo GPX para empezar",
     "expandMap": "Mapa a pantalla completa",
     "collapseMap": "Cerrar",
+    "mountainPeaksHide": "Ocultar cimas",
+    "mountainPeaksShow": "Mostrar cimas",
     "errors": {
       "insufficientPoints": "El archivo GPX no contiene suficientes puntos.",
       "readError": "Error al leer el archivo GPX. Verifica el formato.",
@@ -479,7 +481,9 @@
     "backToMap": "Volver al Mapa",
     "elevation": "Elevación",
     "slope": "Pendiente",
-    "streetView": "Street View"
+    "streetView": "Street View",
+    "evacuationPoint": "Evacuación",
+    "noElevationData": "Sin datos de altitud"
   },
   "IBP": {
     "title": "Índice IBP",
@@ -717,5 +721,14 @@
   "ShareButton": {
     "share": "Compartir ruta",
     "copied": "¡Enlace copiado!"
+  },
+  "Annotations": {
+    "addNote": "Añadir nota",
+    "placeholder": "Escribe tu nota para esta ubicación...",
+    "save": "Guardar",
+    "saveRouteFirst": "Guarda la ruta primero para añadir notas",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "cancel": "Cancelar"
   }
 }

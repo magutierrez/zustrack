@@ -8,6 +8,8 @@
     "uploadFirst": "Téléchargez un fichier GPX pour commencer",
     "expandMap": "Carte plein écran",
     "collapseMap": "Fermer",
+    "mountainPeaksHide": "Masquer les sommets",
+    "mountainPeaksShow": "Afficher les sommets",
     "errors": {
       "insufficientPoints": "Le fichier GPX ne contient pas assez de points.",
       "readError": "Erreur lors de la lecture du fichier GPX. Vérifiez le format.",
@@ -480,7 +482,9 @@
     "backToMap": "Retour à la carte",
     "elevation": "Altitude",
     "slope": "Pente",
-    "streetView": "Vue street"
+    "streetView": "Vue street",
+    "evacuationPoint": "Évacuation",
+    "noElevationData": "Pas de données d'altitude"
   },
   "IBP": {
     "title": "Indice IBP",

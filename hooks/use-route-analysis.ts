@@ -365,7 +365,7 @@ export function useRouteAnalysis() {
           keyPoints,
           activityType: fetchedActivityType,
           baseSpeed: storeConfig.speed,
-          startTime: `${storeConfig.date}T${storeConfig.time}:00`,
+          startTime: `${storeConfig.date}T${storeConfig.time}:00Z`,
         }),
       });
 

@@ -13,6 +13,15 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Protect all other API routes — require an active session
+  if (pathname.startsWith('/api/')) {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    return NextResponse.next();
+  }
+
   // Detect locale segment at the start of the path
   const locale = routing.locales.find((l) => pathname.startsWith(`/${l}/`) || pathname === `/${l}`);
 
@@ -52,7 +61,7 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Exclude: API routes, Next.js internals, and any path with a file extension
+  // Exclude: Next.js internals and any path with a file extension
   // (e.g. /og.png, /favicon.ico, /robots.txt, /sitemap.xml, ...)
-  matcher: ['/((?!api|_next|.*\\.[^/]+$).*)'],
+  matcher: ['/((?!_next|.*\\.[^/]+$).*)'],
 };

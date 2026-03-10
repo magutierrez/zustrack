@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { LineString, TWKB } from '@/lib/tkwb-parser';
 import { base64ToUint8Array } from '@/lib/utils';
+import { z } from 'zod';
 
 // Edge runtime: runs on Cloudflare's edge network instead of AWS Lambda,
 // which has better IP reputation and avoids Wikiloc's data-center IP blocks.
@@ -8,20 +9,17 @@ export const runtime = 'edge';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const url = searchParams.get('url');
 
-  if (!url) {
-    return NextResponse.json({ error: 'URL is required' }, { status: 400 });
+  const urlParseResult = z.string().url().safeParse(searchParams.get('url'));
+  if (!urlParseResult.success) {
+    return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
   }
+  const url = urlParseResult.data;
 
-  // Only allow wikiloc.com URLs
-  try {
-    const parsed = new URL(url);
-    if (!parsed.hostname.endsWith('wikiloc.com')) {
-      return NextResponse.json({ error: 'Only Wikiloc URLs are supported' }, { status: 400 });
-    }
-  } catch {
-    return NextResponse.json({ error: 'Invalid URL' }, { status: 400 });
+  // Only allow exact wikiloc.com hostnames (prevent subdomain bypass)
+  const parsedUrl = new URL(url);
+  if (!['wikiloc.com', 'www.wikiloc.com'].includes(parsedUrl.hostname)) {
+    return NextResponse.json({ error: 'Only Wikiloc URLs are supported' }, { status: 400 });
   }
 
   try {

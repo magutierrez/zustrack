@@ -8,6 +8,8 @@
     "uploadFirst": "Upload a GPX file to start",
     "expandMap": "Full screen map",
     "collapseMap": "Close",
+    "mountainPeaksHide": "Hide peaks",
+    "mountainPeaksShow": "Show peaks",
     "errors": {
       "insufficientPoints": "The GPX file does not contain enough points.",
       "readError": "Error reading GPX file. Check the format.",
@@ -479,7 +481,9 @@
     "backToMap": "Back to Map",
     "elevation": "Elevation",
     "slope": "Slope",
-    "streetView": "Street View"
+    "streetView": "Street View",
+    "evacuationPoint": "Evacuation",
+    "noElevationData": "No elevation data"
   },
   "IBP": {
     "title": "IBP Index",
@@ -717,5 +721,14 @@
   "ShareButton": {
     "share": "Share route",
     "copied": "Link copied!"
+  },
+  "Annotations": {
+    "addNote": "Add note",
+    "placeholder": "Write your note for this location...",
+    "save": "Save",
+    "saveRouteFirst": "Save route first to add notes",
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel"
   }
 }
