@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import {
   Calendar as CalendarIcon,
   Clock,
@@ -28,6 +29,15 @@ export function ActivityConfigSection({ onAnalyze, onReverseRoute }: ActivityCon
   const config = useRouteStore((s) => s.config);
   const setConfig = useRouteStore((s) => s.setConfig);
   const isLoading = useRouteStore((s) => s.isLoading);
+
+  const { minDate, maxDate } = useMemo(() => {
+    const today = new Date();
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const fmt = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    const max = new Date(today);
+    max.setDate(today.getDate() + 3);
+    return { minDate: fmt(today), maxDate: fmt(max) };
+  }, []);
   const gpxData = useRouteStore((s) => s.gpxData);
 
   const hasGpxData = !!gpxData;
@@ -174,6 +184,8 @@ export function ActivityConfigSection({ onAnalyze, onReverseRoute }: ActivityCon
               id="date"
               type="date"
               value={config.date}
+              min={minDate}
+              max={maxDate}
               onChange={(e) => setConfig({ ...config, date: e.target.value })}
               className="h-9"
             />
