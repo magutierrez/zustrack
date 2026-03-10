@@ -380,7 +380,8 @@
       "sett": "Sett/Cobblestone",
       "rock": "Rock",
       "scree": "Scree",
-      "wood": "Wood"
+      "wood": "Wood",
+      "pebblestone": "Pebblestone"
     }
   },
   "Auth": {

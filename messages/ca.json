@@ -380,7 +380,8 @@
       "paving_stones": "Adoquins",
       "rock": "Roca",
       "scree": "Pedrera",
-      "wood": "Fusta"
+      "wood": "Fusta",
+      "pebblestone": "Empedrat de còdols"
     }
   },
   "Auth": {

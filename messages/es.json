@@ -380,7 +380,8 @@
       "paving_stones": "Adoquines",
       "rock": "Roca",
       "scree": "Pedrera",
-      "wood": "Madera"
+      "wood": "Madera",
+      "pebblestone": "Adoquín de canto rodado"
     }
   },
   "Auth": {
