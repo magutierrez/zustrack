@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Annotation, GPXData, MountainPeak, RouteConfig, RouteWeatherPoint } from '@/lib/types';
+import type { Annotation, GPXData, MapLayerType, MountainPeak, RouteConfig, RouteWeatherPoint } from '@/lib/types';
 
 export type ActiveFilter = {
   key: 'pathType' | 'surface' | 'hazard';
@@ -25,6 +25,7 @@ interface RouteState {
   mountainPeaksLoaded: boolean;
   mountainPeaksLoading: boolean;
   show3DTerrain: boolean;
+  mapLayerType: MapLayerType;
   selectedPointIndex: number | null;
   isMobileFullscreen: boolean;
   /** When set, mobile elevation chart shows only this hazard segment */
@@ -76,6 +77,7 @@ interface RouteState {
   setShowEscapePoints: (show: boolean) => void;
   setShowMountainPeaks: (show: boolean) => void;
   setShow3DTerrain: (show: boolean) => void;
+  setMapLayerType: (type: MapLayerType) => void;
   setMountainPeaks: (peaks: MountainPeak[]) => void;
   setMountainPeaksLoading: (loading: boolean) => void;
   setSelectedPointIndex: (index: number | null) => void;
@@ -133,6 +135,7 @@ const initialState = {
   showEscapePoints: false,
   showMountainPeaks: false,
   show3DTerrain: false,
+  mapLayerType: 'standard' as MapLayerType,
   mountainPeaks: [] as MountainPeak[],
   mountainPeaksLoaded: false,
   mountainPeaksLoading: false,
@@ -204,6 +207,7 @@ export const useRouteStore = create<RouteState>()((set) => ({
   setShowEscapePoints: (show) => set({ showEscapePoints: show }),
   setShowMountainPeaks: (show) => set({ showMountainPeaks: show }),
   setShow3DTerrain: (show) => set({ show3DTerrain: show }),
+  setMapLayerType: (type) => set({ mapLayerType: type }),
   setMountainPeaks: (peaks) => set({ mountainPeaks: peaks, mountainPeaksLoaded: true, mountainPeaksLoading: false }),
   setMountainPeaksLoading: (loading) => set({ mountainPeaksLoading: loading }),
   setSelectedPointIndex: (index) => set({ selectedPointIndex: index }),

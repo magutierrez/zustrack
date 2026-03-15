@@ -10,7 +10,9 @@ export function useMapTerrain(
   enable3DTerrain: boolean,
 ) {
   const [terrainLoading, setTerrainLoading] = useState(false);
+  const [terrainJustLoaded, setTerrainJustLoaded] = useState(false);
   const idleHandlerRef = useRef<(() => void) | null>(null);
+  const justLoadedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const clearIdleHandler = useCallback(() => {
     const map = mapRef.current?.getMap();
@@ -42,6 +44,9 @@ export function useMapTerrain(
       setTerrainLoading(true);
       const handler = () => {
         setTerrainLoading(false);
+        setTerrainJustLoaded(true);
+        if (justLoadedTimerRef.current) clearTimeout(justLoadedTimerRef.current);
+        justLoadedTimerRef.current = setTimeout(() => setTerrainJustLoaded(false), 700);
         idleHandlerRef.current = null;
       };
       idleHandlerRef.current = handler;
@@ -85,8 +90,9 @@ export function useMapTerrain(
   useEffect(() => {
     return () => {
       clearIdleHandler();
+      if (justLoadedTimerRef.current) clearTimeout(justLoadedTimerRef.current);
     };
   }, [clearIdleHandler]);
 
-  return { syncTerrain, terrainLoading };
+  return { syncTerrain, terrainLoading, terrainJustLoaded };
 }
