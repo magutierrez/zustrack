@@ -71,7 +71,8 @@
     "tabWikiloc": "Wikiloc",
     "tabStrava": "Strava",
     "wikilocImported": "Percorso importato",
-    "wikilocPoints": "{count} waypoint"
+    "wikilocPoints": "{count} waypoint",
+    "loading": "Caricamento..."
   },
   "Hazards": {
     "title": "Segmenti critici",
