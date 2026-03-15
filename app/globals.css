@@ -118,6 +118,17 @@
         }
     }
 
+    @keyframes terrain-pulse {
+        0%, 100% { opacity: 0.12; }
+        50% { opacity: 0.3; }
+    }
+
+    @keyframes terrain-scanline {
+        0% { top: 100%; opacity: 0.7; }
+        80% { opacity: 0.5; }
+        100% { top: -4%; opacity: 0; }
+    }
+
     --animate-fade-in-up: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     --animate-slide-in-up: slide-in-up 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
     --animate-pop-in: pop-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;

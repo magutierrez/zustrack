@@ -190,7 +190,23 @@ export default function RouteMap({
     ? `https://api.maptiler.com/maps/satellite/style.json?key=${process.env.NEXT_PUBLIC_MAPTILER_KEY}`
     : mapStyle;
 
-  const { syncTerrain } = useMapTerrain(mapRef, effectiveMapStyle, isPlayerActive, show3DTerrain);
+  const { syncTerrain, terrainLoading } = useMapTerrain(
+    mapRef,
+    effectiveMapStyle,
+    isPlayerActive,
+    show3DTerrain,
+  );
+
+  const prevTerrainLoadingRef = useRef(false);
+  const [terrainJustLoaded, setTerrainJustLoaded] = useState(false);
+  useEffect(() => {
+    if (prevTerrainLoadingRef.current && !terrainLoading && show3DTerrain) {
+      setTerrainJustLoaded(true);
+      const t = setTimeout(() => setTerrainJustLoaded(false), 700);
+      return () => clearTimeout(t);
+    }
+    prevTerrainLoadingRef.current = terrainLoading;
+  }, [terrainLoading, show3DTerrain]);
 
   const { routeData, highlightedData, rangeHighlightData } = useMapLayers(
     points,
@@ -642,6 +658,26 @@ export default function RouteMap({
         isMobileFullscreen && 'mobile-fullscreen-map',
       )}
     >
+      {/* Terrain loading overlay — scan effect from bottom while DEM tiles load */}
+      {terrainLoading && (
+        <div className="pointer-events-none absolute inset-0 z-[5] overflow-hidden">
+          <div
+            className="absolute inset-x-0 bottom-0 h-3/4 animate-[terrain-pulse_2s_ease-in-out_infinite]"
+            style={{
+              background:
+                'linear-gradient(to top, rgba(34,197,94,0.18) 0%, rgba(234,179,8,0.08) 45%, transparent 100%)',
+            }}
+          />
+          <div
+            className="absolute inset-x-0 h-[3px] animate-[terrain-scanline_2.2s_ease-in_infinite]"
+            style={{
+              background:
+                'linear-gradient(to right, transparent 0%, rgba(34,197,94,0.7) 30%, rgba(234,179,8,0.9) 50%, rgba(34,197,94,0.7) 70%, transparent 100%)',
+              boxShadow: '0 0 12px 3px rgba(34,197,94,0.4)',
+            }}
+          />
+        </div>
+      )}
       <Map
         ref={mapRef}
         mapLib={maplibregl}
@@ -768,6 +804,7 @@ export default function RouteMap({
             variant={show3DTerrain ? 'default' : 'secondary'}
             size="icon"
             className="h-10 w-10 shadow-md"
+            disabled={terrainLoading}
             onClick={() => {
               const next = !show3DTerrain;
               setShow3DTerrain(next);
@@ -776,7 +813,16 @@ export default function RouteMap({
             aria-label={tMap(show3DTerrain ? 'terrain3DHide' : 'terrain3DShow')}
             title={tMap(show3DTerrain ? 'terrain3DHide' : 'terrain3DShow')}
           >
-            <MountainSnow className="h-5 w-5" />
+            {terrainLoading ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <MountainSnow
+                className={cn(
+                  'h-5 w-5',
+                  terrainJustLoaded && 'animate-[pop-in_0.4s_cubic-bezier(0.16,1,0.3,1)_both]',
+                )}
+              />
+            )}
           </Button>
 
           {activityType === 'walking' && (
