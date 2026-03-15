@@ -71,6 +71,25 @@ export function projectOntoSegment(
 }
 
 /**
+ * Calculates the initial bearing (azimuth) from p1 to p2 in degrees [0, 360).
+ */
+export function calculateBearing(
+  p1: { lat: number; lon: number },
+  p2: { lat: number; lon: number },
+): number {
+  const toRad = (deg: number) => (deg * Math.PI) / 180;
+  const toDeg = (rad: number) => (rad * 180) / Math.PI;
+  const lat1 = toRad(p1.lat);
+  const lat2 = toRad(p2.lat);
+  const dLon = toRad(p2.lon - p1.lon);
+  const y = Math.sin(dLon) * Math.cos(lat2);
+  const x =
+    Math.cos(lat1) * Math.sin(lat2) -
+    Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+  return (toDeg(Math.atan2(y, x)) + 360) % 360;
+}
+
+/**
  * Finds the index of the route point closest to the given lat/lon.
  */
 export function findClosestPointIndex(

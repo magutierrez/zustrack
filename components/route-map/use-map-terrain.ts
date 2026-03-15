@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, RefObject } from 'react';
+import { useCallback, useEffect, useRef, RefObject, useState } from 'react';
 import type { MapRef } from 'react-map-gl/maplibre';
 
 export function useMapTerrain(
@@ -9,6 +9,19 @@ export function useMapTerrain(
   isPlayerActive: boolean,
   enable3DTerrain: boolean,
 ) {
+  const [terrainLoading, setTerrainLoading] = useState(false);
+  const [terrainJustLoaded, setTerrainJustLoaded] = useState(false);
+  const idleHandlerRef = useRef<(() => void) | null>(null);
+  const justLoadedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearIdleHandler = useCallback(() => {
+    const map = mapRef.current?.getMap();
+    if (map && idleHandlerRef.current) {
+      map.off('idle', idleHandlerRef.current);
+      idleHandlerRef.current = null;
+    }
+  }, [mapRef]);
+
   const syncTerrain = useCallback(() => {
     const map = mapRef.current?.getMap();
     if (!map || !map.isStyleLoaded()) return;
@@ -26,11 +39,25 @@ export function useMapTerrain(
         });
       }
       map.setTerrain({ source: 'terrain-dem', exaggeration: 1 });
+
+      clearIdleHandler();
+      setTerrainLoading(true);
+      const handler = () => {
+        setTerrainLoading(false);
+        setTerrainJustLoaded(true);
+        if (justLoadedTimerRef.current) clearTimeout(justLoadedTimerRef.current);
+        justLoadedTimerRef.current = setTimeout(() => setTerrainJustLoaded(false), 700);
+        idleHandlerRef.current = null;
+      };
+      idleHandlerRef.current = handler;
+      map.once('idle', handler);
     } else {
+      clearIdleHandler();
+      setTerrainLoading(false);
       if (map.getTerrain()) map.setTerrain(null);
       if (map.getSource('terrain-dem')) map.removeSource('terrain-dem');
     }
-  }, [mapRef, isPlayerActive, enable3DTerrain]);
+  }, [mapRef, isPlayerActive, enable3DTerrain, clearIdleHandler]);
 
   useEffect(() => {
     const map = mapRef.current?.getMap();
@@ -60,5 +87,12 @@ export function useMapTerrain(
     }
   }, [mapStyle, syncTerrain, mapRef]);
 
-  return { syncTerrain };
+  useEffect(() => {
+    return () => {
+      clearIdleHandler();
+      if (justLoadedTimerRef.current) clearTimeout(justLoadedTimerRef.current);
+    };
+  }, [clearIdleHandler]);
+
+  return { syncTerrain, terrainLoading, terrainJustLoaded };
 }

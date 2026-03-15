@@ -160,7 +160,7 @@ export function SetupPageClient({ session: serverSession }: SetupPageClientProps
         />
       </div>
 
-      <div className="border-border bg-card w-full max-w-2xl rounded-xl border p-6 shadow-xl">
+      <div className="border-border bg-card w-full max-w-2xl animate-[slide-in-up_0.45s_cubic-bezier(0.16,1,0.3,1)_both] rounded-xl border p-6 shadow-xl">
         <h1 className="text-foreground mb-6 text-center text-2xl font-bold">{t('title')}</h1>
 
         <Tabs defaultValue="gpx" className="mb-8 w-full">
@@ -233,7 +233,7 @@ export function SetupPageClient({ session: serverSession }: SetupPageClientProps
 
         <div className="mb-8">
           {selectedGpxData && (
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid animate-[slide-in-up_0.35s_cubic-bezier(0.16,1,0.3,1)_both] grid-cols-1 gap-4">
               <div className="flex flex-col gap-3">
                 <Label className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
                   {tRouteConfig('activity')}
@@ -270,7 +270,7 @@ export function SetupPageClient({ session: serverSession }: SetupPageClientProps
         </div>
 
         {error && (
-          <div className="border-destructive/30 bg-destructive/10 mt-auto mb-6 shrink-0 rounded-lg border p-3">
+          <div className="border-destructive/30 bg-destructive/10 mt-auto mb-6 shrink-0 animate-[slide-in-up_0.3s_cubic-bezier(0.16,1,0.3,1)_both] rounded-lg border p-3">
             <p className="text-destructive text-xs">{error}</p>
           </div>
         )}
@@ -278,9 +278,10 @@ export function SetupPageClient({ session: serverSession }: SetupPageClientProps
         <Button
           onClick={handleAnalyzeRoute}
           disabled={!selectedGpxData}
-          className="h-12 w-full gap-2 text-lg"
+          className="group h-12 w-full gap-2 text-lg"
         >
-          {t('analyzeRoute')} <ArrowRight className="h-5 w-5" />
+          {t('analyzeRoute')}{' '}
+          <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
         </Button>
       </div>
     </div>

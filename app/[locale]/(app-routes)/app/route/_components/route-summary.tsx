@@ -34,7 +34,12 @@ export function RouteSummary() {
   const activityType = fetchedActivityType ?? 'cycling';
 
   const ibpIndex = gpxData
-    ? calculateIBP(recalculatedTotalDistance, recalculatedElevationGain, activityType, recalculatedElevationLoss)
+    ? calculateIBP(
+        recalculatedTotalDistance,
+        recalculatedElevationGain,
+        activityType,
+        recalculatedElevationLoss,
+      )
     : 0;
   const difficulty = getIBPDifficulty(ibpIndex, activityType);
 
@@ -81,12 +86,20 @@ export function RouteSummary() {
                   placeholder={t('routeNamePlaceholder')}
                   maxLength={80}
                   autoFocus
-                  className="border-border bg-background text-foreground focus:ring-ring min-w-0 flex-1 truncate rounded border px-2 py-0.5 text-right text-sm font-medium focus:outline-none focus:ring-1"
+                  className="border-border bg-background text-foreground focus:ring-ring min-w-0 flex-1 truncate rounded border px-2 py-0.5 text-right text-sm font-medium focus:ring-1 focus:outline-none"
                 />
-                <button onClick={commitName} className="text-primary hover:text-primary/80 shrink-0" aria-label={t('editRouteName')}>
+                <button
+                  onClick={commitName}
+                  className="text-primary hover:text-primary/80 shrink-0"
+                  aria-label={t('editRouteName')}
+                >
                   <Check className="h-3.5 w-3.5" />
                 </button>
-                <button onClick={cancelEditing} className="text-muted-foreground hover:text-foreground shrink-0" aria-label="Cancel">
+                <button
+                  onClick={cancelEditing}
+                  className="text-muted-foreground hover:text-foreground shrink-0"
+                  aria-label="Cancel"
+                >
                   <X className="h-3.5 w-3.5" />
                 </button>
               </>
@@ -94,7 +107,7 @@ export function RouteSummary() {
               <button
                 onClick={startEditing}
                 title={t('editRouteName')}
-                className="group flex min-w-0 items-center gap-1 rounded px-1 py-0.5 transition-colors hover:bg-secondary"
+                className="group hover:bg-secondary flex min-w-0 items-center gap-1 rounded px-1 py-0.5 transition-colors"
               >
                 <span className="text-foreground min-w-0 truncate text-right text-sm font-medium">
                   {saved ? (
@@ -103,7 +116,7 @@ export function RouteSummary() {
                     currentName
                   )}
                 </span>
-                <Pencil className="text-muted-foreground h-3 w-3 shrink-0 opacity-0 transition-opacity group-hover:opacity-100" />
+                <Pencil className="text-muted-foreground h-3 w-3 shrink-0 opacity-0 transition-all group-hover:scale-125 group-hover:rotate-[-12deg] group-hover:opacity-100" />
               </button>
             )}
           </div>
@@ -194,7 +207,7 @@ export function RouteSummary() {
                 {startPoint.lat.toFixed(4)}, {startPoint.lon.toFixed(4)}
               </p>
             </div>
-            <ExternalLink className="h-3 w-3 shrink-0 text-emerald-600 opacity-0 transition-opacity group-hover:opacity-100" />
+            <ExternalLink className="h-3 w-3 shrink-0 translate-x-1 text-emerald-600 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
           </a>
 
           <a
@@ -214,7 +227,7 @@ export function RouteSummary() {
                 {endPoint.lat.toFixed(4)}, {endPoint.lon.toFixed(4)}
               </p>
             </div>
-            <ExternalLink className="h-3 w-3 shrink-0 text-rose-600 opacity-0 transition-opacity group-hover:opacity-100" />
+            <ExternalLink className="h-3 w-3 shrink-0 translate-x-1 text-rose-600 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
           </a>
         </div>
       )}

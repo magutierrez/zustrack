@@ -119,6 +119,17 @@ export interface GPXData {
   totalElevationLoss: number;
 }
 
+export type MapLayerType = 'standard' | 'satellite' | 'hybrid' | 'topography';
+
+export interface MapPopupInfo {
+  point: RoutePoint & { slope?: number };
+  weather: WeatherData;
+  windEffect: RouteWeatherPoint['windEffect'];
+  solarIntensity?: RouteWeatherPoint['solarIntensity'];
+  bearing?: number;
+  index: number;
+}
+
 export const WEATHER_CODES: Record<number, { description: string; icon: string }> = {
   0: { description: 'Despejado', icon: 'sun' },
   1: { description: 'Mayormente despejado', icon: 'sun' },

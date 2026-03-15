@@ -73,7 +73,8 @@
     "tabWikiloc": "Wikiloc",
     "tabStrava": "Strava",
     "wikilocImported": "Ruta importada",
-    "wikilocPoints": "{count} punts"
+    "wikilocPoints": "{count} punts",
+    "loading": "Carregant..."
   },
   "Hazards": {
     "title": "Trams Crítics",

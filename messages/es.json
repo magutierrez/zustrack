@@ -73,7 +73,8 @@
     "tabWikiloc": "Wikiloc",
     "tabStrava": "Strava",
     "wikilocImported": "Ruta importada",
-    "wikilocPoints": "{count} puntos"
+    "wikilocPoints": "{count} puntos",
+    "loading": "Cargando..."
   },
   "Hazards": {
     "title": "Tramos Críticos",

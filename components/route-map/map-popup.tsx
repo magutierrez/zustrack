@@ -2,7 +2,7 @@
 
 import { Popup } from 'react-map-gl/maplibre';
 import { useTranslations } from 'next-intl';
-import type { Annotation, RouteWeatherPoint } from '@/lib/types';
+import type { Annotation, MapPopupInfo } from '@/lib/types';
 import { WEATHER_CODES } from '@/lib/types';
 import {
   ArrowDown,
@@ -24,7 +24,7 @@ import { useEffect, useState } from 'react';
 import { WeatherIcon } from '@/components/weather-icon';
 
 interface MapPopupProps {
-  popupInfo: RouteWeatherPoint & { index: number; point: any; bearing?: number };
+  popupInfo: MapPopupInfo;
   onClose: () => void;
   mobileMode?: boolean;
   onSaveAnnotation?: (text: string) => void;

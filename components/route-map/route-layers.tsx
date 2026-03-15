@@ -47,7 +47,7 @@ export function RouteLayers({
             id="route-base"
             type="line"
             paint={{
-              'line-color': mapType === 'standard' ? '#1368CE' : '#ffffff',
+              'line-color': mapType === 'standard' ? '#1368CE' : '#000000',
               'line-width': 5,
               'line-opacity': activeFilter || selectedRange ? 0.3 : 1,
             }}
@@ -67,7 +67,7 @@ export function RouteLayers({
               'icon-rotation-alignment': 'map',
             }}
             paint={{
-              'icon-color': mapType === 'standard' ? '#1368CE' : '#ffffff',
+              'icon-color': mapType === 'standard' ? '#1368CE' : '#000000',
               'icon-opacity': activeFilter || selectedRange ? 0.4 : 1,
               'icon-halo-width': 0,
             }}

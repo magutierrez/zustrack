@@ -1,8 +1,9 @@
 'use client';
 
 import { useMemo } from 'react';
+import type { MapLayerType } from '@/lib/types';
 
-export type MapLayerType = 'standard' | 'satellite' | 'hybrid' | 'topography';
+export type { MapLayerType } from '@/lib/types';
 
 export function useMapStyle(mapType: MapLayerType, resolvedTheme: string | undefined) {
   const maptilerKey = process.env.NEXT_PUBLIC_MAPTILER_KEY;
