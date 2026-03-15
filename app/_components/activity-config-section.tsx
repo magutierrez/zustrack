@@ -67,7 +67,7 @@ export function ActivityConfigSection({ onAnalyze, onReverseRoute }: ActivityCon
         )}
       </div>
 
-      <div className="flex flex-col items-center gap-8 lg:flex-row lg:items-end">
+      <div className="flex flex-col flex-wrap items-center gap-8 lg:flex-row lg:items-end">
         <div className="flex w-full flex-col gap-3 lg:w-auto lg:flex-row lg:gap-8">
           {/* Speed */}
           <div className="flex flex-col gap-1.5">
@@ -214,7 +214,7 @@ export function ActivityConfigSection({ onAnalyze, onReverseRoute }: ActivityCon
           <Button
             onClick={() => onAnalyze()}
             disabled={!hasGpxData || isLoading}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 w-full flex-1 font-semibold"
+            className="group bg-primary text-primary-foreground hover:bg-primary/90 h-12 w-full flex-1 font-semibold"
             size="lg"
           >
             {isLoading ? (
