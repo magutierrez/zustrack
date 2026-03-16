@@ -1,5 +1,6 @@
 {
   "HomePage": {
+    "loadRoute": "Carga una ruta para ver el mapa",
     "loadingMap": "Cargando mapa...",
     "processingRoute": "Procesando ruta...",
     "obtainingData": "Obteniendo datos de elevación y terreno",
