@@ -60,6 +60,22 @@ function addArrowImage(map: maplibregl.Map) {
   map.addImage('route-arrow', imageData, { sdf: true });
 }
 
+const transformRequest = (url: string) => {
+  const PROXY_DOMAIN = process.env.NEXT_PUBLIC_PROXY_TILES_DOMAIN;
+
+  if (PROXY_DOMAIN && url.includes('api.maptiler.com')) {
+    const newUrl = url.replace('api.maptiler.com', PROXY_DOMAIN);
+
+    const urlObj = new URL(newUrl);
+    urlObj.searchParams.delete('key');
+
+    return {
+      url: urlObj.toString(),
+    };
+  }
+  return { url };
+};
+
 interface RouteMapProps {
   onResetToFullRouteView?: (func: () => void) => void;
   isMobileFullscreen?: boolean;
@@ -366,6 +382,7 @@ export default function RouteMap({
         onMouseLeave={onMapMouseLeave}
         dragRotate={true}
         touchZoomRotate={true}
+        transformRequest={transformRequest}
       >
         <NavigationControl position="bottom-right" />
 
