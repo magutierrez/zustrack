@@ -777,7 +777,30 @@
     "flat": "Piatto (≤1%)",
     "gentle": "Lieve (1–5%)",
     "steep": "Ripido (5–10%)",
-    "extreme": "Estremo (≥10%)"
+    "extreme": "Estremo (≥10%)",
+    "slopeBreakdown": "Distribuzione delle pendenze",
+    "surfaceTypes": "Tipi di superficie",
+    "pathTypes": "Tipi di percorso",
+    "surface": {
+      "asphalt": "Asfalto", "concrete": "Calcestruzzo", "paved": "Pavimentato",
+      "gravel": "Ghiaia", "fine_gravel": "Ghiaia fine", "pebblestone": "Acciottolato",
+      "compacted": "Compattato", "dirt": "Terra battuta", "earth": "Terra",
+      "ground": "Suolo", "grass": "Erba", "unpaved": "Non pavimentato",
+      "rock": "Roccia", "sand": "Sabbia", "mud": "Fango", "unknown": "Sconosciuto"
+    },
+    "pathType": {
+      "footway": "Percorso pedonale", "path": "Sentiero", "track": "Pista",
+      "cycleway": "Pista ciclabile", "bridleway": "Percorso equestre", "steps": "Scalini",
+      "primary": "Strada principale", "secondary": "Strada secondaria", "tertiary": "Strada terziaria",
+      "unclassified": "Via non classificata", "residential": "Via residenziale",
+      "service": "Via di servizio", "unknown": "Sconosciuto"
+    },
+    "escapePoints": "Punti di evacuazione",
+    "waterSources": "Fonti d'acqua",
+    "town": "Centro abitato", "road": "Strada principale", "shelter": "Rifugio di montagna",
+    "natural": "Sorgente naturale", "urban": "Rubinetto / fontana",
+    "reliable": "Affidabile", "seasonal": "Stagionale", "unreliable": "Non affidabile",
+    "kmAway": "km"
   },
   "TrailSearchPage": {
     "title": "Sentieri ufficiali",

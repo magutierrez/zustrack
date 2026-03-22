@@ -16,6 +16,11 @@ import { EffortBadge } from './effort-badge';
 import { SuitabilityChips } from './suitability-chips';
 import { TrailElevationChart } from './trail-elevation-chart';
 import { TrailMapWrapper } from './trail-map-wrapper';
+import { SlopeBreakdownBar } from './slope-breakdown-bar';
+import { SurfaceSection } from './surface-section';
+import { EscapePointsSection } from './escape-points-section';
+import { WaterSourcesSection } from './water-sources-section';
+import { TrailHazards } from './trail-hazards';
 
 function SeasonIcon({ season }: { season: string }) {
   if (season === 'avoid_summer') return <Sun className="h-4 w-4 text-amber-500" />;
@@ -166,6 +171,25 @@ export async function TrailDetailView({ trail, locale }: { trail: Trail; locale:
           />
         )}
 
+        {/* Hazards & effort segments */}
+        {trail.track_profile && trail.track_profile.length > 1 && (
+          <TrailHazards trackProfile={trail.track_profile} />
+        )}
+
+        {/* Slope breakdown */}
+        {trail.slope_breakdown && (
+          <SlopeBreakdownBar
+            breakdown={trail.slope_breakdown}
+            labels={{
+              slopeBreakdown: t('slopeBreakdown'),
+              flat: t('flat'),
+              gentle: t('gentle'),
+              steep: t('steep'),
+              extreme: t('extreme'),
+            }}
+          />
+        )}
+
         {/* Suitability */}
         <SuitabilityChips
           childFriendly={trail.child_friendly}
@@ -177,6 +201,83 @@ export async function TrailDetailView({ trail, locale }: { trail: Trail; locale:
             no: t('no'),
           }}
         />
+
+        {/* Surface types + path types */}
+        {(trail.dominant_surface || trail.dominant_path_type) && (
+          <SurfaceSection
+            dominantSurface={trail.dominant_surface}
+            surfaceBreakdown={trail.surface_breakdown}
+            dominantPathType={trail.dominant_path_type}
+            pathTypeBreakdown={trail.path_type_breakdown}
+            labels={{
+              surfaceTypes: t('surfaceTypes'),
+              pathTypes: t('pathTypes'),
+              surface: {
+                asphalt: t('surface.asphalt'),
+                concrete: t('surface.concrete'),
+                paved: t('surface.paved'),
+                gravel: t('surface.gravel'),
+                fine_gravel: t('surface.fine_gravel'),
+                pebblestone: t('surface.pebblestone'),
+                compacted: t('surface.compacted'),
+                dirt: t('surface.dirt'),
+                earth: t('surface.earth'),
+                ground: t('surface.ground'),
+                grass: t('surface.grass'),
+                unpaved: t('surface.unpaved'),
+                rock: t('surface.rock'),
+                sand: t('surface.sand'),
+                mud: t('surface.mud'),
+                unknown: t('surface.unknown'),
+              },
+              pathType: {
+                footway: t('pathType.footway'),
+                path: t('pathType.path'),
+                track: t('pathType.track'),
+                cycleway: t('pathType.cycleway'),
+                bridleway: t('pathType.bridleway'),
+                steps: t('pathType.steps'),
+                primary: t('pathType.primary'),
+                secondary: t('pathType.secondary'),
+                tertiary: t('pathType.tertiary'),
+                unclassified: t('pathType.unclassified'),
+                residential: t('pathType.residential'),
+                service: t('pathType.service'),
+                unknown: t('pathType.unknown'),
+              },
+            }}
+          />
+        )}
+
+        {/* Escape points */}
+        {trail.escape_points && trail.escape_points.length > 0 && (
+          <EscapePointsSection
+            escapePoints={trail.escape_points}
+            labels={{
+              escapePoints: t('escapePoints'),
+              town: t('town'),
+              road: t('road'),
+              shelter: t('shelter'),
+              kmAway: t('kmAway'),
+            }}
+          />
+        )}
+
+        {/* Water sources */}
+        {trail.water_sources && trail.water_sources.length > 0 && (
+          <WaterSourcesSection
+            waterSources={trail.water_sources}
+            labels={{
+              waterSources: t('waterSources'),
+              natural: t('natural'),
+              urban: t('urban'),
+              reliable: t('reliable'),
+              seasonal: t('seasonal'),
+              unreliable: t('unreliable'),
+              kmAway: t('kmAway'),
+            }}
+          />
+        )}
 
         {/* Description */}
         {trail.description && (

@@ -777,7 +777,30 @@
     "flat": "Plat (≤1%)",
     "gentle": "Doux (1–5%)",
     "steep": "Raide (5–10%)",
-    "extreme": "Extrême (≥10%)"
+    "extreme": "Extrême (≥10%)",
+    "slopeBreakdown": "Répartition des pentes",
+    "surfaceTypes": "Types de surface",
+    "pathTypes": "Types de voie",
+    "surface": {
+      "asphalt": "Asphalte", "concrete": "Béton", "paved": "Pavé",
+      "gravel": "Gravier", "fine_gravel": "Gravier fin", "pebblestone": "Pavés",
+      "compacted": "Compacté", "dirt": "Terre", "earth": "Terre",
+      "ground": "Sol", "grass": "Herbe", "unpaved": "Non pavé",
+      "rock": "Roche", "sand": "Sable", "mud": "Boue", "unknown": "Inconnu"
+    },
+    "pathType": {
+      "footway": "Chemin piéton", "path": "Sentier", "track": "Piste",
+      "cycleway": "Piste cyclable", "bridleway": "Allée cavalière", "steps": "Escaliers",
+      "primary": "Route principale", "secondary": "Route secondaire", "tertiary": "Route tertiaire",
+      "unclassified": "Voie non classée", "residential": "Rue résidentielle",
+      "service": "Voie de service", "unknown": "Inconnu"
+    },
+    "escapePoints": "Points d'évacuation",
+    "waterSources": "Sources d'eau",
+    "town": "Ville", "road": "Route principale", "shelter": "Refuge de montagne",
+    "natural": "Source naturelle", "urban": "Robinet / fontaine",
+    "reliable": "Fiable", "seasonal": "Saisonnier", "unreliable": "Non fiable",
+    "kmAway": "km"
   },
   "TrailSearchPage": {
     "title": "Sentiers officiels",

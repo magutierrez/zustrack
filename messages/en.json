@@ -789,7 +789,30 @@
     "flat": "Flat (≤1%)",
     "gentle": "Gentle (1–5%)",
     "steep": "Steep (5–10%)",
-    "extreme": "Extreme (≥10%)"
+    "extreme": "Extreme (≥10%)",
+    "slopeBreakdown": "Slope distribution",
+    "surfaceTypes": "Surface types",
+    "pathTypes": "Path types",
+    "surface": {
+      "asphalt": "Asphalt", "concrete": "Concrete", "paved": "Paved",
+      "gravel": "Gravel", "fine_gravel": "Fine gravel", "pebblestone": "Pebblestone",
+      "compacted": "Compacted", "dirt": "Dirt", "earth": "Earth",
+      "ground": "Ground", "grass": "Grass", "unpaved": "Unpaved",
+      "rock": "Rock", "sand": "Sand", "mud": "Mud", "unknown": "Unknown"
+    },
+    "pathType": {
+      "footway": "Footway", "path": "Path", "track": "Track",
+      "cycleway": "Cycleway", "bridleway": "Bridleway", "steps": "Steps",
+      "primary": "Main road", "secondary": "Secondary road", "tertiary": "Tertiary road",
+      "unclassified": "Unclassified road", "residential": "Residential road",
+      "service": "Service road", "unknown": "Unknown"
+    },
+    "escapePoints": "Emergency exit points",
+    "waterSources": "Water sources",
+    "town": "Town", "road": "Main road", "shelter": "Mountain hut",
+    "natural": "Natural spring", "urban": "Tap / fountain",
+    "reliable": "Reliable", "seasonal": "Seasonal", "unreliable": "Unreliable",
+    "kmAway": "km"
   },
   "TrailSearchPage": {
     "title": "Official trails",

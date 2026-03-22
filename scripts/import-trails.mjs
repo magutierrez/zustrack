@@ -123,6 +123,201 @@ function getTextContent(doc, ...tags) {
   return null;
 }
 
+/** Sleep for ms milliseconds */
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/** Compute slope breakdown percentages from track_profile points */
+function computeSlopeBreakdown(trackProfile) {
+  if (!trackProfile || trackProfile.length < 2) return null;
+
+  let flat = 0, gentle = 0, steep = 0, extreme = 0, total = 0;
+
+  for (let i = 1; i < trackProfile.length; i++) {
+    const prev = trackProfile[i - 1];
+    const curr = trackProfile[i];
+    const segDistKm = curr.d - prev.d;
+    if (segDistKm <= 0) continue;
+
+    total += segDistKm;
+
+    if (prev.e !== null && curr.e !== null) {
+      const slopePct = Math.abs((curr.e - prev.e) / (segDistKm * 1000)) * 100;
+      if (slopePct <= 1) flat += segDistKm;
+      else if (slopePct <= 5) gentle += segDistKm;
+      else if (slopePct <= 10) steep += segDistKm;
+      else extreme += segDistKm;
+    } else {
+      flat += segDistKm; // unknown elevation → assume flat
+    }
+  }
+
+  if (total === 0) return null;
+  return {
+    flat: Math.round((flat / total) * 100),
+    gentle: Math.round((gentle / total) * 100),
+    steep: Math.round((steep / total) * 100),
+    extreme: Math.round((extreme / total) * 100),
+  };
+}
+
+/**
+ * Query Overpass OSM for surface/path types, escape points, and water sources.
+ * Uses the same query as app/api/route-info/route.ts.
+ */
+async function fetchOsmEnrichment(bbox, trackProfile) {
+  const overpassQuery = `[out:json][timeout:30];
+(
+  way["highway"](${bbox});
+  node["place"~"village|town|hamlet"](${bbox});
+  way["highway"~"primary|secondary|tertiary"](${bbox});
+  node["amenity"="drinking_water"](${bbox});
+  node["natural"="spring"](${bbox});
+  node["man_made"="water_tap"](${bbox});
+  node["tourism"~"alpine_hut|wilderness_hut"](${bbox});
+  way["tourism"~"alpine_hut|wilderness_hut"](${bbox});
+);
+out center;`;
+
+  let elements = [];
+  try {
+    const response = await fetch('https://overpass-api.de/api/interpreter', {
+      method: 'POST',
+      body: `data=${encodeURIComponent(overpassQuery)}`,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'User-Agent': 'zustrackapp/1.0',
+      },
+      signal: AbortSignal.timeout(35000),
+    });
+    if (response.ok) {
+      const data = await response.json();
+      elements = data.elements || [];
+    }
+  } catch (err) {
+    console.warn(`    ⚠  Overpass error: ${err.message}`);
+    return null;
+  }
+
+  // Distance in km between two lat/lon pairs (fast approximation, same as route-info)
+  const distKm = (p1, p2) =>
+    Math.sqrt(Math.pow(p1.lat - p2.lat, 2) + Math.pow(p1.lng - p2.lng, 2)) * 111.32;
+
+  const highwayEls = elements.filter((el) => el.tags?.highway);
+  const escapeEls = elements.filter(
+    (el) =>
+      el.tags?.place ||
+      (el.tags?.highway && ['primary', 'secondary'].includes(el.tags.highway)) ||
+      (el.tags?.tourism && ['alpine_hut', 'wilderness_hut'].includes(el.tags.tourism)),
+  );
+  const waterEls = elements.filter(
+    (el) =>
+      el.tags?.amenity === 'drinking_water' ||
+      el.tags?.natural === 'spring' ||
+      el.tags?.man_made === 'water_tap',
+  );
+
+  // --- Surface and path type breakdown ---
+  const surfaceCounts = {};
+  const pathTypeCounts = {};
+  let matchedPoints = 0;
+
+  for (const tp of trackProfile) {
+    let bestDist = Infinity;
+    let bestEl = null;
+    for (const el of highwayEls) {
+      if (!el.center) continue;
+      const d = distKm(tp, el.center);
+      if (d < 0.1 && d < bestDist) { bestDist = d; bestEl = el; }
+    }
+    if (bestEl) {
+      matchedPoints++;
+      const surface = bestEl.tags.surface || (bestEl.tags.highway === 'cycleway' ? 'asphalt' : 'unknown');
+      const pathType = bestEl.tags.highway || 'unknown';
+      surfaceCounts[surface] = (surfaceCounts[surface] || 0) + 1;
+      pathTypeCounts[pathType] = (pathTypeCounts[pathType] || 0) + 1;
+    }
+  }
+
+  let dominantSurface = null, surfaceBreakdown = null;
+  let dominantPathType = null, pathTypeBreakdown = null;
+
+  if (matchedPoints > 0) {
+    const toBreakdown = (counts) => {
+      const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+      return Object.fromEntries(sorted.map(([k, v]) => [k, Math.round((v / matchedPoints) * 100)]));
+    };
+    surfaceBreakdown = toBreakdown(surfaceCounts);
+    dominantSurface = Object.entries(surfaceCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+    pathTypeBreakdown = toBreakdown(pathTypeCounts);
+    dominantPathType = Object.entries(pathTypeCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+  }
+
+  // --- Escape points (deduplicated, max 5) ---
+  const seenEscape = new Set();
+  const escapePoints = [];
+  for (const tp of trackProfile) {
+    for (const el of escapeEls) {
+      const center = el.center || { lat: el.lat, lon: el.lon };
+      if (!center) continue;
+      const d = distKm(tp, { lat: center.lat, lng: center.lon });
+      if (d > 2.5) continue;
+      const key = `${Math.round(center.lat * 100)},${Math.round((center.lon ?? center.lng) * 100)}`;
+      if (seenEscape.has(key)) continue;
+      seenEscape.add(key);
+      const tags = el.tags || {};
+      escapePoints.push({
+        lat: center.lat,
+        lng: center.lon ?? center.lng,
+        name: tags.name || (tags.tourism ? 'Refugio' : tags.highway ? 'Carretera principal' : 'Núcleo urbano'),
+        type: tags.tourism ? 'shelter' : tags.place ? 'town' : 'road',
+        distanceFromRoute: Math.round(d * 10) / 10,
+      });
+      if (escapePoints.length >= 5) break;
+    }
+    if (escapePoints.length >= 5) break;
+  }
+
+  // --- Water sources (deduplicated, max 10) ---
+  const seenWater = new Set();
+  const waterSources = [];
+  for (const tp of trackProfile) {
+    for (const el of waterEls) {
+      const center = el.center || { lat: el.lat, lon: el.lon };
+      if (!center) continue;
+      const d = distKm(tp, { lat: center.lat, lng: center.lon });
+      if (d > 1.5) continue;
+      const key = `${Math.round(center.lat * 100)},${Math.round((center.lon ?? center.lng) * 100)}`;
+      if (seenWater.has(key)) continue;
+      seenWater.add(key);
+      const isNatural = el.tags?.natural === 'spring';
+      const type = isNatural ? 'natural' : 'urban';
+      // Simple reliability: natural springs = medium (seasonal), urban = high
+      const reliability = isNatural ? 'medium' : 'high';
+      waterSources.push({
+        lat: center.lat,
+        lng: center.lon ?? center.lng,
+        name: el.tags?.name || (isNatural ? 'Manantial' : 'Fuente'),
+        type,
+        distanceFromRoute: Math.round(d * 10) / 10,
+        reliability,
+      });
+      if (waterSources.length >= 10) break;
+    }
+    if (waterSources.length >= 10) break;
+  }
+
+  return {
+    dominant_surface: dominantSurface,
+    surface_breakdown: surfaceBreakdown,
+    dominant_path_type: dominantPathType,
+    path_type_breakdown: pathTypeBreakdown,
+    escape_points: escapePoints.length > 0 ? escapePoints : null,
+    water_sources: waterSources.length > 0 ? waterSources : null,
+  };
+}
+
 /** Sample up to maxPoints evenly-spaced points from the track for the profile */
 function sampleTrackPoints(points, cumulativeDists, maxPoints) {
   if (points.length === 0) return [];
@@ -348,7 +543,32 @@ async function main() {
       }
 
       const slug = `${slugify(metrics.name)}-${id}`;
-      const row = { id, slug, country: COUNTRY, gpx_file: filename, ...metrics };
+
+      // Slope breakdown (no API, derived from track_profile)
+      const slopeBreakdown = computeSlopeBreakdown(metrics.track_profile);
+
+      // OSM enrichment (Overpass API) — skipped in dry-run
+      let osmData = null;
+      if (!DRY_RUN && metrics.track_profile && metrics.bbox_min_lat !== null) {
+        const bboxStr = `${metrics.bbox_min_lat},${metrics.bbox_min_lng},${metrics.bbox_max_lat},${metrics.bbox_max_lng}`;
+        osmData = await fetchOsmEnrichment(bboxStr, metrics.track_profile);
+        await sleep(1100); // Overpass rate limit: ~1 req/s
+      }
+
+      const row = {
+        id,
+        slug,
+        country: COUNTRY,
+        gpx_file: filename,
+        ...metrics,
+        slope_breakdown: slopeBreakdown,
+        dominant_surface: osmData?.dominant_surface ?? null,
+        surface_breakdown: osmData?.surface_breakdown ?? null,
+        dominant_path_type: osmData?.dominant_path_type ?? null,
+        path_type_breakdown: osmData?.path_type_breakdown ?? null,
+        escape_points: osmData?.escape_points ?? null,
+        water_sources: osmData?.water_sources ?? null,
+      };
 
       if (DRY_RUN) {
         if (i < 5) {

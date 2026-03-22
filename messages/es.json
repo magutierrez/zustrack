@@ -789,7 +789,30 @@
     "flat": "Llano (≤1%)",
     "gentle": "Suave (1–5%)",
     "steep": "Pronunciado (5–10%)",
-    "extreme": "Extremo (≥10%)"
+    "extreme": "Extremo (≥10%)",
+    "slopeBreakdown": "Distribución de pendiente",
+    "surfaceTypes": "Tipos de superficie",
+    "pathTypes": "Tipos de vía",
+    "surface": {
+      "asphalt": "Asfalto", "concrete": "Hormigón", "paved": "Pavimentado",
+      "gravel": "Grava", "fine_gravel": "Grava fina", "pebblestone": "Empedrado",
+      "compacted": "Compactado", "dirt": "Tierra", "earth": "Tierra",
+      "ground": "Suelo", "grass": "Hierba", "unpaved": "Sin pavimentar",
+      "rock": "Roca", "sand": "Arena", "mud": "Barro", "unknown": "Desconocido"
+    },
+    "pathType": {
+      "footway": "Sendero peatonal", "path": "Camino", "track": "Pista",
+      "cycleway": "Carril bici", "bridleway": "Camino ecuestre", "steps": "Escalones",
+      "primary": "Carretera principal", "secondary": "Carretera secundaria", "tertiary": "Carretera terciaria",
+      "unclassified": "Vía sin clasificar", "residential": "Calle residencial",
+      "service": "Vía de servicio", "unknown": "Desconocido"
+    },
+    "escapePoints": "Puntos de evacuación",
+    "waterSources": "Fuentes de agua",
+    "town": "Núcleo urbano", "road": "Carretera principal", "shelter": "Refugio de montaña",
+    "natural": "Manantial natural", "urban": "Grifo / fuente",
+    "reliable": "Fiable", "seasonal": "Estacional", "unreliable": "No fiable",
+    "kmAway": "km"
   },
   "TrailSearchPage": {
     "title": "Senderos oficiales",

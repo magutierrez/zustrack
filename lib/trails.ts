@@ -38,6 +38,26 @@ export interface Trail {
   point_count: number | null;
   waypoint_count: number | null;
   track_profile: Array<{ lat: number; lng: number; d: number; e: number | null }> | null;
+  slope_breakdown: { flat: number; gentle: number; steep: number; extreme: number } | null;
+  dominant_surface: string | null;
+  surface_breakdown: Record<string, number> | null;
+  dominant_path_type: string | null;
+  path_type_breakdown: Record<string, number> | null;
+  escape_points: Array<{
+    lat: number;
+    lng: number;
+    name: string;
+    type: 'town' | 'road' | 'shelter';
+    distanceFromRoute: number;
+  }> | null;
+  water_sources: Array<{
+    lat: number;
+    lng: number;
+    name: string;
+    type: 'natural' | 'urban';
+    distanceFromRoute: number;
+    reliability: 'high' | 'medium' | 'low';
+  }> | null;
 }
 
 export type TrailSummary = Pick<
