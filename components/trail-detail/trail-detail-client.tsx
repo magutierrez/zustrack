@@ -58,9 +58,11 @@ export function TrailDetailClient({
   const [selectedRange, setSelectedRange] = useState<Range | null>(null);
   const [hoverDist, setHoverDist] = useState<number | null>(null);
   const [focusPoint, setFocusPoint] = useState<FocusPoint | null>(null);
+  const [activePOI, setActivePOI] = useState<FocusPoint | null>(null);
 
   const handleShowOnMap = (lat: number, lng: number) => {
-    setFocusPoint({ lat, lng });
+    setFocusPoint({ lat, lng });   // triggers fly-to (consumed by map)
+    setActivePOI({ lat, lng });    // persists for marker + list highlight
   };
 
   return (
@@ -77,7 +79,7 @@ export function TrailDetailClient({
         waterSources={waterSources}
         focusPoint={focusPoint}
         onFocusPointConsumed={() => setFocusPoint(null)}
-        activePOI={focusPoint}
+        activePOI={activePOI}
       />
       {trackProfile.length > 1 && (
         <TrailElevationChart
@@ -106,7 +108,7 @@ export function TrailDetailClient({
             kmAway: poiLabels.kmAway,
             showOnMap: poiLabels.showOnMap,
           }}
-          activePOI={focusPoint}
+          activePOI={activePOI}
           onShowOnMap={handleShowOnMap}
         />
       )}
@@ -123,7 +125,7 @@ export function TrailDetailClient({
             kmAway: poiLabels.kmAway,
             showOnMap: poiLabels.showOnMap,
           }}
-          activePOI={focusPoint}
+          activePOI={activePOI}
           onShowOnMap={handleShowOnMap}
         />
       )}
