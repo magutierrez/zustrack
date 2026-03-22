@@ -31,6 +31,7 @@ export function TrailDetailClient({
   elevationLabels: ElevationLabels;
 }) {
   const [selectedRange, setSelectedRange] = useState<Range | null>(null);
+  const [hoverDist, setHoverDist] = useState<number | null>(null);
 
   return (
     <>
@@ -40,11 +41,15 @@ export function TrailDetailClient({
         isCircular={isCircular}
         selectedRange={selectedRange}
         onReset={() => setSelectedRange(null)}
+        hoverDist={hoverDist}
+        onHoverDist={setHoverDist}
       />
       {trackProfile.length > 1 && (
         <TrailElevationChart
           trackProfile={trackProfile}
           labels={elevationLabels}
+          externalHoverDist={hoverDist}
+          onHoverDist={setHoverDist}
         />
       )}
       <TrailHazards

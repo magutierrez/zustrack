@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect, useMemo } from 'react';
+import { useRef, useEffect, useMemo, useCallback } from 'react';
 import Map, { NavigationControl, Source, Layer, Marker, type MapRef } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { getSlopeColorHex } from '@/lib/slope-colors';
@@ -19,6 +19,8 @@ interface TrailMapProps {
   isCircular: boolean;
   selectedRange?: { start: number; end: number } | null;
   onReset?: () => void;
+  hoverDist?: number | null;
+  onHoverDist?: (dist: number | null) => void;
 }
 
 const MAP_STYLE = `https://api.maptiler.com/maps/outdoor-v2/style.json?key=${process.env.NEXT_PUBLIC_MAPTILER_KEY}`;
@@ -52,6 +54,8 @@ export default function TrailMap({
   isCircular,
   selectedRange,
   onReset: _onReset,
+  hoverDist,
+  onHoverDist,
 }: TrailMapProps) {
   const mapRef = useRef<MapRef | null>(null);
 
@@ -128,6 +132,40 @@ export default function TrailMap({
 
   const baseOpacity = selectedRange ? 0.3 : 1;
 
+  // Find the closest track point for the hovered distance
+  const hoverPoint = useMemo(() => {
+    if (hoverDist == null || trackProfile.length === 0) return null;
+    let best = trackProfile[0];
+    let bestDiff = Math.abs(best.d - hoverDist);
+    for (const p of trackProfile) {
+      const diff = Math.abs(p.d - hoverDist);
+      if (diff < bestDiff) { best = p; bestDiff = diff; }
+    }
+    return best;
+  }, [hoverDist, trackProfile]);
+
+  const handleMapMouseMove = useCallback(
+    (e: any) => {
+      if (!onHoverDist || trackProfile.length === 0) return;
+      const { lng, lat } = e.lngLat;
+      let best = trackProfile[0];
+      let bestDistSq = Infinity;
+      for (const p of trackProfile) {
+        const dlat = p.lat - lat;
+        const dlng = p.lng - lng;
+        const dsq = dlat * dlat + dlng * dlng;
+        if (dsq < bestDistSq) { bestDistSq = dsq; best = p; }
+      }
+      // ~0.003° ≈ 330 m threshold
+      onHoverDist(bestDistSq < 0.003 * 0.003 ? best.d : null);
+    },
+    [onHoverDist, trackProfile],
+  );
+
+  const handleMapMouseLeave = useCallback(() => {
+    onHoverDist?.(null);
+  }, [onHoverDist]);
+
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800">
       <Map
@@ -145,6 +183,8 @@ export default function TrailMap({
             { padding: 40, duration: 0 },
           );
         }}
+        onMouseMove={handleMapMouseMove}
+        onMouseLeave={handleMapMouseLeave}
         attributionControl={false}
       >
         <NavigationControl position="top-right" />
@@ -207,6 +247,13 @@ export default function TrailMap({
             color="#ef4444"
             label="E"
           />
+        )}
+
+        {/* Hover dot — synced with elevation chart */}
+        {hoverPoint && (
+          <Marker latitude={hoverPoint.lat} longitude={hoverPoint.lng} anchor="center">
+            <div className="h-3.5 w-3.5 rounded-full border-2 border-white bg-amber-400 shadow-md" />
+          </Marker>
         )}
       </Map>
 

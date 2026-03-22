@@ -50,9 +50,13 @@ const MARGIN = { top: 8, right: 16, bottom: 28, left: 50 };
 export function TrailElevationChart({
   trackProfile,
   labels,
+  externalHoverDist,
+  onHoverDist,
 }: {
   trackProfile: TrackPoint[];
   labels: Labels;
+  externalHoverDist?: number | null;
+  onHoverDist?: (dist: number | null) => void;
 }) {
   const outerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -168,6 +172,48 @@ export function TrailElevationChart({
     [yScale],
   );
 
+  // Compute tooltip state for a given distance value
+  const tooltipFromDist = (dist: number): TooltipState | null => {
+    if (!xScale || !yScale || !chartData.length) return null;
+    let best = chartData[0];
+    let bestDiff = Math.abs(best.distance - dist);
+    for (const d of chartData) {
+      const diff = Math.abs(d.distance - dist);
+      if (diff < bestDiff) { best = d; bestDiff = diff; }
+    }
+    return {
+      x: xScale(best.distance),
+      y: yScale(best.elevation),
+      dist: best.distance,
+      ele: best.elevation,
+      slope: best.slope,
+      color: best.color,
+    };
+  };
+
+  // External hover indicator (from map) — only shown when chart is not being hovered
+  const externalTooltip = useMemo<TooltipState | null>(() => {
+    if (externalHoverDist == null || !xScale || !yScale || !chartData.length) return null;
+    let best = chartData[0];
+    let bestDiff = Math.abs(best.distance - externalHoverDist);
+    for (const d of chartData) {
+      const diff = Math.abs(d.distance - externalHoverDist);
+      if (diff < bestDiff) { best = d; bestDiff = diff; }
+    }
+    return {
+      x: xScale(best.distance),
+      y: yScale(best.elevation),
+      dist: best.distance,
+      ele: best.elevation,
+      slope: best.slope,
+      color: best.color,
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [externalHoverDist, chartData, xScale, yScale, innerW, innerH]);
+
+  // Active tooltip: local (chart hover) takes priority over external (map hover)
+  const activeTooltip = tooltip ?? externalTooltip;
+
   // Mouse interaction
   const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
     if (!svgRef.current || !xScale || !yScale || !chartData.length) return;
@@ -175,21 +221,16 @@ export function TrailElevationChart({
     const x = e.clientX - rect.left - MARGIN.left;
     const dist = xScale.invert(Math.max(0, Math.min(innerW, x)));
 
-    let best = chartData[0];
-    let bestDiff = Math.abs(best.distance - dist);
-    for (const d of chartData) {
-      const diff = Math.abs(d.distance - dist);
-      if (diff < bestDiff) { best = d; bestDiff = diff; }
+    const t = tooltipFromDist(dist);
+    if (t) {
+      setTooltip(t);
+      onHoverDist?.(t.dist);
     }
+  };
 
-    setTooltip({
-      x: xScale(best.distance),
-      y: yScale(best.elevation),
-      dist: best.distance,
-      ele: best.elevation,
-      slope: best.slope,
-      color: best.color,
-    });
+  const handleMouseLeave = () => {
+    setTooltip(null);
+    onHoverDist?.(null);
   };
 
   if (chartData.length < 2) return null;
@@ -208,26 +249,26 @@ export function TrailElevationChart({
       {/* Chart area */}
       <div ref={outerRef} className="relative h-44 w-full select-none">
         {/* Tooltip */}
-        {tooltip && (
+        {activeTooltip && (
           <div
             className="pointer-events-none absolute top-1 z-10"
             style={
-              tooltip.x + MARGIN.left < size.w / 2
-                ? { left: tooltip.x + MARGIN.left + 10 }
-                : { right: size.w - tooltip.x - MARGIN.left + 10 }
+              activeTooltip.x + MARGIN.left < size.w / 2
+                ? { left: activeTooltip.x + MARGIN.left + 10 }
+                : { right: size.w - activeTooltip.x - MARGIN.left + 10 }
             }
           >
             <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white/95 px-2.5 py-1.5 shadow-lg backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/95">
               <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">
-                {Math.round(tooltip.ele)} {labels.meters}
+                {Math.round(activeTooltip.ele)} {labels.meters}
               </span>
               <span className="text-slate-300 dark:text-slate-600">·</span>
-              <span className="text-xs text-slate-500">{tooltip.dist.toFixed(1)} {labels.km}</span>
+              <span className="text-xs text-slate-500">{activeTooltip.dist.toFixed(1)} {labels.km}</span>
               <span className="text-slate-300 dark:text-slate-600">·</span>
               <div className="flex items-center gap-1">
-                <div className="h-2 w-2 rounded-full" style={{ backgroundColor: tooltip.color }} />
+                <div className="h-2 w-2 rounded-full" style={{ backgroundColor: activeTooltip.color }} />
                 <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">
-                  {tooltip.slope}%
+                  {activeTooltip.slope}%
                 </span>
               </div>
             </div>
@@ -239,7 +280,7 @@ export function TrailElevationChart({
           width="100%"
           height="100%"
           onMouseMove={handleMouseMove}
-          onMouseLeave={() => setTooltip(null)}
+          onMouseLeave={handleMouseLeave}
           className="cursor-crosshair"
         >
           <defs>
@@ -280,15 +321,15 @@ export function TrailElevationChart({
             />
 
             {/* Hover crosshair + dot */}
-            {tooltip && (
+            {activeTooltip && (
               <>
                 <line
-                  x1={tooltip.x} x2={tooltip.x} y1={0} y2={innerH}
+                  x1={activeTooltip.x} x2={activeTooltip.x} y1={0} y2={innerH}
                   stroke="currentColor" strokeOpacity={0.2} strokeWidth={1} strokeDasharray="3 3"
                 />
                 <circle
-                  cx={tooltip.x} cy={tooltip.y} r={4}
-                  fill={tooltip.color} stroke="white" strokeWidth={1.5}
+                  cx={activeTooltip.x} cy={activeTooltip.y} r={4}
+                  fill={activeTooltip.color} stroke="white" strokeWidth={1.5}
                 />
               </>
             )}

@@ -17,9 +17,11 @@ interface Props {
   isCircular: boolean;
   selectedRange?: { start: number; end: number } | null;
   onReset?: () => void;
+  hoverDist?: number | null;
+  onHoverDist?: (dist: number | null) => void;
 }
 
-export function TrailMapWrapper({ trackProfile, name, isCircular, selectedRange, onReset }: Props) {
+export function TrailMapWrapper({ trackProfile, name, isCircular, selectedRange, onReset, hoverDist, onHoverDist }: Props) {
   return (
     <TrailMapInner
       trackProfile={trackProfile}
@@ -27,6 +29,8 @@ export function TrailMapWrapper({ trackProfile, name, isCircular, selectedRange,
       isCircular={isCircular}
       selectedRange={selectedRange}
       onReset={onReset}
+      hoverDist={hoverDist}
+      onHoverDist={onHoverDist}
     />
   );
 }
