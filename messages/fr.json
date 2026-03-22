@@ -801,7 +801,8 @@
     "town": "Ville", "road": "Route principale", "shelter": "Refuge de montagne",
     "natural": "Source naturelle", "urban": "Robinet / fontaine",
     "reliable": "Fiable", "seasonal": "Saisonnier", "unreliable": "Non fiable",
-    "kmAway": "km"
+    "kmAway": "km",
+    "showOnMap": "Voir sur la carte"
   },
   "TrailSearchPage": {
     "title": "Sentiers officiels",

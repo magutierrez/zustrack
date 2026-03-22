@@ -16,8 +16,6 @@ import { EffortBadge } from './effort-badge';
 import { SuitabilityChips } from './suitability-chips';
 import { SlopeBreakdownBar } from './slope-breakdown-bar';
 import { SurfaceSection } from './surface-section';
-import { EscapePointsSection } from './escape-points-section';
-import { WaterSourcesSection } from './water-sources-section';
 import { TrailDetailClient } from './trail-detail-client';
 
 function SeasonIcon({ season }: { season: string }) {
@@ -136,6 +134,22 @@ export async function TrailDetailView({ trail, locale }: { trail: Trail; locale:
               meters: t('meters'),
               resetZoom: t('resetZoom'),
             }}
+            escapePoints={trail.escape_points ?? undefined}
+            waterSources={trail.water_sources ?? undefined}
+            poiLabels={{
+              showOnMap: t('showOnMap'),
+              escapePoints: t('escapePoints'),
+              town: t('town'),
+              road: t('road'),
+              shelter: t('shelter'),
+              waterSources: t('waterSources'),
+              natural: t('natural'),
+              urban: t('urban'),
+              reliable: t('reliable'),
+              seasonal: t('seasonal'),
+              unreliable: t('unreliable'),
+              kmAway: t('kmAway'),
+            }}
           />
         )}
 
@@ -232,36 +246,6 @@ export async function TrailDetailView({ trail, locale }: { trail: Trail; locale:
                 service: t('pathType.service'),
                 unknown: t('pathType.unknown'),
               },
-            }}
-          />
-        )}
-
-        {/* Escape points */}
-        {trail.escape_points && trail.escape_points.length > 0 && (
-          <EscapePointsSection
-            escapePoints={trail.escape_points}
-            labels={{
-              escapePoints: t('escapePoints'),
-              town: t('town'),
-              road: t('road'),
-              shelter: t('shelter'),
-              kmAway: t('kmAway'),
-            }}
-          />
-        )}
-
-        {/* Water sources */}
-        {trail.water_sources && trail.water_sources.length > 0 && (
-          <WaterSourcesSection
-            waterSources={trail.water_sources}
-            labels={{
-              waterSources: t('waterSources'),
-              natural: t('natural'),
-              urban: t('urban'),
-              reliable: t('reliable'),
-              seasonal: t('seasonal'),
-              unreliable: t('unreliable'),
-              kmAway: t('kmAway'),
             }}
           />
         )}

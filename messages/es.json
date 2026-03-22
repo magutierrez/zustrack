@@ -813,7 +813,8 @@
     "town": "Núcleo urbano", "road": "Carretera principal", "shelter": "Refugio de montaña",
     "natural": "Manantial natural", "urban": "Grifo / fuente",
     "reliable": "Fiable", "seasonal": "Estacional", "unreliable": "No fiable",
-    "kmAway": "km"
+    "kmAway": "km",
+    "showOnMap": "Ver en el mapa"
   },
   "TrailSearchPage": {
     "title": "Senderos oficiales",

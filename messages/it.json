@@ -801,7 +801,8 @@
     "town": "Centro abitato", "road": "Strada principale", "shelter": "Rifugio di montagna",
     "natural": "Sorgente naturale", "urban": "Rubinetto / fontana",
     "reliable": "Affidabile", "seasonal": "Stagionale", "unreliable": "Non affidabile",
-    "kmAway": "km"
+    "kmAway": "km",
+    "showOnMap": "Mostra sulla mappa"
   },
   "TrailSearchPage": {
     "title": "Sentieri ufficiali",

@@ -813,7 +813,8 @@
     "town": "Nucli urbà", "road": "Carretera principal", "shelter": "Refugi de muntanya",
     "natural": "Deu natural", "urban": "Aixeta / font",
     "reliable": "Fiable", "seasonal": "Estacional", "unreliable": "No fiable",
-    "kmAway": "km"
+    "kmAway": "km",
+    "showOnMap": "Veure al mapa"
   },
   "TrailSearchPage": {
     "title": "Senders oficials",

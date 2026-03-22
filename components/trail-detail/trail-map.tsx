@@ -5,6 +5,8 @@ import Map, { NavigationControl, Source, Layer, Marker, type MapRef } from 'reac
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { getSlopeColorHex } from '@/lib/slope-colors';
 import { haversineDistance } from '@/lib/gpx-parser';
+import type { EscapePoint } from './escape-points-section';
+import type { WaterSource } from './water-sources-section';
 
 interface TrackPoint {
   lat: number;
@@ -12,6 +14,13 @@ interface TrackPoint {
   d: number;
   e: number | null;
 }
+
+// Colors per escape point type
+const ESCAPE_COLORS: Record<EscapePoint['type'], string> = {
+  town: '#f97316',   // orange
+  road: '#3b82f6',   // blue
+  shelter: '#a855f7', // purple
+};
 
 interface TrailMapProps {
   trackProfile: TrackPoint[];
@@ -21,6 +30,11 @@ interface TrailMapProps {
   onReset?: () => void;
   hoverDist?: number | null;
   onHoverDist?: (dist: number | null) => void;
+  escapePoints?: EscapePoint[];
+  waterSources?: WaterSource[];
+  focusPoint?: { lat: number; lng: number } | null;
+  onFocusPointConsumed?: () => void;
+  activePOI?: { lat: number; lng: number } | null;
 }
 
 const MAP_STYLE = `https://api.maptiler.com/maps/outdoor-v2/style.json?key=${process.env.NEXT_PUBLIC_MAPTILER_KEY}`;
@@ -60,6 +74,11 @@ function buildGradientStops(points: TrackPoint[]): (string | number)[] {
   return stops;
 }
 
+function isActivePOI(activePOI: { lat: number; lng: number } | null | undefined, lat: number, lng: number) {
+  if (!activePOI) return false;
+  return Math.abs(activePOI.lat - lat) < 0.00001 && Math.abs(activePOI.lng - lng) < 0.00001;
+}
+
 export default function TrailMap({
   trackProfile,
   name,
@@ -68,6 +87,11 @@ export default function TrailMap({
   onReset: _onReset,
   hoverDist,
   onHoverDist,
+  escapePoints,
+  waterSources,
+  focusPoint,
+  onFocusPointConsumed,
+  activePOI,
 }: TrailMapProps) {
   const mapRef = useRef<MapRef | null>(null);
 
@@ -141,6 +165,15 @@ export default function TrailMap({
       );
     }
   }, [selectedRange, trackProfile, minLat, maxLat, minLng, maxLng]);
+
+  // Fly to POI focus point when set
+  useEffect(() => {
+    if (!focusPoint) return;
+    const map = mapRef.current;
+    if (!map) return;
+    map.flyTo({ center: [focusPoint.lng, focusPoint.lat], zoom: 14, duration: 800 });
+    onFocusPointConsumed?.();
+  }, [focusPoint, onFocusPointConsumed]);
 
   const baseOpacity = selectedRange ? 0.3 : 1;
 
@@ -245,6 +278,43 @@ export default function TrailMap({
             />
           </Source>
         )}
+
+        {/* Escape point marker — only shown when selected via "Show on map" */}
+        {escapePoints?.map((ep, i) => {
+          if (!isActivePOI(activePOI, ep.lat, ep.lng)) return null;
+          const color = ESCAPE_COLORS[ep.type];
+          return (
+            <Marker key={`ep-${i}`} latitude={ep.lat} longitude={ep.lng} anchor="bottom">
+              <div className="flex flex-col items-center">
+                <div
+                  style={{ backgroundColor: color }}
+                  className="flex h-7 w-7 items-center justify-center rounded-full text-[9px] font-black text-white shadow-lg ring-2 ring-white ring-offset-1"
+                >
+                  {ep.type === 'town' ? 'T' : ep.type === 'road' ? 'R' : 'S'}
+                </div>
+                <div
+                  style={{ borderTopColor: color }}
+                  className="h-0 w-0 border-l-[5px] border-r-[5px] border-t-[6px] border-l-transparent border-r-transparent"
+                />
+              </div>
+            </Marker>
+          );
+        })}
+
+        {/* Water source marker — only shown when selected via "Show on map" */}
+        {waterSources?.map((ws, i) => {
+          if (!isActivePOI(activePOI, ws.lat, ws.lng)) return null;
+          return (
+            <Marker key={`ws-${i}`} latitude={ws.lat} longitude={ws.lng} anchor="bottom">
+              <div className="flex flex-col items-center">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-sky-500 text-[9px] font-black text-white shadow-lg ring-2 ring-white ring-offset-1">
+                  💧
+                </div>
+                <div className="h-0 w-0 border-l-[5px] border-r-[5px] border-t-[6px] border-l-transparent border-r-transparent border-t-sky-500" />
+              </div>
+            </Marker>
+          );
+        })}
 
         {/* Start marker */}
         {trackProfile.length > 0 && (

@@ -813,7 +813,8 @@
     "town": "Town", "road": "Main road", "shelter": "Mountain hut",
     "natural": "Natural spring", "urban": "Tap / fountain",
     "reliable": "Reliable", "seasonal": "Seasonal", "unreliable": "Unreliable",
-    "kmAway": "km"
+    "kmAway": "km",
+    "showOnMap": "Show on map"
   },
   "TrailSearchPage": {
     "title": "Official trails",
