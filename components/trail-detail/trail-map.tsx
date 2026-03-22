@@ -81,7 +81,7 @@ function isActivePOI(activePOI: { lat: number; lng: number } | null | undefined,
 
 export default function TrailMap({
   trackProfile,
-  name,
+  name: _name,
   isCircular,
   selectedRange,
   onReset: _onReset,
@@ -95,7 +95,6 @@ export default function TrailMap({
 }: TrailMapProps) {
   const mapRef = useRef<MapRef | null>(null);
 
-  const totalDist = trackProfile.length > 0 ? trackProfile[trackProfile.length - 1].d : 0;
   const coordinates = trackProfile.map((p) => [p.lng, p.lat]);
 
   const geojson: GeoJSON.FeatureCollection = {
@@ -212,7 +211,7 @@ export default function TrailMap({
   }, [onHoverDist]);
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800">
+    <div className="h-full w-full overflow-hidden">
       <Map
         ref={mapRef}
         initialViewState={{
@@ -220,7 +219,7 @@ export default function TrailMap({
           latitude: (minLat + maxLat) / 2,
           zoom: 10,
         }}
-        style={{ width: '100%', height: 320 }}
+        style={{ width: '100%', height: '100%' }}
         mapStyle={MAP_STYLE}
         onLoad={(e) => {
           e.target.fitBounds(
@@ -338,12 +337,6 @@ export default function TrailMap({
           </Marker>
         )}
       </Map>
-
-      {/* Distance legend */}
-      <div className="flex items-center justify-between bg-slate-50 px-3 py-2 text-xs text-slate-500 dark:bg-slate-900 dark:text-slate-400">
-        <span>{name}</span>
-        <span>{totalDist.toFixed(1)} km</span>
-      </div>
     </div>
   );
 }
