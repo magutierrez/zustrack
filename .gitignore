@@ -16,3 +16,4 @@ skills-lock.json
 testing/
 next-env.d.ts
 tsconfig.tsbuildinfo
+gpx_trails/*
