@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
-import { TrendingUp, TrendingDown, Activity, Zap, Flame } from 'lucide-react';
+import { TrendingUp, TrendingDown, Activity, Zap, Flame, Map, RefreshCcw } from 'lucide-react';
 import {
   AreaChart,
   Area,
@@ -14,6 +14,7 @@ import {
 } from 'recharts';
 import { getSlopeColorHex } from '@/lib/slope-colors';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -303,28 +304,37 @@ const SEGMENT_COLORS: Record<string, string> = {
 
 export function TrailHazards({
   trackProfile,
+  selectedRange,
+  onSegmentSelect,
+  onReset,
 }: {
   trackProfile: TrackPoint[];
+  selectedRange?: { start: number; end: number } | null;
+  onSegmentSelect?: (start: number, end: number) => void;
+  onReset?: () => void;
 }) {
   const t = useTranslations('Hazards');
 
   const segments = useMemo(() => analyzeTrackSegments(trackProfile), [trackProfile]);
 
-  if (segments.length === 0) {
-    return (
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold">{t('title')}</h2>
-        <div className="rounded-xl border-2 border-dashed border-slate-200 p-10 text-center dark:border-slate-800">
-          <Zap className="mx-auto mb-3 h-8 w-8 text-slate-300 dark:text-slate-700" />
-          <p className="text-sm italic text-slate-400 dark:text-slate-500">{t('noSegments')}</p>
-        </div>
-      </section>
-    );
-  }
+  if (segments.length === 0) return null;
 
   return (
     <section className="space-y-4">
-      <h2 className="text-lg font-semibold">{t('title')}</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold">{t('title')}</h2>
+        {selectedRange && (
+          <Button
+            variant="secondary"
+            size="sm"
+            className="h-8 gap-1.5 text-[10px] font-bold uppercase tracking-wider"
+            onClick={onReset}
+          >
+            <RefreshCcw className="h-3.5 w-3.5" />
+            {t('showFullRoute')}
+          </Button>
+        )}
+      </div>
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {segments.map((seg, idx) => {
           const chartData = buildChartData(seg.points);
@@ -342,11 +352,17 @@ export function TrailHazards({
           );
 
           const fillColor = seg.dangerLevel === 'high' ? '#ef4444' : '#f59e0b';
+          const isSelected =
+            selectedRange?.start === seg.startDist && selectedRange?.end === seg.endDist;
 
           return (
             <div
               key={idx}
-              className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900"
+              className={`overflow-hidden rounded-xl border bg-white transition-all dark:bg-slate-900 ${
+                isSelected
+                  ? 'border-amber-400 ring-2 ring-amber-400/50 dark:border-amber-400'
+                  : 'border-slate-200 dark:border-slate-800'
+              }`}
             >
               {/* Header */}
               <div className="flex items-start justify-between border-b border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/50">
@@ -475,6 +491,15 @@ export function TrailHazards({
                     </span>
                   </div>
                 </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 gap-1.5 px-2 text-[10px] font-bold uppercase transition-colors hover:bg-amber-50 hover:text-amber-700 dark:hover:bg-amber-900/20 dark:hover:text-amber-400"
+                  onClick={() => onSegmentSelect?.(seg.startDist, seg.endDist)}
+                >
+                  <Map className="h-3 w-3" />
+                  {t('showOnMap')}
+                </Button>
               </div>
             </div>
           );

@@ -11,14 +11,22 @@ interface TrackPoint {
   e: number | null;
 }
 
-export function TrailMapWrapper({
-  trackProfile,
-  name,
-  isCircular,
-}: {
+interface Props {
   trackProfile: TrackPoint[];
   name: string;
   isCircular: boolean;
-}) {
-  return <TrailMapInner trackProfile={trackProfile} name={name} isCircular={isCircular} />;
+  selectedRange?: { start: number; end: number } | null;
+  onReset?: () => void;
+}
+
+export function TrailMapWrapper({ trackProfile, name, isCircular, selectedRange, onReset }: Props) {
+  return (
+    <TrailMapInner
+      trackProfile={trackProfile}
+      name={name}
+      isCircular={isCircular}
+      selectedRange={selectedRange}
+      onReset={onReset}
+    />
+  );
 }

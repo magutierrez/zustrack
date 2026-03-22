@@ -15,12 +15,11 @@ import { StatsGrid } from './stats-grid';
 import { EffortBadge } from './effort-badge';
 import { SuitabilityChips } from './suitability-chips';
 import { TrailElevationChart } from './trail-elevation-chart';
-import { TrailMapWrapper } from './trail-map-wrapper';
 import { SlopeBreakdownBar } from './slope-breakdown-bar';
 import { SurfaceSection } from './surface-section';
 import { EscapePointsSection } from './escape-points-section';
 import { WaterSourcesSection } from './water-sources-section';
-import { TrailHazards } from './trail-hazards';
+import { TrailDetailClient } from './trail-detail-client';
 
 function SeasonIcon({ season }: { season: string }) {
   if (season === 'avoid_summer') return <Sun className="h-4 w-4 text-amber-500" />;
@@ -121,9 +120,9 @@ export async function TrailDetailView({ trail, locale }: { trail: Trail; locale:
           </div>
         </div>
 
-        {/* Interactive map */}
+        {/* Interactive map + hazard segments (shared selectedRange state via TrailDetailClient) */}
         {trail.track_profile && trail.track_profile.length > 0 && (
-          <TrailMapWrapper
+          <TrailDetailClient
             trackProfile={trail.track_profile}
             name={trail.name}
             isCircular={trail.is_circular}
@@ -169,11 +168,6 @@ export async function TrailDetailView({ trail, locale }: { trail: Trail; locale:
               meters: t('meters'),
             }}
           />
-        )}
-
-        {/* Hazards & effort segments */}
-        {trail.track_profile && trail.track_profile.length > 1 && (
-          <TrailHazards trackProfile={trail.track_profile} />
         )}
 
         {/* Slope breakdown */}

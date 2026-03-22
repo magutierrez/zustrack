@@ -1,6 +1,7 @@
 'use client';
 
-import Map, { NavigationControl, Source, Layer, Marker } from 'react-map-gl/maplibre';
+import { useRef, useEffect, useMemo } from 'react';
+import Map, { NavigationControl, Source, Layer, Marker, type MapRef } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { getSlopeColorHex } from '@/lib/slope-colors';
 import { haversineDistance } from '@/lib/gpx-parser';
@@ -16,6 +17,8 @@ interface TrailMapProps {
   trackProfile: TrackPoint[];
   name: string;
   isCircular: boolean;
+  selectedRange?: { start: number; end: number } | null;
+  onReset?: () => void;
 }
 
 const MAP_STYLE = `https://api.maptiler.com/maps/outdoor-v2/style.json?key=${process.env.NEXT_PUBLIC_MAPTILER_KEY}`;
@@ -43,28 +46,32 @@ function buildGradientStops(points: TrackPoint[]): (string | number)[] {
   return stops;
 }
 
-export default function TrailMap({ trackProfile, name, isCircular }: TrailMapProps) {
-  // Build GeoJSON from track profile
+export default function TrailMap({
+  trackProfile,
+  name,
+  isCircular,
+  selectedRange,
+  onReset: _onReset,
+}: TrailMapProps) {
+  const mapRef = useRef<MapRef | null>(null);
+
   const totalDist = trackProfile.length > 0 ? trackProfile[trackProfile.length - 1].d : 0;
   const coordinates = trackProfile.map((p) => [p.lng, p.lat]);
+
   const geojson: GeoJSON.FeatureCollection = {
     type: 'FeatureCollection',
     features: [
       {
         type: 'Feature',
         properties: {},
-        geometry: {
-          type: 'LineString',
-          coordinates,
-        },
+        geometry: { type: 'LineString', coordinates },
       },
     ],
   };
 
-  // Gradient stops for slope coloring
   const gradientStops = buildGradientStops(trackProfile);
 
-  // Compute initial bounds
+  // Compute full-route bounds
   const lats = trackProfile.map((p) => p.lat);
   const lngs = trackProfile.map((p) => p.lng);
   const minLat = Math.min(...lats);
@@ -72,20 +79,67 @@ export default function TrailMap({ trackProfile, name, isCircular }: TrailMapPro
   const minLng = Math.min(...lngs);
   const maxLng = Math.max(...lngs);
 
-  const initialViewState = {
-    longitude: (minLng + maxLng) / 2,
-    latitude: (minLat + maxLat) / 2,
-    zoom: 10,
-  };
+  // Highlight GeoJSON for the selected segment
+  const highlightGeoJSON = useMemo<GeoJSON.FeatureCollection | null>(() => {
+    if (!selectedRange) return null;
+    const pts = trackProfile.filter(
+      (p) => p.d >= selectedRange.start && p.d <= selectedRange.end,
+    );
+    if (pts.length < 2) return null;
+    return {
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          properties: {},
+          geometry: {
+            type: 'LineString',
+            coordinates: pts.map((p) => [p.lng, p.lat]),
+          },
+        },
+      ],
+    };
+  }, [selectedRange, trackProfile]);
+
+  // Zoom to selected range or full route when selectedRange changes
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    if (selectedRange) {
+      const pts = trackProfile.filter(
+        (p) => p.d >= selectedRange.start && p.d <= selectedRange.end,
+      );
+      if (pts.length > 0) {
+        const ptLngs = pts.map((p) => p.lng);
+        const ptLats = pts.map((p) => p.lat);
+        map.fitBounds(
+          [[Math.min(...ptLngs), Math.min(...ptLats)], [Math.max(...ptLngs), Math.max(...ptLats)]],
+          { padding: 60, duration: 800 },
+        );
+      }
+    } else {
+      map.fitBounds(
+        [[minLng, minLat], [maxLng, maxLat]],
+        { padding: 40, duration: 800 },
+      );
+    }
+  }, [selectedRange, trackProfile, minLat, maxLat, minLng, maxLng]);
+
+  const baseOpacity = selectedRange ? 0.3 : 1;
 
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800">
       <Map
-        initialViewState={initialViewState}
+        ref={mapRef}
+        initialViewState={{
+          longitude: (minLng + maxLng) / 2,
+          latitude: (minLat + maxLat) / 2,
+          zoom: 10,
+        }}
         style={{ width: '100%', height: 320 }}
         mapStyle={MAP_STYLE}
         onLoad={(e) => {
-          // Fit to trail bounds with padding
           e.target.fitBounds(
             [[minLng, minLat], [maxLng, maxLat]],
             { padding: 40, duration: 0 },
@@ -95,16 +149,15 @@ export default function TrailMap({ trackProfile, name, isCircular }: TrailMapPro
       >
         <NavigationControl position="top-right" />
 
+        {/* Base trail */}
         <Source id="trail" type="geojson" data={geojson} lineMetrics>
-          {/* Shadow for legibility */}
           <Layer
             id="trail-shadow"
             type="line"
             source="trail"
             layout={{ 'line-join': 'round', 'line-cap': 'round' }}
-            paint={{ 'line-color': '#000', 'line-width': 7, 'line-opacity': 0.15 }}
+            paint={{ 'line-color': '#000', 'line-width': 7, 'line-opacity': 0.15 * baseOpacity }}
           />
-          {/* Slope-colored line using line-gradient */}
           <Layer
             id="trail-line"
             type="line"
@@ -112,6 +165,7 @@ export default function TrailMap({ trackProfile, name, isCircular }: TrailMapPro
             layout={{ 'line-join': 'round', 'line-cap': 'round' }}
             paint={{
               'line-width': 4,
+              'line-opacity': baseOpacity,
               'line-gradient': [
                 'interpolate',
                 ['linear'],
@@ -122,17 +176,30 @@ export default function TrailMap({ trackProfile, name, isCircular }: TrailMapPro
           />
         </Source>
 
-        {/* Start marker */}
-        {trackProfile.length > 0 && (
-          <StartEndMarker
-            lng={trackProfile[0].lng}
-            lat={trackProfile[0].lat}
-            color="#10b981"
-            label="S"
-          />
+        {/* Segment highlight overlay */}
+        {selectedRange && highlightGeoJSON && (
+          <Source id="trail-highlight" type="geojson" data={highlightGeoJSON}>
+            <Layer
+              id="trail-highlight-glow"
+              type="line"
+              layout={{ 'line-join': 'round', 'line-cap': 'round' }}
+              paint={{ 'line-color': '#fff', 'line-width': 9, 'line-opacity': 0.4, 'line-blur': 4 }}
+            />
+            <Layer
+              id="trail-highlight-line"
+              type="line"
+              layout={{ 'line-join': 'round', 'line-cap': 'round' }}
+              paint={{ 'line-color': '#f59e0b', 'line-width': 5 }}
+            />
+          </Source>
         )}
 
-        {/* End marker (only for linear routes) */}
+        {/* Start marker */}
+        {trackProfile.length > 0 && (
+          <StartEndMarker lng={trackProfile[0].lng} lat={trackProfile[0].lat} color="#10b981" label="S" />
+        )}
+
+        {/* End marker (linear only) */}
         {!isCircular && trackProfile.length > 1 && (
           <StartEndMarker
             lng={trackProfile[trackProfile.length - 1].lng}
@@ -152,7 +219,6 @@ export default function TrailMap({ trackProfile, name, isCircular }: TrailMapPro
   );
 }
 
-// Simple dot marker for start/end points
 function StartEndMarker({
   lat,
   lng,
