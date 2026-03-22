@@ -32,9 +32,14 @@ function buildGradientStops(points: TrackPoint[]): (string | number)[] {
   if (totalDist === 0) return [0, '#10b981'];
 
   const stops: (string | number)[] = [];
+  let lastProgress = -1;
+
   for (let i = 0; i < points.length; i++) {
     const p = points[i];
-    const progress = p.d / totalDist;
+    const progress = Math.min(1, Math.max(0, p.d / totalDist));
+    // MapLibre requires strictly ascending stop values — skip duplicates
+    if (progress <= lastProgress) continue;
+
     let slope = 0;
     if (i > 0) {
       const prev = points[i - 1];
@@ -43,8 +48,15 @@ function buildGradientStops(points: TrackPoint[]): (string | number)[] {
         slope = ((p.e - prev.e) / distM) * 100;
       }
     }
-    stops.push(Math.min(1, Math.max(0, progress)), getSlopeColorHex(slope));
+    stops.push(progress, getSlopeColorHex(slope));
+    lastProgress = progress;
   }
+
+  if (stops.length === 0) return [0, '#10b981'];
+  // Ensure the gradient always starts at 0 and ends at 1
+  if ((stops[0] as number) > 0) stops.unshift(0, stops[1]);
+  if ((stops[stops.length - 2] as number) < 1) stops.push(1, stops[stops.length - 1]);
+
   return stops;
 }
 
