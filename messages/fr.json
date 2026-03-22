@@ -772,6 +772,7 @@
     "metaDescription": "Sentier de {distance} km avec {elevationGain}m de dénivelé. Niveau : {effort}.",
     "km": "km",
     "meters": "m",
+    "resetZoom": "Réinitialiser le zoom",
     "elevationProfile": "Profil d'altitude",
     "slope": "Pente",
     "flat": "Plat (≤1%)",

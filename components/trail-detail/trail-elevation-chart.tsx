@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect, useMemo } from 'react';
 import * as d3 from 'd3';
-import { TrendingUp } from 'lucide-react';
+import { TrendingUp, RefreshCcw } from 'lucide-react';
 import {
   getSlopeColorHex,
   SLOPE_COLOR_FLAT,
@@ -34,6 +34,7 @@ interface Labels {
   extreme: string;
   km: string;
   meters: string;
+  resetZoom: string;
 }
 
 interface TooltipState {
@@ -52,16 +53,28 @@ export function TrailElevationChart({
   labels,
   externalHoverDist,
   onHoverDist,
+  onRangeSelect,
+  onRangeReset,
 }: {
   trackProfile: TrackPoint[];
   labels: Labels;
   externalHoverDist?: number | null;
   onHoverDist?: (dist: number | null) => void;
+  onRangeSelect?: (start: number, end: number) => void;
+  onRangeReset?: () => void;
 }) {
   const outerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
+
+  // Zoom/drag state
+  const [zoomRange, setZoomRange] = useState<{ start: number; end: number } | null>(null);
+  const [dragPreview, setDragPreview] = useState<{ start: number; end: number } | null>(null);
+  const isDragging = useRef(false);
+  const dragStartRef = useRef<number | null>(null);
+  const dragStartPxRef = useRef<number | null>(null);
+  const dragEndRef = useRef<number | null>(null);
 
   // Measure container
   useEffect(() => {
@@ -100,26 +113,36 @@ export function TrailElevationChart({
 
   const xScale = useMemo(() => {
     if (!chartData.length || innerW === 0) return null;
-    return d3
-      .scaleLinear()
-      .domain([chartData[0].distance, chartData[chartData.length - 1].distance])
-      .range([0, innerW]);
-  }, [chartData, innerW]);
+    const domain = zoomRange
+      ? [zoomRange.start, zoomRange.end]
+      : [chartData[0].distance, chartData[chartData.length - 1].distance];
+    return d3.scaleLinear().domain(domain).range([0, innerW]);
+  }, [chartData, innerW, zoomRange]);
 
   const yScale = useMemo(() => {
     if (!chartData.length || innerH === 0) return null;
-    const elevs = chartData.map((d) => d.elevation);
+    // When zoomed, compute y range from visible points only
+    const visible = zoomRange
+      ? chartData.filter((d) => d.distance >= zoomRange.start && d.distance <= zoomRange.end)
+      : chartData;
+    const elevs = (visible.length > 0 ? visible : chartData).map((d) => d.elevation);
     const pad = Math.max((Math.max(...elevs) - Math.min(...elevs)) * 0.15, 15);
     return d3
       .scaleLinear()
       .domain([Math.min(...elevs) - pad, Math.max(...elevs) + pad])
       .range([innerH, 0])
       .nice();
-  }, [chartData, innerH]);
+  }, [chartData, innerH, zoomRange]);
 
   // Colored area segments
   const colorSegmentPaths = useMemo(() => {
     if (!xScale || !yScale || !chartData.length) return [];
+
+    // When zoomed, only draw segments within range
+    const pts = zoomRange
+      ? chartData.filter((d) => d.distance >= zoomRange.start && d.distance <= zoomRange.end)
+      : chartData;
+
     const areaGen = d3
       .area<ChartPoint>()
       .x((d) => xScale(d.distance))
@@ -129,38 +152,44 @@ export function TrailElevationChart({
 
     const result: { color: string; path: string }[] = [];
     let i = 0;
-    while (i < chartData.length) {
-      const color = chartData[i].color;
+    while (i < pts.length) {
+      const color = pts[i].color;
       const group: ChartPoint[] = [];
-      while (i < chartData.length && chartData[i].color === color) group.push(chartData[i++]);
-      if (i < chartData.length) group.push(chartData[i]);
+      while (i < pts.length && pts[i].color === color) group.push(pts[i++]);
+      if (i < pts.length) group.push(pts[i]);
       const path = areaGen(group);
       if (path) result.push({ color, path });
     }
     return result;
-  }, [chartData, xScale, yScale, innerH]);
+  }, [chartData, xScale, yScale, innerH, zoomRange]);
 
   // Gradient stroke line
   const linePath = useMemo(() => {
     if (!xScale || !yScale || !chartData.length) return '';
+    const pts = zoomRange
+      ? chartData.filter((d) => d.distance >= zoomRange.start && d.distance <= zoomRange.end)
+      : chartData;
     return (
       d3
         .line<ChartPoint>()
         .x((d) => xScale(d.distance))
         .y((d) => yScale(d.elevation))
-        .curve(d3.curveLinear)(chartData) ?? ''
+        .curve(d3.curveLinear)(pts) ?? ''
     );
-  }, [chartData, xScale, yScale]);
+  }, [chartData, xScale, yScale, zoomRange]);
 
   const gradientStops = useMemo(() => {
     if (!chartData.length) return [{ offset: 0, color: SLOPE_COLOR_FLAT }];
-    const min = chartData[0].distance;
-    const range = chartData[chartData.length - 1].distance - min;
-    return chartData.map((d) => ({
+    const pts = zoomRange
+      ? chartData.filter((d) => d.distance >= zoomRange.start && d.distance <= zoomRange.end)
+      : chartData;
+    const min = pts[0]?.distance ?? 0;
+    const range = (pts[pts.length - 1]?.distance ?? 0) - min;
+    return pts.map((d) => ({
       offset: range > 0 ? ((d.distance - min) / range) * 100 : 0,
       color: d.color,
     }));
-  }, [chartData]);
+  }, [chartData, zoomRange]);
 
   // X/Y ticks
   const xTicks = useMemo(
@@ -171,6 +200,42 @@ export function TrailElevationChart({
     () => (yScale ? yScale.ticks(4).map((v) => ({ v, y: yScale(v) })) : []),
     [yScale],
   );
+
+  // Zoom helpers
+  const confirmSelection = (start: number, end: number) => {
+    const [s, e] = start <= end ? [start, end] : [end, start];
+    setZoomRange({ start: s, end: e });
+    setDragPreview(null);
+    onRangeSelect?.(s, e);
+  };
+
+  const resetZoom = () => {
+    setZoomRange(null);
+    setDragPreview(null);
+    onRangeReset?.();
+  };
+
+  // Window mouseup handler to finalize drag
+  useEffect(() => {
+    const onMouseUp = () => {
+      if (!isDragging.current) return;
+      isDragging.current = false;
+      const start = dragStartRef.current;
+      const end = dragEndRef.current;
+      if (start !== null && end !== null && Math.abs(end - start) > 0.01) {
+        confirmSelection(start, end);
+      } else {
+        setDragPreview(null);
+      }
+      dragStartRef.current = null;
+      dragStartPxRef.current = null;
+      dragEndRef.current = null;
+    };
+    window.addEventListener('mouseup', onMouseUp);
+    return () => window.removeEventListener('mouseup', onMouseUp);
+  // confirmSelection is stable (no deps change it); we accept the lint rule here
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onRangeSelect]);
 
   // Compute tooltip state for a given distance value
   const tooltipFromDist = (dist: number): TooltipState | null => {
@@ -191,9 +256,13 @@ export function TrailElevationChart({
     };
   };
 
-  // External hover indicator (from map) — only shown when chart is not being hovered
+  // External hover indicator (from map) — only shown when chart is not being hovered and dist is in view
   const externalTooltip = useMemo<TooltipState | null>(() => {
     if (externalHoverDist == null || !xScale || !yScale || !chartData.length) return null;
+    // Skip if outside zoomed range
+    if (zoomRange && (externalHoverDist < zoomRange.start || externalHoverDist > zoomRange.end)) {
+      return null;
+    }
     let best = chartData[0];
     let bestDiff = Math.abs(best.distance - externalHoverDist);
     for (const d of chartData) {
@@ -209,7 +278,7 @@ export function TrailElevationChart({
       color: best.color,
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [externalHoverDist, chartData, xScale, yScale, innerW, innerH]);
+  }, [externalHoverDist, chartData, xScale, yScale, innerW, innerH, zoomRange]);
 
   // Active tooltip: local (chart hover) takes priority over external (map hover)
   const activeTooltip = tooltip ?? externalTooltip;
@@ -221,6 +290,12 @@ export function TrailElevationChart({
     const x = e.clientX - rect.left - MARGIN.left;
     const dist = xScale.invert(Math.max(0, Math.min(innerW, x)));
 
+    if (isDragging.current && dragStartRef.current !== null) {
+      dragEndRef.current = dist;
+      setDragPreview({ start: dragStartRef.current, end: dist });
+      return; // don't show tooltip while dragging
+    }
+
     const t = tooltipFromDist(dist);
     if (t) {
       setTooltip(t);
@@ -228,10 +303,33 @@ export function TrailElevationChart({
     }
   };
 
-  const handleMouseLeave = () => {
+  const handleMouseDown = (e: React.MouseEvent<SVGSVGElement>) => {
+    if (zoomRange) return; // already zoomed — reset via button/dblclick
+    if (!svgRef.current || !xScale) return;
+    const rect = svgRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left - MARGIN.left;
+    const dist = xScale.invert(Math.max(0, Math.min(innerW, x)));
+    isDragging.current = true;
+    dragStartRef.current = dist;
+    dragStartPxRef.current = x;
+    dragEndRef.current = dist;
     setTooltip(null);
-    onHoverDist?.(null);
   };
+
+  const handleMouseLeave = () => {
+    if (!isDragging.current) {
+      setTooltip(null);
+      onHoverDist?.(null);
+    }
+  };
+
+  // Drag preview pixel bounds (relative to inner g transform)
+  const dragPreviewPx = useMemo(() => {
+    if (!dragPreview || !xScale) return null;
+    const x0 = xScale(dragPreview.start);
+    const x1 = xScale(dragPreview.end);
+    return { left: Math.min(x0, x1), width: Math.abs(x1 - x0) };
+  }, [dragPreview, xScale]);
 
   if (chartData.length < 2) return null;
 
@@ -244,12 +342,21 @@ export function TrailElevationChart({
         <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
           {labels.elevationProfile}
         </h3>
+        {zoomRange && (
+          <button
+            onClick={resetZoom}
+            className="ml-auto flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-tight text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+          >
+            <RefreshCcw className="h-3 w-3" />
+            {labels.resetZoom}
+          </button>
+        )}
       </div>
 
       {/* Chart area */}
       <div ref={outerRef} className="relative h-44 w-full select-none">
         {/* Tooltip */}
-        {activeTooltip && (
+        {activeTooltip && !dragPreview && (
           <div
             className="pointer-events-none absolute top-1 z-10"
             style={
@@ -280,8 +387,10 @@ export function TrailElevationChart({
           width="100%"
           height="100%"
           onMouseMove={handleMouseMove}
+          onMouseDown={handleMouseDown}
           onMouseLeave={handleMouseLeave}
-          className="cursor-crosshair"
+          onDoubleClick={resetZoom}
+          className={zoomRange ? 'cursor-zoom-out' : 'cursor-crosshair'}
         >
           <defs>
             <linearGradient id="trail-elev-stroke" x1="0" y1="0" x2="1" y2="0">
@@ -320,8 +429,19 @@ export function TrailElevationChart({
               clipPath="url(#trail-elev-clip)"
             />
 
+            {/* Drag preview rect */}
+            {dragPreviewPx && dragPreviewPx.width > 0 && (
+              <rect
+                x={dragPreviewPx.left} y={0}
+                width={dragPreviewPx.width} height={innerH}
+                fill="hsl(var(--primary))" fillOpacity={0.2}
+                stroke="hsl(var(--primary))" strokeOpacity={0.5} strokeWidth={1}
+                clipPath="url(#trail-elev-clip)"
+              />
+            )}
+
             {/* Hover crosshair + dot */}
-            {activeTooltip && (
+            {activeTooltip && !dragPreview && (
               <>
                 <line
                   x1={activeTooltip.x} x2={activeTooltip.x} y1={0} y2={innerH}

@@ -784,6 +784,7 @@
     "metaDescription": "Sendero de {distance} km con {elevationGain}m de desnivel. Nivel: {effort}.",
     "km": "km",
     "meters": "m",
+    "resetZoom": "Restablecer zoom",
     "elevationProfile": "Perfil de elevación",
     "slope": "Pendiente",
     "flat": "Llano (≤1%)",

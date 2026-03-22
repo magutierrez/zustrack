@@ -784,6 +784,7 @@
     "metaDescription": "Sender de {distance} km amb {elevationGain}m de desnivell. Nivell: {effort}.",
     "km": "km",
     "meters": "m",
+    "resetZoom": "Restablir el zoom",
     "elevationProfile": "Perfil d'elevació",
     "slope": "Pendent",
     "flat": "Pla (≤1%)",

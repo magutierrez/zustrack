@@ -17,6 +17,7 @@ type ElevationLabels = {
   extreme: string;
   km: string;
   meters: string;
+  resetZoom: string;
 };
 
 export function TrailDetailClient({
@@ -50,6 +51,8 @@ export function TrailDetailClient({
           labels={elevationLabels}
           externalHoverDist={hoverDist}
           onHoverDist={setHoverDist}
+          onRangeSelect={(s, e) => setSelectedRange({ start: s, end: e })}
+          onRangeReset={() => setSelectedRange(null)}
         />
       )}
       <TrailHazards

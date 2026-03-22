@@ -134,6 +134,7 @@ export async function TrailDetailView({ trail, locale }: { trail: Trail; locale:
               extreme: t('extreme'),
               km: t('km'),
               meters: t('meters'),
+              resetZoom: t('resetZoom'),
             }}
           />
         )}

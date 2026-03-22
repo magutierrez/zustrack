@@ -784,6 +784,7 @@
     "metaDescription": "{distance} km trail with {elevationGain}m elevation gain. Effort: {effort}.",
     "km": "km",
     "meters": "m",
+    "resetZoom": "Reset zoom",
     "elevationProfile": "Elevation profile",
     "slope": "Slope",
     "flat": "Flat (≤1%)",

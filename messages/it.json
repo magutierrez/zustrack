@@ -772,6 +772,7 @@
     "metaDescription": "Sentiero di {distance} km con {elevationGain}m di dislivello. Livello: {effort}.",
     "km": "km",
     "meters": "m",
+    "resetZoom": "Ripristina zoom",
     "elevationProfile": "Profilo altimetrico",
     "slope": "Pendenza",
     "flat": "Piatto (≤1%)",
