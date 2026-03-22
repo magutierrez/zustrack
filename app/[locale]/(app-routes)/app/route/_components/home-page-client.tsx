@@ -146,16 +146,24 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
             <div
               className={cn('relative', isMobileFullscreen ? 'min-h-0 flex-1' : 'h-full w-full')}
             >
-              <RouteLoadingOverlay isVisible={isRouteInfoLoading} />
-              <RouteMap
-                onResetToFullRouteView={(func) => (mapResetViewRef.current = func)}
-                isMobileFullscreen={isMobileFullscreen}
-                onToggleMobileFullscreen={() => {
-                  const next = !isMobileFullscreen;
-                  setIsMobileFullscreen(next);
-                  if (!next) setMobileHazardRange(null);
-                }}
-              />
+              {gpxData ? (
+                <>
+                  <RouteLoadingOverlay isVisible={isRouteInfoLoading} />
+                  <RouteMap
+                    onResetToFullRouteView={(func) => (mapResetViewRef.current = func)}
+                    isMobileFullscreen={isMobileFullscreen}
+                    onToggleMobileFullscreen={() => {
+                      const next = !isMobileFullscreen;
+                      setIsMobileFullscreen(next);
+                      if (!next) setMobileHazardRange(null);
+                    }}
+                  />
+                </>
+              ) : (
+                <div className="bg-muted/30 flex h-full items-center justify-center">
+                  <p className="text-muted-foreground text-sm">{tHomePage('loadRoute')}</p>
+                </div>
+              )}
             </div>
 
             {/* Elevation chart below the map in fullscreen */}
