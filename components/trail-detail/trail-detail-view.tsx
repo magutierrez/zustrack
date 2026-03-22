@@ -14,7 +14,6 @@ import type { Trail } from '@/lib/trails';
 import { StatsGrid } from './stats-grid';
 import { EffortBadge } from './effort-badge';
 import { SuitabilityChips } from './suitability-chips';
-import { TrailElevationChart } from './trail-elevation-chart';
 import { SlopeBreakdownBar } from './slope-breakdown-bar';
 import { SurfaceSection } from './surface-section';
 import { EscapePointsSection } from './escape-points-section';
@@ -126,6 +125,16 @@ export async function TrailDetailView({ trail, locale }: { trail: Trail; locale:
             trackProfile={trail.track_profile}
             name={trail.name}
             isCircular={trail.is_circular}
+            elevationLabels={{
+              elevationProfile: t('elevationProfile'),
+              slope: t('slope'),
+              flat: t('flat'),
+              gentle: t('gentle'),
+              steep: t('steep'),
+              extreme: t('extreme'),
+              km: t('km'),
+              meters: t('meters'),
+            }}
           />
         )}
 
@@ -152,23 +161,6 @@ export async function TrailDetailView({ trail, locale }: { trail: Trail; locale:
             meters: t('meters'),
           }}
         />
-
-        {/* Elevation chart */}
-        {trail.track_profile && trail.track_profile.length > 1 && (
-          <TrailElevationChart
-            trackProfile={trail.track_profile}
-            labels={{
-              elevationProfile: t('elevationProfile'),
-              slope: t('slope'),
-              flat: t('flat'),
-              gentle: t('gentle'),
-              steep: t('steep'),
-              extreme: t('extreme'),
-              km: t('km'),
-              meters: t('meters'),
-            }}
-          />
-        )}
 
         {/* Slope breakdown */}
         {trail.slope_breakdown && (
