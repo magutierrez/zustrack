@@ -17,6 +17,8 @@ import Link from 'next/link';
 import { StatsGrid } from '@/components/trail-detail/stats-grid';
 import { EffortBadge } from '@/components/trail-detail/effort-badge';
 import { SuitabilityChips } from '@/components/trail-detail/suitability-chips';
+import { TrailElevationChart } from '@/components/trail-detail/trail-elevation-chart';
+import { TrailMapWrapper } from '@/components/trail-detail/trail-map-wrapper';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -55,6 +57,7 @@ interface Trail {
   season_best: string;
   point_count: number | null;
   waypoint_count: number | null;
+  track_profile: Array<{ lat: number; lng: number; d: number; e: number | null }> | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -184,26 +187,13 @@ async function TrailDetailContent({ trail, locale }: { trail: Trail; locale: str
 
   const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${trail.start_lat},${trail.start_lng}`;
 
-  // Static map preview using MapTiler (uses same key as the main map)
-  const mapKey = process.env.NEXT_PUBLIC_MAPTILER_KEY ?? '';
-  const centerLat = trail.bbox_min_lat != null && trail.bbox_max_lat != null
-    ? (trail.bbox_min_lat + trail.bbox_max_lat) / 2
-    : trail.start_lat;
-  const centerLng = trail.bbox_min_lng != null && trail.bbox_max_lng != null
-    ? (trail.bbox_min_lng + trail.bbox_max_lng) / 2
-    : trail.start_lng;
-
-  const staticMapUrl = mapKey
-    ? `https://api.maptiler.com/maps/outdoor-v2/static/${centerLng},${centerLat},10/800x400.png?key=${mapKey}`
-    : null;
-
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#08090f] dark:text-white">
       {/* Header */}
       <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
         <div className="mx-auto max-w-5xl px-4 py-4">
           <Link
-            href={`/${locale}`}
+            href={`/${locale}/trail`}
             className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -249,18 +239,13 @@ async function TrailDetailContent({ trail, locale }: { trail: Trail; locale: str
           </div>
         </div>
 
-        {/* Static map */}
-        {staticMapUrl && (
-          <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={staticMapUrl}
-              alt={trail.name}
-              width={800}
-              height={400}
-              className="h-64 w-full object-cover sm:h-80"
-            />
-          </div>
+        {/* Interactive map */}
+        {trail.track_profile && trail.track_profile.length > 0 && (
+          <TrailMapWrapper
+            trackProfile={trail.track_profile}
+            name={trail.name}
+            isCircular={trail.is_circular}
+          />
         )}
 
         {/* Stats */}
@@ -286,6 +271,23 @@ async function TrailDetailContent({ trail, locale }: { trail: Trail; locale: str
             meters: t('meters'),
           }}
         />
+
+        {/* Elevation chart */}
+        {trail.track_profile && trail.track_profile.length > 1 && (
+          <TrailElevationChart
+            trackProfile={trail.track_profile}
+            labels={{
+              elevationProfile: t('elevationProfile'),
+              slope: t('slope'),
+              flat: t('flat'),
+              gentle: t('gentle'),
+              steep: t('steep'),
+              extreme: t('extreme'),
+              km: t('km'),
+              meters: t('meters'),
+            }}
+          />
+        )}
 
         {/* Suitability */}
         <SuitabilityChips

@@ -771,6 +771,28 @@
     "analyzeWithZustrack": "Analyser la météo pour ce sentier",
     "metaDescription": "Sentier de {distance} km avec {elevationGain}m de dénivelé. Niveau : {effort}.",
     "km": "km",
-    "meters": "m"
+    "meters": "m",
+    "elevationProfile": "Profil d'altitude",
+    "slope": "Pente",
+    "flat": "Plat (≤1%)",
+    "gentle": "Doux (1–5%)",
+    "steep": "Raide (5–10%)",
+    "extreme": "Extrême (≥10%)"
+  },
+  "TrailSearchPage": {
+    "title": "Sentiers officiels",
+    "searchPlaceholder": "Rechercher par nom...",
+    "results": "{count} sentiers trouvés",
+    "noResults": "Aucun sentier ne correspond aux filtres",
+    "filterEffort": "Effort",
+    "filterType": "Type de parcours",
+    "filterShape": "Forme",
+    "allShapes": "Tous",
+    "filterChild": "Familles",
+    "filterPet": "Animaux",
+    "clearFilters": "Effacer",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "page": "Page {page} sur {total}"
   }
 }

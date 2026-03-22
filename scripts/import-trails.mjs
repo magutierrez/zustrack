@@ -123,6 +123,31 @@ function getTextContent(doc, ...tags) {
   return null;
 }
 
+/** Sample up to maxPoints evenly-spaced points from the track for the profile */
+function sampleTrackPoints(points, cumulativeDists, maxPoints) {
+  if (points.length === 0) return [];
+  if (points.length <= maxPoints) {
+    return points.map((p, i) => ({
+      lat: Math.round(p.lat * 1e6) / 1e6,
+      lng: Math.round(p.lon * 1e6) / 1e6,
+      d: Math.round(cumulativeDists[i] * 1000) / 1000,
+      e: p.ele !== null ? Math.round(p.ele) : null,
+    }));
+  }
+  const result = [];
+  for (let i = 0; i < maxPoints; i++) {
+    const idx = Math.round((i / (maxPoints - 1)) * (points.length - 1));
+    const p = points[idx];
+    result.push({
+      lat: Math.round(p.lat * 1e6) / 1e6,
+      lng: Math.round(p.lon * 1e6) / 1e6,
+      d: Math.round(cumulativeDists[idx] * 1000) / 1000,
+      e: p.ele !== null ? Math.round(p.ele) : null,
+    });
+  }
+  return result;
+}
+
 /** Parse all trkpt elements from a GPX document */
 function parseTrkpts(doc) {
   let trkpts = doc.getElementsByTagName('trkpt');
@@ -230,6 +255,17 @@ function analyzeGPX(gpxContent, filename) {
   const petFriendly = distanceKm <= 15 && elevGain <= 600;
   const trailCode = extractTrailCode(name);
 
+  // Build cumulative distances for the smoothed points array
+  const cumulativeDists = [0];
+  for (let i = 1; i < points.length; i++) {
+    const prev = points[i - 1];
+    const curr = points[i];
+    cumulativeDists.push(cumulativeDists[i - 1] + haversineKm(prev.lat, prev.lon, curr.lat, curr.lon));
+  }
+
+  // Sample up to 300 evenly-spaced points for the track profile
+  const trackProfile = sampleTrackPoints(points, cumulativeDists, 300);
+
   return {
     name,
     description,
@@ -260,6 +296,7 @@ function analyzeGPX(gpxContent, filename) {
     season_best: bestSeason(avgElev, elevMax),
     point_count: pointCount,
     waypoint_count: waypointCount,
+    track_profile: trackProfile,
   };
 }
 

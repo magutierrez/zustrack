@@ -783,6 +783,28 @@
     "analyzeWithZustrack": "Analyze weather for this trail",
     "metaDescription": "{distance} km trail with {elevationGain}m elevation gain. Effort: {effort}.",
     "km": "km",
-    "meters": "m"
+    "meters": "m",
+    "elevationProfile": "Elevation profile",
+    "slope": "Slope",
+    "flat": "Flat (≤1%)",
+    "gentle": "Gentle (1–5%)",
+    "steep": "Steep (5–10%)",
+    "extreme": "Extreme (≥10%)"
+  },
+  "TrailSearchPage": {
+    "title": "Official trails",
+    "searchPlaceholder": "Search by name...",
+    "results": "{count} trails found",
+    "noResults": "No trails match your filters",
+    "filterEffort": "Effort",
+    "filterType": "Route type",
+    "filterShape": "Shape",
+    "allShapes": "All",
+    "filterChild": "Family",
+    "filterPet": "Pets",
+    "clearFilters": "Clear",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {page} of {total}"
   }
 }

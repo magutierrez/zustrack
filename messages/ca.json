@@ -783,6 +783,28 @@
     "analyzeWithZustrack": "Analitzar el temps per a aquest sender",
     "metaDescription": "Sender de {distance} km amb {elevationGain}m de desnivell. Nivell: {effort}.",
     "km": "km",
-    "meters": "m"
+    "meters": "m",
+    "elevationProfile": "Perfil d'elevació",
+    "slope": "Pendent",
+    "flat": "Pla (≤1%)",
+    "gentle": "Suau (1–5%)",
+    "steep": "Pronunciat (5–10%)",
+    "extreme": "Extrem (≥10%)"
+  },
+  "TrailSearchPage": {
+    "title": "Senders oficials",
+    "searchPlaceholder": "Cercar per nom...",
+    "results": "{count} senders trobats",
+    "noResults": "Cap sender coincideix amb els filtres",
+    "filterEffort": "Esforç",
+    "filterType": "Tipus de ruta",
+    "filterShape": "Forma",
+    "allShapes": "Tots",
+    "filterChild": "Famílies",
+    "filterPet": "Mascotes",
+    "clearFilters": "Netejar",
+    "previous": "Anterior",
+    "next": "Següent",
+    "page": "Pàgina {page} de {total}"
   }
 }
