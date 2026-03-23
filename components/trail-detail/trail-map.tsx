@@ -317,6 +317,20 @@ export default function TrailMap({
           );
         })}
 
+        {/* Elevation point marker — shown when activePOI is a high/low point (not an escape/water POI) */}
+        {activePOI &&
+          !escapePoints?.some((ep) => isActivePOI(activePOI, ep.lat, ep.lng)) &&
+          !waterSources?.some((ws) => isActivePOI(activePOI, ws.lat, ws.lng)) && (
+            <Marker latitude={activePOI.lat} longitude={activePOI.lng} anchor="bottom">
+              <div className="flex flex-col items-center">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-violet-500 text-[11px] font-black text-white shadow-lg ring-2 ring-white ring-offset-1">
+                  ▲
+                </div>
+                <div className="h-0 w-0 border-l-[5px] border-r-[5px] border-t-[6px] border-l-transparent border-r-transparent border-t-violet-500" />
+              </div>
+            </Marker>
+          )}
+
         {/* Start marker */}
         {trackProfile.length > 0 && (
           <StartEndMarker lng={trackProfile[0].lng} lat={trackProfile[0].lat} color="#10b981" label="S" />

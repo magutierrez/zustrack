@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import {
@@ -88,6 +88,29 @@ export function TrailDetailPageClient({ trail, locale }: { trail: Trail; locale:
   const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${trail.start_lat},${trail.start_lng}`;
 
   const trackProfile = trail.track_profile ?? [];
+
+  // Find the lat/lng of the highest and lowest elevation points in the track profile
+  const highPointCoords = useMemo(() => {
+    if (!trail.elevation_max_m || !trackProfile.length) return null;
+    const best = trackProfile.reduce((prev, curr) =>
+      curr.e !== null &&
+      Math.abs(curr.e - trail.elevation_max_m!) < Math.abs((prev.e ?? Infinity) - trail.elevation_max_m!)
+        ? curr
+        : prev,
+    );
+    return best.e !== null ? { lat: best.lat, lng: best.lng } : null;
+  }, [trackProfile, trail.elevation_max_m]);
+
+  const lowPointCoords = useMemo(() => {
+    if (!trail.elevation_min_m || !trackProfile.length) return null;
+    const best = trackProfile.reduce((prev, curr) =>
+      curr.e !== null &&
+      Math.abs(curr.e - trail.elevation_min_m!) < Math.abs((prev.e ?? Infinity) - trail.elevation_min_m!)
+        ? curr
+        : prev,
+    );
+    return best.e !== null ? { lat: best.lat, lng: best.lng } : null;
+  }, [trackProfile, trail.elevation_min_m]);
 
   return (
     <>
@@ -201,7 +224,9 @@ export function TrailDetailPageClient({ trail, locale }: { trail: Trail; locale:
               elevationMinM={trail.elevation_min_m}
               avgElevationM={trail.avg_elevation_m}
               estimatedDurationMin={trail.estimated_duration_min}
-              maxSlopePct={trail.max_slope_pct}
+              highPointCoords={highPointCoords}
+              lowPointCoords={lowPointCoords}
+              onShowOnMap={handleShowOnMap}
               labels={{
                 distance: t('distance'),
                 elevationGain: t('elevationGain'),
@@ -210,7 +235,6 @@ export function TrailDetailPageClient({ trail, locale }: { trail: Trail; locale:
                 lowPoint: t('lowPoint'),
                 avgElevation: t('avgElevation'),
                 duration: t('duration'),
-                maxSlope: t('maxSlope'),
                 km: t('km'),
                 meters: t('meters'),
               }}
