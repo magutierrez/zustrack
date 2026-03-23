@@ -14,6 +14,7 @@ import type { FeatureCollection, Point, LineString } from 'geojson';
 import maplibregl, { GeoJSONSource } from 'maplibre-gl';
 import Link from 'next/link';
 import type { TrailSearchParams } from '@/lib/trails';
+import { transformRequest } from '@/lib/map-transform';
 
 const MAP_STYLE = `https://api.maptiler.com/maps/outdoor-v4/style.json${process.env.NEXT_PUBLIC_MAPTILER_KEY ? `?key=${process.env.NEXT_PUBLIC_MAPTILER_KEY}` : ''}`;
 
@@ -258,6 +259,7 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
         onClick={handleClick}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
+        transformRequest={transformRequest}
       >
         <NavigationControl position="top-right" />
 

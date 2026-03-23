@@ -5,6 +5,7 @@ import Map, { NavigationControl, Source, Layer, Marker, type MapRef } from 'reac
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { getSlopeColorHex } from '@/lib/slope-colors';
 import { haversineDistance } from '@/lib/gpx-parser';
+import { transformRequest } from '@/lib/map-transform';
 import type { EscapePoint } from './escape-points-section';
 import type { WaterSource } from './water-sources-section';
 
@@ -230,6 +231,7 @@ export default function TrailMap({
         onMouseMove={handleMapMouseMove}
         onMouseLeave={handleMapMouseLeave}
         attributionControl={false}
+        transformRequest={transformRequest}
       >
         <NavigationControl position="top-right" />
 

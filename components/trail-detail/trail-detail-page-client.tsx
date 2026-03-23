@@ -54,13 +54,7 @@ function InfoRow({
   );
 }
 
-export function TrailDetailPageClient({
-  trail,
-  locale,
-}: {
-  trail: Trail;
-  locale: string;
-}) {
+export function TrailDetailPageClient({ trail, locale }: { trail: Trail; locale: string }) {
   const t = useTranslations('TrailPage');
 
   const [selectedRange, setSelectedRange] = useState<Range | null>(null);
@@ -105,7 +99,6 @@ export function TrailDetailPageClient({
       `}</style>
 
       <div className="flex h-screen flex-col overflow-hidden bg-slate-50 text-slate-900 dark:bg-[#08090f] dark:text-white">
-
         {/* Header */}
         <header className="shrink-0 border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
           <div className="px-4 py-3 md:px-8">
@@ -121,10 +114,8 @@ export function TrailDetailPageClient({
 
         {/* Body */}
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
-
           {/* LEFT: scrollable content */}
           <div className="trail-scrollbar flex flex-col gap-8 overflow-y-auto p-4 md:p-8 lg:w-[55%]">
-
             {/* Hero */}
             <div className="space-y-3">
               <div className="flex flex-wrap items-center gap-2">
@@ -157,7 +148,11 @@ export function TrailDetailPageClient({
                 </p>
               )}
               <div className="flex flex-wrap items-center gap-3">
-                <EffortBadge level={trail.effort_level} label={effortLabel} score={trail.difficulty_score} />
+                <EffortBadge
+                  level={trail.effort_level}
+                  label={effortLabel}
+                  score={trail.difficulty_score}
+                />
                 <span className="inline-flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400">
                   <SeasonIcon season={trail.season_best} />
                   {seasonLabel}
@@ -339,7 +334,7 @@ export function TrailDetailPageClient({
             )}
 
             {/* Info table */}
-            <section className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+            <section className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
               <table className="w-full text-sm">
                 <tbody>
                   {trail.place && <InfoRow label={t('place')} value={trail.place} />}
@@ -386,11 +381,10 @@ export function TrailDetailPageClient({
                 {t('analyzeWithZustrack')}
               </Link>
             </div>
-
           </div>
 
           {/* RIGHT: map — fills full height */}
-          <div className="h-[70vh] shrink-0 border-t border-slate-200 dark:border-slate-800 lg:h-auto lg:flex-1 lg:border-l lg:border-t-0">
+          <div className="h-[70vh] shrink-0 border-t border-slate-200 lg:h-auto lg:flex-1 lg:border-t-0 lg:border-l dark:border-slate-800">
             {trackProfile.length > 0 ? (
               <TrailMapWrapper
                 trackProfile={trackProfile}
@@ -412,7 +406,6 @@ export function TrailDetailPageClient({
               </div>
             )}
           </div>
-
         </div>
       </div>
     </>
