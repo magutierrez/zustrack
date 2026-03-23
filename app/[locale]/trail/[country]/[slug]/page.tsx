@@ -4,7 +4,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { getTrail, getTrailStaticParams } from '@/lib/trails';
 import { TrailDetailView } from '@/components/trail-detail/trail-detail-view';
 
-export const generateStaticParams = getTrailStaticParams;
+// export const generateStaticParams = getTrailStaticParams;
 
 export async function generateMetadata({
   params,
@@ -41,6 +41,7 @@ export default async function TrailPage({
   params: Promise<{ locale: string; country: string; slug: string }>;
 }) {
   const { locale, country, slug } = await params;
+
   setRequestLocale(locale);
 
   const trail = await getTrail(country, slug);
