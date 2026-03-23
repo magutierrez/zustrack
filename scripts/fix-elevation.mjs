@@ -461,7 +461,8 @@ async function main() {
       const correctedPoints = await correctElevationsIGN(rawPoints, bbox);
 
       console.log(`   ⛰️  Sampling elevations from raster...`);
-      const metrics = calcMetrics(correctedPoints);
+      const filledPoints = fillElevationHoles(correctedPoints);
+      const metrics = calcMetrics(filledPoints);
 
       console.log(
         `   ✓  gain: ${metrics.elevation_gain_m}m, max: ${metrics.elevation_max_m}m, effort: ${metrics.effort_level}`,
