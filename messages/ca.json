@@ -1,5 +1,6 @@
 {
   "HomePage": {
+    "loadRoute": "Carrega una ruta per veure el mapa",
     "loadingMap": "Carregant mapa...",
     "processingRoute": "Processant ruta...",
     "obtainingData": "Obtenint dades d'elevació i terreny",

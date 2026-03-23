@@ -10,7 +10,7 @@ export function useMapStyle(mapType: MapLayerType, resolvedTheme: string | undef
 
   return useMemo(() => {
     if (mapType === 'standard') {
-      return `https://api.maptiler.com/maps/019c8145-75e2-716d-a93a-c5165bc0a7ad/style.json?key=${maptilerKey}`;
+      return `https://api.maptiler.com/maps/outdoor-v4/style.json${maptilerKey ? `?key=${maptilerKey}` : ''}`;
     }
 
     if (mapType === 'topography') {

@@ -60,6 +60,22 @@ function addArrowImage(map: maplibregl.Map) {
   map.addImage('route-arrow', imageData, { sdf: true });
 }
 
+const transformRequest = (url: string) => {
+  const PROXY_DOMAIN = process.env.NEXT_PUBLIC_PROXY_TILES_DOMAIN;
+
+  if (PROXY_DOMAIN && url.includes('api.maptiler.com')) {
+    const newUrl = url.replace('api.maptiler.com', PROXY_DOMAIN);
+
+    const urlObj = new URL(newUrl);
+    urlObj.searchParams.delete('key');
+
+    return {
+      url: urlObj.toString(),
+    };
+  }
+  return { url };
+};
+
 interface RouteMapProps {
   onResetToFullRouteView?: (func: () => void) => void;
   isMobileFullscreen?: boolean;
@@ -197,12 +213,11 @@ export default function RouteMap({
   const geolocateControlRef = useRef<maplibregl.GeolocateControl | null>(null);
 
   const mapStyle = useMapStyle(mapType, resolvedTheme);
+  const playerMapStyle = useMapStyle('satellite', resolvedTheme);
 
-  // During playback switch to MapTiler satellite for the Strava-like 3-D flyover.
+  // During playback switch to Esri satellite (free) for the Strava-like 3-D flyover.
   // When the player stops, mapStyle reverts to the user's selected layer.
-  const effectiveMapStyle = isPlayerActive
-    ? `https://api.maptiler.com/maps/satellite/style.json?key=${process.env.NEXT_PUBLIC_MAPTILER_KEY}`
-    : mapStyle;
+  const effectiveMapStyle = isPlayerActive ? playerMapStyle : mapStyle;
 
   const { syncTerrain, terrainLoading, terrainJustLoaded } = useMapTerrain(
     mapRef,
@@ -301,15 +316,27 @@ export default function RouteMap({
         });
         map.addControl(geolocateControlRef.current, 'bottom-right');
       }
-
-      resetToFullRouteView();
+      // No resetToFullRouteView() here — initialViewState already sets the correct bounds
+      // instantly, so calling fitBounds on load would trigger an unwanted fly animation.
     },
-    [syncTerrain, applyMapLanguage, resetToFullRouteView],
+    [syncTerrain, applyMapLanguage],
   );
 
   const initialViewState = useMemo(() => {
-    if (points && points.length > 0) {
-      return { longitude: points[0].lon, latitude: points[0].lat, zoom: 10 };
+    const validPoints = points.filter(
+      (p) =>
+        typeof p.lon === 'number' && typeof p.lat === 'number' && !isNaN(p.lon) && !isNaN(p.lat),
+    );
+    if (validPoints.length > 0) {
+      const lons = validPoints.map((p) => p.lon);
+      const lats = validPoints.map((p) => p.lat);
+      return {
+        bounds: [
+          [Math.min(...lons), Math.min(...lats)],
+          [Math.max(...lons), Math.max(...lats)],
+        ] as [[number, number], [number, number]],
+        fitBoundsOptions: { padding: 40 },
+      };
     }
     return { longitude: -3.7038, latitude: 40.4168, zoom: 5 };
   }, [points]);
@@ -355,6 +382,7 @@ export default function RouteMap({
         onMouseLeave={onMapMouseLeave}
         dragRotate={true}
         touchZoomRotate={true}
+        transformRequest={transformRequest}
       >
         <NavigationControl position="bottom-right" />
 
@@ -464,7 +492,7 @@ export default function RouteMap({
 
       {/* 3D terrain + mountain peaks toggles */}
       {!(isMobile && activePopupData) && points.length > 0 && (
-        <div className="absolute top-[calc(3.5rem+2.75rem+0.25rem)] right-3 z-10 lg:top-[calc(3rem+2.75rem+0.25rem)] flex flex-col gap-1">
+        <div className="absolute top-[calc(3.5rem+2.75rem+0.25rem)] right-3 z-10 flex flex-col gap-1 lg:top-[calc(3rem+2.75rem+0.25rem)]">
           <Button
             variant={show3DTerrain ? 'default' : 'secondary'}
             size="icon"
