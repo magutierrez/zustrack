@@ -27,11 +27,6 @@ export function useMapView(
     }
   }, [points, mapRef]);
 
-  // Initial fit bounds
-  useEffect(() => {
-    fitFullRoute();
-  }, [fitFullRoute]);
-
   // Fit bounds on range selection
   useEffect(() => {
     if (selectedRange && mapRef.current) {
