@@ -773,6 +773,8 @@
     "maxSlope": "Pendiente máxima",
     "pointCount": "Puntos de ruta",
     "waypointCount": "Puntos de interés",
+    "region": "Comunidad autónoma",
+    "place": "Municipio de inicio",
     "trailType": {
       "GR": "Sendero de Gran Recorrido (GR)",
       "PR": "Sendero de Pequeño Recorrido (PR)",

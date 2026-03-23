@@ -59,9 +59,7 @@ function haversineKm(lat1, lon1, lat2, lon2) {
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const a =
     Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) ** 2;
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
@@ -92,10 +90,10 @@ function extractId(filename) {
   return match ? parseInt(match[1], 10) : null;
 }
 
-/** Extract trail code like GR-113, PR-12, SL-5 from name string */
+/** Extract trail code like GR-200, PR-BA-047, SL-GI-1002, GR-11.2 from name string */
 function extractTrailCode(name) {
-  const match = name.match(/\b(GR|PR|SL)-?\s*(\d+)/i);
-  return match ? `${match[1].toUpperCase()}-${match[2]}` : null;
+  const match = name.match(/\b(GR|PR|SL)-((?:[A-Z]{1,3}-)?(?:\d+(?:\.\d+)*))/i);
+  return match ? `${match[1].toUpperCase()}-${match[2].toUpperCase()}` : null;
 }
 
 function routeTypeFromCode(trailCode) {
@@ -132,7 +130,11 @@ function sleep(ms) {
 function computeSlopeBreakdown(trackProfile) {
   if (!trackProfile || trackProfile.length < 2) return null;
 
-  let flat = 0, gentle = 0, steep = 0, extreme = 0, total = 0;
+  let flat = 0,
+    gentle = 0,
+    steep = 0,
+    extreme = 0,
+    total = 0;
 
   for (let i = 1; i < trackProfile.length; i++) {
     const prev = trackProfile[i - 1];
@@ -160,6 +162,26 @@ function computeSlopeBreakdown(trackProfile) {
     steep: Math.round((steep / total) * 100),
     extreme: Math.round((extreme / total) * 100),
   };
+}
+
+/** Reverse-geocode start point via Nominatim to get region (state) and place (municipality) */
+async function fetchNominatimGeocode(lat, lng) {
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=es`;
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'zustrackapp/1.0 (trail-import)' },
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) return { region: null, place: null };
+    const data = await res.json();
+    const addr = data.address || {};
+    const region = addr.state || addr.region || null;
+    const place =
+      addr.municipality || addr.city || addr.town || addr.village || addr.hamlet || null;
+    return { region, place };
+  } catch {
+    return { region: null, place: null };
+  }
 }
 
 /**
@@ -229,19 +251,25 @@ out center;`;
     for (const el of highwayEls) {
       if (!el.center) continue;
       const d = distKm(tp, el.center);
-      if (d < 0.1 && d < bestDist) { bestDist = d; bestEl = el; }
+      if (d < 0.1 && d < bestDist) {
+        bestDist = d;
+        bestEl = el;
+      }
     }
     if (bestEl) {
       matchedPoints++;
-      const surface = bestEl.tags.surface || (bestEl.tags.highway === 'cycleway' ? 'asphalt' : 'unknown');
+      const surface =
+        bestEl.tags.surface || (bestEl.tags.highway === 'cycleway' ? 'asphalt' : 'unknown');
       const pathType = bestEl.tags.highway || 'unknown';
       surfaceCounts[surface] = (surfaceCounts[surface] || 0) + 1;
       pathTypeCounts[pathType] = (pathTypeCounts[pathType] || 0) + 1;
     }
   }
 
-  let dominantSurface = null, surfaceBreakdown = null;
-  let dominantPathType = null, pathTypeBreakdown = null;
+  let dominantSurface = null,
+    surfaceBreakdown = null;
+  let dominantPathType = null,
+    pathTypeBreakdown = null;
 
   if (matchedPoints > 0) {
     const toBreakdown = (counts) => {
@@ -270,7 +298,9 @@ out center;`;
       escapePoints.push({
         lat: center.lat,
         lng: center.lon ?? center.lng,
-        name: tags.name || (tags.tourism ? 'Refugio' : tags.highway ? 'Carretera principal' : 'Núcleo urbano'),
+        name:
+          tags.name ||
+          (tags.tourism ? 'Refugio' : tags.highway ? 'Carretera principal' : 'Núcleo urbano'),
         type: tags.tourism ? 'shelter' : tags.place ? 'town' : 'road',
         distanceFromRoute: Math.round(d * 10) / 10,
       });
@@ -455,7 +485,9 @@ function analyzeGPX(gpxContent, filename) {
   for (let i = 1; i < points.length; i++) {
     const prev = points[i - 1];
     const curr = points[i];
-    cumulativeDists.push(cumulativeDists[i - 1] + haversineKm(prev.lat, prev.lon, curr.lat, curr.lon));
+    cumulativeDists.push(
+      cumulativeDists[i - 1] + haversineKm(prev.lat, prev.lon, curr.lat, curr.lon),
+    );
   }
 
   // Sample up to 300 evenly-spaced points for the track profile
@@ -547,6 +579,13 @@ async function main() {
       // Slope breakdown (no API, derived from track_profile)
       const slopeBreakdown = computeSlopeBreakdown(metrics.track_profile);
 
+      // Nominatim reverse geocoding — skipped in dry-run
+      let geoData = { region: null, place: null };
+      if (!DRY_RUN) {
+        geoData = await fetchNominatimGeocode(metrics.start_lat, metrics.start_lng);
+        await sleep(1100); // Nominatim rate limit: 1 req/s
+      }
+
       // OSM enrichment (Overpass API) — skipped in dry-run
       let osmData = null;
       if (!DRY_RUN && metrics.track_profile && metrics.bbox_min_lat !== null) {
@@ -560,6 +599,8 @@ async function main() {
         slug,
         country: COUNTRY,
         gpx_file: filename,
+        region: geoData.region,
+        place: geoData.place,
         ...metrics,
         slope_breakdown: slopeBreakdown,
         dominant_surface: osmData?.dominant_surface ?? null,

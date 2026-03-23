@@ -11,6 +11,8 @@ export interface Trail {
   name: string;
   trail_code: string | null;
   route_type: string | null;
+  region: string | null;
+  place: string | null;
   description: string | null;
   source: string | null;
   distance_km: number;
@@ -62,10 +64,24 @@ export interface Trail {
 
 export type TrailSummary = Pick<
   Trail,
-  | 'id' | 'slug' | 'country' | 'name' | 'trail_code' | 'route_type'
-  | 'distance_km' | 'elevation_gain_m' | 'estimated_duration_min'
-  | 'effort_level' | 'difficulty_score' | 'child_friendly' | 'pet_friendly'
-  | 'is_circular' | 'season_best' | 'elevation_max_m'
+  | 'id'
+  | 'slug'
+  | 'country'
+  | 'name'
+  | 'trail_code'
+  | 'route_type'
+  | 'region'
+  | 'place'
+  | 'distance_km'
+  | 'elevation_gain_m'
+  | 'estimated_duration_min'
+  | 'effort_level'
+  | 'difficulty_score'
+  | 'child_friendly'
+  | 'pet_friendly'
+  | 'is_circular'
+  | 'season_best'
+  | 'elevation_max_m'
 >;
 
 export interface TrailSearchParams {
@@ -121,9 +137,7 @@ export async function fetchTrails(sp: TrailSearchParams): Promise<TrailSearchRes
   const page = Math.max(1, parseInt(sp.page ?? '1', 10));
   const offset = (page - 1) * TRAILS_PAGE_SIZE;
 
-  let query = getSupabase()
-    .from('trails')
-    .select(TRAIL_SUMMARY_COLUMNS, { count: 'exact' });
+  let query = getSupabase().from('trails').select(TRAIL_SUMMARY_COLUMNS, { count: 'exact' });
 
   if (sp.q) query = query.ilike('name', `%${sp.q}%`);
   if (sp.effort) query = query.eq('effort_level', sp.effort);

@@ -773,6 +773,8 @@
     "maxSlope": "Pendent màxima",
     "pointCount": "Punts de ruta",
     "waypointCount": "Punts d'interès",
+    "region": "Comunitat autònoma",
+    "place": "Municipi d'inici",
     "trailType": {
       "GR": "Sender de Gran Recorregut (GR)",
       "PR": "Sender de Petit Recorregut (PR)",

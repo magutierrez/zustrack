@@ -773,6 +773,8 @@
     "maxSlope": "Max slope",
     "pointCount": "Track points",
     "waypointCount": "Waypoints",
+    "region": "Region",
+    "place": "Start municipality",
     "trailType": {
       "GR": "Long-distance trail (GR)",
       "PR": "Short-distance trail (PR)",

@@ -150,6 +150,12 @@ export function TrailDetailPageClient({
                 </span>
               </div>
               <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{trail.name}</h1>
+              {(trail.place || trail.region) && (
+                <p className="inline-flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400">
+                  <MapPin className="h-3.5 w-3.5 shrink-0" />
+                  {[trail.place, trail.region].filter(Boolean).join(', ')}
+                </p>
+              )}
               <div className="flex flex-wrap items-center gap-3">
                 <EffortBadge level={trail.effort_level} label={effortLabel} score={trail.difficulty_score} />
                 <span className="inline-flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400">
@@ -336,6 +342,8 @@ export function TrailDetailPageClient({
             <section className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
               <table className="w-full text-sm">
                 <tbody>
+                  {trail.place && <InfoRow label={t('place')} value={trail.place} />}
+                  {trail.region && <InfoRow label={t('region')} value={trail.region} />}
                   {trail.source && <InfoRow label={t('source')} value={trail.source} />}
                   <InfoRow
                     label={t('startPoint')}
