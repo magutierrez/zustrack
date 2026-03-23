@@ -11,11 +11,11 @@ import Map, {
 } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type { FeatureCollection, Point, LineString } from 'geojson';
-import type { GeoJSONSource } from 'maplibre-gl';
+import maplibregl, { GeoJSONSource } from 'maplibre-gl';
 import Link from 'next/link';
 import type { TrailSearchParams } from '@/lib/trails';
 
-const MAP_STYLE = `https://api.maptiler.com/maps/outdoor-v2/style.json?key=${process.env.NEXT_PUBLIC_MAPTILER_KEY}`;
+const MAP_STYLE = `https://api.maptiler.com/maps/outdoor-v4/style.json${process.env.NEXT_PUBLIC_MAPTILER_KEY ? `?key=${process.env.NEXT_PUBLIC_MAPTILER_KEY}` : ''}`;
 
 const EFFORT_COLORS: Record<string, string> = {
   easy: '#10b981',
@@ -106,7 +106,14 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
     return () => {
       cancelled = true;
     };
-  }, [searchParams.q, searchParams.effort, searchParams.type, searchParams.shape, searchParams.child, searchParams.pet]);
+  }, [
+    searchParams.q,
+    searchParams.effort,
+    searchParams.type,
+    searchParams.shape,
+    searchParams.child,
+    searchParams.pet,
+  ]);
 
   // Fit bounds to all features after data loads
   useEffect(() => {
@@ -124,7 +131,10 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
       mapRef.current.flyTo({ center: [minLng, minLat], zoom: 12 });
     } else {
       mapRef.current.fitBounds(
-        [[minLng, minLat], [maxLng, maxLat]],
+        [
+          [minLng, minLat],
+          [maxLng, maxLat],
+        ],
         { padding: 50, maxZoom: 14, duration: 800 },
       );
     }
@@ -178,30 +188,40 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
         // Fetch track preview and zoom to trail bounds
         fetch(`/api/trails/${props.id as number}/track`)
           .then((r) => r.json())
-          .then((data: { coordinates: [number, number][]; bbox: [number, number, number, number] | null }) => {
-            if (data.coordinates.length >= 2) {
-              setTrackPreview({
-                color: EFFORT_COLORS[effortLevel] ?? '#94a3b8',
-                geojson: {
-                  type: 'FeatureCollection',
-                  features: [{
-                    type: 'Feature',
-                    geometry: { type: 'LineString', coordinates: data.coordinates },
-                    properties: {},
-                  }],
-                },
-              });
-            }
+          .then(
+            (data: {
+              coordinates: [number, number][];
+              bbox: [number, number, number, number] | null;
+            }) => {
+              if (data.coordinates.length >= 2) {
+                setTrackPreview({
+                  color: EFFORT_COLORS[effortLevel] ?? '#94a3b8',
+                  geojson: {
+                    type: 'FeatureCollection',
+                    features: [
+                      {
+                        type: 'Feature',
+                        geometry: { type: 'LineString', coordinates: data.coordinates },
+                        properties: {},
+                      },
+                    ],
+                  },
+                });
+              }
 
-            if (data.bbox) {
-              mapRef.current?.fitBounds(
-                [[data.bbox[0], data.bbox[1]], [data.bbox[2], data.bbox[3]]],
-                { padding: 60, maxZoom: 14, duration: 700 },
-              );
-            } else {
-              mapRef.current?.flyTo({ center: coords, zoom: 13, duration: 600 });
-            }
-          })
+              if (data.bbox) {
+                mapRef.current?.fitBounds(
+                  [
+                    [data.bbox[0], data.bbox[1]],
+                    [data.bbox[2], data.bbox[3]],
+                  ],
+                  { padding: 60, maxZoom: 14, duration: 700 },
+                );
+              } else {
+                mapRef.current?.flyTo({ center: coords, zoom: 13, duration: 600 });
+              }
+            },
+          )
           .catch(() => {
             mapRef.current?.flyTo({ center: coords, zoom: 13, duration: 600 });
           });
@@ -230,6 +250,7 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
       <Map
         ref={mapRef}
         mapStyle={MAP_STYLE}
+        mapLib={maplibregl}
         initialViewState={{ longitude: -3.7, latitude: 40.4, zoom: 5 }}
         style={{ width: '100%', height: '100%' }}
         interactiveLayerIds={['trail-clusters', 'trail-points']}
@@ -292,10 +313,14 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
                 'circle-color': [
                   'match',
                   ['get', 'effort_level'],
-                  'easy', EFFORT_COLORS.easy,
-                  'moderate', EFFORT_COLORS.moderate,
-                  'hard', EFFORT_COLORS.hard,
-                  'very_hard', EFFORT_COLORS.very_hard,
+                  'easy',
+                  EFFORT_COLORS.easy,
+                  'moderate',
+                  EFFORT_COLORS.moderate,
+                  'hard',
+                  EFFORT_COLORS.hard,
+                  'very_hard',
+                  EFFORT_COLORS.very_hard,
                   '#94a3b8',
                 ],
                 'circle-radius': 7,
@@ -347,7 +372,7 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
                   {getEffortLabel(popup.effort_level, labels)}
                 </span>
               </div>
-              <p className="mb-1 text-sm font-semibold leading-snug">{popup.name}</p>
+              <p className="mb-1 text-sm leading-snug font-semibold">{popup.name}</p>
               <p className="mb-2 text-xs text-slate-500">
                 {popup.distance_km.toFixed(1)} {labels.km}
               </p>
