@@ -10,7 +10,7 @@ import Map, {
   type MapLayerMouseEvent,
 } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import type { FeatureCollection, Point } from 'geojson';
+import type { FeatureCollection, Point, LineString } from 'geojson';
 import type { GeoJSONSource } from 'maplibre-gl';
 import Link from 'next/link';
 import type { TrailSearchParams } from '@/lib/trails';
@@ -72,11 +72,17 @@ function getEffortLabel(effort: string, labels: TrailsMapProps['labels']): strin
   return effort;
 }
 
+interface TrackPreview {
+  geojson: FeatureCollection<LineString>;
+  color: string;
+}
+
 export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
   const mapRef = useRef<MapRef>(null);
   const [geojson, setGeojson] = useState<FeatureCollection<Point> | null>(null);
   const [loading, setLoading] = useState(true);
   const [popup, setPopup] = useState<PopupInfo | null>(null);
+  const [trackPreview, setTrackPreview] = useState<TrackPreview | null>(null);
   const [cursor, setCursor] = useState<string>('grab');
 
   // Fetch GeoJSON whenever filters change
@@ -84,6 +90,7 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
     let cancelled = false;
     setLoading(true);
     setPopup(null);
+    setTrackPreview(null);
 
     fetch(buildGeoUrl(searchParams))
       .then((r) => r.json())
@@ -123,11 +130,16 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
     }
   }, [geojson]);
 
+  const clearTrailSelection = useCallback(() => {
+    setPopup(null);
+    setTrackPreview(null);
+  }, []);
+
   const handleClick = useCallback(
     async (e: MapLayerMouseEvent) => {
       const features = e.features;
       if (!features?.length) {
-        setPopup(null);
+        clearTrailSelection();
         return;
       }
 
@@ -149,19 +161,53 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
       } else if (feature.layer.id === 'trail-points') {
         const props = feature.properties ?? {};
         const coords = (feature.geometry as GeoJSON.Point).coordinates as [number, number];
+        const effortLevel = props.effort_level as string;
+
         setPopup({
           lng: coords[0],
           lat: coords[1],
           name: props.name as string,
           trail_code: props.trail_code as string | null,
           distance_km: props.distance_km as number,
-          effort_level: props.effort_level as string,
+          effort_level: effortLevel,
           slug: props.slug as string,
           country: props.country as string,
         });
+        setTrackPreview(null);
+
+        // Fetch track preview and zoom to trail bounds
+        fetch(`/api/trails/${props.id as number}/track`)
+          .then((r) => r.json())
+          .then((data: { coordinates: [number, number][]; bbox: [number, number, number, number] | null }) => {
+            if (data.coordinates.length >= 2) {
+              setTrackPreview({
+                color: EFFORT_COLORS[effortLevel] ?? '#94a3b8',
+                geojson: {
+                  type: 'FeatureCollection',
+                  features: [{
+                    type: 'Feature',
+                    geometry: { type: 'LineString', coordinates: data.coordinates },
+                    properties: {},
+                  }],
+                },
+              });
+            }
+
+            if (data.bbox) {
+              mapRef.current?.fitBounds(
+                [[data.bbox[0], data.bbox[1]], [data.bbox[2], data.bbox[3]]],
+                { padding: 60, maxZoom: 14, duration: 700 },
+              );
+            } else {
+              mapRef.current?.flyTo({ center: coords, zoom: 13, duration: 600 });
+            }
+          })
+          .catch(() => {
+            mapRef.current?.flyTo({ center: coords, zoom: 13, duration: 600 });
+          });
       }
     },
-    [],
+    [clearTrailSelection],
   );
 
   const handleMouseEnter = useCallback(() => setCursor('pointer'), []);
@@ -260,12 +306,30 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
           </Source>
         )}
 
+        {/* Trail track preview — shown on click */}
+        {trackPreview && (
+          <Source id="track-preview" type="geojson" data={trackPreview.geojson}>
+            <Layer
+              id="track-preview-shadow"
+              type="line"
+              layout={{ 'line-cap': 'round', 'line-join': 'round' }}
+              paint={{ 'line-color': '#000000', 'line-width': 5, 'line-opacity': 0.12 }}
+            />
+            <Layer
+              id="track-preview-line"
+              type="line"
+              layout={{ 'line-cap': 'round', 'line-join': 'round' }}
+              paint={{ 'line-color': trackPreview.color, 'line-width': 3, 'line-opacity': 0.85 }}
+            />
+          </Source>
+        )}
+
         {popup && (
           <Popup
             longitude={popup.lng}
             latitude={popup.lat}
             anchor="bottom"
-            onClose={() => setPopup(null)}
+            onClose={clearTrailSelection}
             closeButton={false}
             maxWidth="260px"
           >
