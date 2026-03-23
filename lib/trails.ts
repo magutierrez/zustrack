@@ -92,6 +92,7 @@ export interface TrailSearchParams {
   child?: string;
   pet?: string;
   page?: string;
+  view?: string; // 'list' | 'map'
 }
 
 export interface TrailSearchResult {

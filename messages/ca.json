@@ -832,6 +832,11 @@
     "clearFilters": "Netejar",
     "previous": "Anterior",
     "next": "Següent",
-    "page": "Pàgina {page} de {total}"
+    "page": "Pàgina {page} de {total}",
+    "listView": "Llista",
+    "mapView": "Mapa",
+    "mapLoading": "Carregant senders…",
+    "mapNoTrails": "No hi ha senders per mostrar",
+    "viewTrail": "Veure sender"
   }
 }

@@ -832,6 +832,11 @@
     "clearFilters": "Clear",
     "previous": "Previous",
     "next": "Next",
-    "page": "Page {page} of {total}"
+    "page": "Page {page} of {total}",
+    "listView": "List",
+    "mapView": "Map",
+    "mapLoading": "Loading trails…",
+    "mapNoTrails": "No trails to show",
+    "viewTrail": "View trail"
   }
 }

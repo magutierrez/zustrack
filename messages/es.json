@@ -832,6 +832,11 @@
     "clearFilters": "Limpiar",
     "previous": "Anterior",
     "next": "Siguiente",
-    "page": "Página {page} de {total}"
+    "page": "Página {page} de {total}",
+    "listView": "Lista",
+    "mapView": "Mapa",
+    "mapLoading": "Cargando senderos…",
+    "mapNoTrails": "No hay senderos que mostrar",
+    "viewTrail": "Ver sendero"
   }
 }
