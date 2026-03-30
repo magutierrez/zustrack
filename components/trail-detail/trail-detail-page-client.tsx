@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
+import { Header } from '@/app/_components/header';
 import {
   ArrowLeft,
   MapPin,
@@ -122,9 +123,13 @@ export function TrailDetailPageClient({ trail, locale }: { trail: Trail; locale:
       `}</style>
 
       <div className="flex h-screen flex-col overflow-hidden bg-slate-50 text-slate-900 dark:bg-[#08090f] dark:text-white">
-        {/* Header */}
-        <header className="shrink-0 border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
-          <div className="px-4 py-3 md:px-8">
+        <Header session={null} />
+
+        {/* Body */}
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
+          {/* LEFT: scrollable content */}
+          <div className="trail-scrollbar flex flex-col gap-8 overflow-y-auto p-4 md:p-8 lg:w-[55%]">
+            {/* Back link */}
             <Link
               href={`/${locale}/trail`}
               className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
@@ -132,13 +137,6 @@ export function TrailDetailPageClient({ trail, locale }: { trail: Trail; locale:
               <ArrowLeft className="h-4 w-4" />
               {t('backToTrails')}
             </Link>
-          </div>
-        </header>
-
-        {/* Body */}
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
-          {/* LEFT: scrollable content */}
-          <div className="trail-scrollbar flex flex-col gap-8 overflow-y-auto p-4 md:p-8 lg:w-[55%]">
             {/* Hero */}
             <div className="space-y-3">
               <div className="flex flex-wrap items-center gap-2">
