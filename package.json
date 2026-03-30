@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint .",
     "tsc": "tsc --noEmit",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "db:backup": "export $(grep -v '^#' .env.local | xargs) && node scripts/backup-db.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
