@@ -1,11 +1,14 @@
 'use client';
 
-import { useRef, useEffect, useMemo, useCallback } from 'react';
+import { useRef, useEffect, useMemo, useCallback, useState } from 'react';
 import Map, { NavigationControl, Source, Layer, Marker, type MapRef } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { getSlopeColorHex } from '@/lib/slope-colors';
 import { haversineDistance } from '@/lib/gpx-parser';
 import { transformRequest } from '@/lib/map-transform';
+import type { TrailMapLayerType } from '@/lib/types';
+import { useTrailMapStyle } from './use-trail-map-style';
+import { TrailLayerControl } from './trail-layer-control';
 import type { EscapePoint } from './escape-points-section';
 import type { WaterSource } from './water-sources-section';
 
@@ -38,7 +41,6 @@ interface TrailMapProps {
   activePOI?: { lat: number; lng: number } | null;
 }
 
-const MAP_STYLE = `https://api.maptiler.com/maps/outdoor-v2/style.json?key=${process.env.NEXT_PUBLIC_MAPTILER_KEY}`;
 
 /** Build color-stop stops for MapLibre line-gradient from slope values */
 function buildGradientStops(points: TrackPoint[]): (string | number)[] {
@@ -95,6 +97,8 @@ export default function TrailMap({
   activePOI,
 }: TrailMapProps) {
   const mapRef = useRef<MapRef | null>(null);
+  const [mapType, setMapType] = useState<TrailMapLayerType>('ign-raster');
+  const mapStyle = useTrailMapStyle(mapType);
 
   const coordinates = trackProfile.map((p) => [p.lng, p.lat]);
 
@@ -221,7 +225,7 @@ export default function TrailMap({
           zoom: 10,
         }}
         style={{ width: '100%', height: '100%' }}
-        mapStyle={MAP_STYLE}
+        mapStyle={mapStyle}
         onLoad={(e) => {
           e.target.fitBounds(
             [[minLng, minLat], [maxLng, maxLat]],
@@ -233,7 +237,8 @@ export default function TrailMap({
         attributionControl={false}
         transformRequest={transformRequest}
       >
-        <NavigationControl position="top-right" />
+        <NavigationControl position="bottom-right" />
+        <TrailLayerControl mapType={mapType} setMapType={setMapType} />
 
         {/* Base trail */}
         <Source id="trail" type="geojson" data={geojson} lineMetrics>

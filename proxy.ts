@@ -8,8 +8,8 @@ const intlMiddleware = createMiddleware(routing);
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Always let Next.js auth callbacks pass through
-  if (pathname.startsWith('/api/auth')) {
+  // Always let Next.js auth callbacks and public API routes pass through
+  if (pathname.startsWith('/api/auth') || pathname.startsWith('/api/trails')) {
     return NextResponse.next();
   }
 

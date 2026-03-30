@@ -839,5 +839,14 @@
     "mapLoading": "Cargando senderos…",
     "mapNoTrails": "No hay senderos que mostrar",
     "viewTrail": "Ver sendero"
+  },
+  "TrailMap": {
+    "layers": {
+      "ignRaster": "Mapa Raster IGN",
+      "ignBase": "Mapa Base IGN",
+      "osm": "OpenStreetMap",
+      "pnoa": "Ortofoto PNOA",
+      "opentopomap": "OpenTopoMap"
+    }
   }
 }

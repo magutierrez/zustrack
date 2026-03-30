@@ -839,5 +839,14 @@
     "mapLoading": "Carregant senders…",
     "mapNoTrails": "No hi ha senders per mostrar",
     "viewTrail": "Veure sender"
+  },
+  "TrailMap": {
+    "layers": {
+      "ignRaster": "Mapa Raster IGN",
+      "ignBase": "Mapa Base IGN",
+      "osm": "OpenStreetMap",
+      "pnoa": "Ortofoto PNOA",
+      "opentopomap": "OpenTopoMap"
+    }
   }
 }

@@ -839,5 +839,14 @@
     "mapLoading": "Loading trails…",
     "mapNoTrails": "No trails to show",
     "viewTrail": "View trail"
+  },
+  "TrailMap": {
+    "layers": {
+      "ignRaster": "Mapa Raster IGN",
+      "ignBase": "Mapa Base IGN",
+      "osm": "OpenStreetMap",
+      "pnoa": "Ortofoto PNOA",
+      "opentopomap": "OpenTopoMap"
+    }
   }
 }
