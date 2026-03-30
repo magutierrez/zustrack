@@ -1,0 +1,58 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+
+export async function GET(req: NextRequest) {
+  const sp = req.nextUrl.searchParams;
+
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  );
+
+  let query = supabase
+    .from('trails')
+    .select('id,slug,country,name,trail_code,effort_level,distance_km,start_lat,start_lng')
+    .limit(10000);
+
+  const q = sp.get('q');
+  const effort = sp.get('effort');
+  const type = sp.get('type');
+  const shape = sp.get('shape');
+  const child = sp.get('child');
+  const pet = sp.get('pet');
+
+  if (q) query = query.ilike('name', `%${q}%`);
+  if (effort) query = query.eq('effort_level', effort);
+  if (type) query = query.eq('route_type', type);
+  if (shape === 'circular') query = query.eq('is_circular', true);
+  if (shape === 'linear') query = query.eq('is_circular', false);
+  if (child === 'true') query = query.eq('child_friendly', true);
+  if (pet === 'true') query = query.eq('pet_friendly', true);
+
+  const { data, error } = await query;
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  const features = (data ?? [])
+    .filter((t) => t.start_lat != null && t.start_lng != null)
+    .map((t) => ({
+      type: 'Feature' as const,
+      geometry: { type: 'Point' as const, coordinates: [t.start_lng, t.start_lat] as [number, number] },
+      properties: {
+        id: t.id,
+        slug: t.slug,
+        country: t.country,
+        name: t.name,
+        trail_code: t.trail_code,
+        effort_level: t.effort_level,
+        distance_km: t.distance_km,
+      },
+    }));
+
+  return NextResponse.json(
+    { type: 'FeatureCollection', features },
+    { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } },
+  );
+}

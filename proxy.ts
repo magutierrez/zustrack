@@ -40,6 +40,7 @@ export async function proxy(request: NextRequest) {
     cleanPath === '/' ||
     cleanPath.startsWith('/terms') ||
     cleanPath.startsWith('/privacy') ||
+    cleanPath.startsWith('/trail') ||
     isLoginPath;
 
   if (!isPublicPath) {
