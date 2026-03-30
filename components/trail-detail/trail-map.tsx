@@ -10,7 +10,6 @@ import type { TrailMapLayerType } from '@/lib/types';
 import { useTrailMapStyle } from './use-trail-map-style';
 import { TrailLayerControl } from './trail-layer-control';
 import { useTrailTerrain } from './use-trail-terrain';
-import { Box } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { EscapePoint } from './escape-points-section';
 import type { WaterSource } from './water-sources-section';
@@ -104,6 +103,13 @@ export default function TrailMap({
   const [enable3D, setEnable3D] = useState(false);
   const mapStyle = useTrailMapStyle(mapType);
   const { terrainLoading } = useTrailTerrain(mapRef, mapStyle, enable3D);
+
+  // Tilt map when switching 3D on/off
+  useEffect(() => {
+    const map = mapRef.current?.getMap();
+    if (!map) return;
+    map.easeTo({ pitch: enable3D ? 60 : 0, duration: 600 });
+  }, [enable3D, mapRef]);
 
   const coordinates = trackProfile.map((p) => [p.lng, p.lat]);
 
@@ -248,12 +254,12 @@ export default function TrailMap({
           <Button
             variant={enable3D ? 'default' : 'secondary'}
             size="icon"
-            className="h-10 w-10 shadow-md"
+            className="h-10 w-10 shadow-md text-xs font-bold"
             onClick={() => setEnable3D((v) => !v)}
             disabled={terrainLoading}
-            title="3D terrain"
+            title={enable3D ? '2D' : '3D'}
           >
-            <Box className="h-5 w-5" />
+            {enable3D ? '2D' : '3D'}
           </Button>
         </div>
 
