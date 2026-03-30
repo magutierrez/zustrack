@@ -9,6 +9,9 @@ import { transformRequest } from '@/lib/map-transform';
 import type { TrailMapLayerType } from '@/lib/types';
 import { useTrailMapStyle } from './use-trail-map-style';
 import { TrailLayerControl } from './trail-layer-control';
+import { useTrailTerrain } from './use-trail-terrain';
+import { Box } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import type { EscapePoint } from './escape-points-section';
 import type { WaterSource } from './water-sources-section';
 
@@ -98,7 +101,9 @@ export default function TrailMap({
 }: TrailMapProps) {
   const mapRef = useRef<MapRef | null>(null);
   const [mapType, setMapType] = useState<TrailMapLayerType>('ign-raster');
+  const [enable3D, setEnable3D] = useState(false);
   const mapStyle = useTrailMapStyle(mapType);
+  const { terrainLoading } = useTrailTerrain(mapRef, mapStyle, enable3D);
 
   const coordinates = trackProfile.map((p) => [p.lng, p.lat]);
 
@@ -239,6 +244,18 @@ export default function TrailMap({
       >
         <NavigationControl position="bottom-right" />
         <TrailLayerControl mapType={mapType} setMapType={setMapType} />
+        <div className="absolute top-[100px] right-3 z-10">
+          <Button
+            variant={enable3D ? 'default' : 'secondary'}
+            size="icon"
+            className="h-10 w-10 shadow-md"
+            onClick={() => setEnable3D((v) => !v)}
+            disabled={terrainLoading}
+            title="3D terrain"
+          >
+            <Box className="h-5 w-5" />
+          </Button>
+        </div>
 
         {/* Base trail */}
         <Source id="trail" type="geojson" data={geojson} lineMetrics>
