@@ -17,3 +17,11 @@ testing/
 next-env.d.ts
 tsconfig.tsbuildinfo
 gpx_trails/*
+
+# Database backups — never commit
+backups/
+
+# Supabase local dev artifacts
+.supabase/
+supabase/.branches
+supabase/.temp
