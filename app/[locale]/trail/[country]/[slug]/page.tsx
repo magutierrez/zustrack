@@ -1,8 +1,9 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { getTrail, getTrailStaticParams } from '@/lib/trails';
+import { getTrail } from '@/lib/trails';
 import { TrailDetailView } from '@/components/trail-detail/trail-detail-view';
+import { auth } from '@/auth';
 
 // export const generateStaticParams = getTrailStaticParams;
 
@@ -44,8 +45,8 @@ export default async function TrailPage({
 
   setRequestLocale(locale);
 
-  const trail = await getTrail(country, slug);
+  const [trail, session] = await Promise.all([getTrail(country, slug), auth()]);
   if (!trail) notFound();
 
-  return <TrailDetailView trail={trail} locale={locale} />;
+  return <TrailDetailView trail={trail} locale={locale} isAuthenticated={!!session?.user} />;
 }

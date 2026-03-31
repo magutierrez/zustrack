@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useCallback } from 'react';
+import { trailToGpx } from '@/lib/trail-to-gpx';
 import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
@@ -45,6 +46,7 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
   const session = clientSession || serverSession;
   const searchParams = useSearchParams();
   const routeId = searchParams.get('routeId');
+  const trailId = searchParams.get('trailId');
   const initialActivityType = (searchParams.get('activity') as 'cycling' | 'walking') || 'cycling';
 
   const tHomePage = useTranslations('HomePage');
@@ -57,10 +59,10 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
   const config = useRouteStore((s) => s.config);
   const fetchedActivityType = useRouteStore((s) => s.fetchedActivityType);
   const isMobileFullscreen = useRouteStore((s) => s.isMobileFullscreen);
-  const { setConfig, setIsMobileFullscreen, setMobileHazardRange, reset } = useRouteStore();
+  const { setConfig, setIsMobileFullscreen, setMobileHazardRange, reset, setFetchedRoute } = useRouteStore();
 
   const { handleAnalyze, handleReverseRoute, handleFindBestWindow } = useRouteAnalysis();
-  const { activityFromHash } = useSharedRouteLoader(session, routeId);
+  const { activityFromHash } = useSharedRouteLoader(session, routeId, !!trailId);
 
   const mapResetViewRef = useRef<(() => void) | null>(null);
 
@@ -70,6 +72,26 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
   useEffect(() => {
     return () => reset();
   }, [reset]);
+
+  // Load trail from URL param (used after login redirect from trail detail page)
+  useEffect(() => {
+    if (!trailId) return;
+    fetch(`/api/trails/${trailId}`)
+      .then((r) => r.json())
+      .then((trail) => {
+        if (!trail?.track_profile) return;
+        const gpxContent = trailToGpx(trail.name, trail.track_profile);
+        setFetchedRoute({
+          rawGpxContent: gpxContent,
+          gpxFileName: `${trail.slug}.gpx`,
+          activityType: 'walking',
+          distance: trail.distance_km,
+          elevationGain: trail.elevation_gain_m,
+          elevationLoss: trail.elevation_loss_m,
+        });
+      })
+      .catch(() => {}); // silently ignore network errors
+  }, [trailId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onReverseWithRange = useCallback(() => {
     handleReverseRoute();
