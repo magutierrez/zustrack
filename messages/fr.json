@@ -806,6 +806,7 @@
   },
   "TrailSearchPage": {
     "title": "Sentiers officiels",
+    "metaDescription": "Découvrez des sentiers officiels avec des traces GPS détaillées, des profils d'élévation et une analyse météo point par point. Filtrez par difficulté, distance et région.",
     "searchPlaceholder": "Rechercher par nom...",
     "results": "{count} sentiers trouvés",
     "noResults": "Aucun sentier ne correspond aux filtres",

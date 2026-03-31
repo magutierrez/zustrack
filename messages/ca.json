@@ -821,6 +821,7 @@
   },
   "TrailSearchPage": {
     "title": "Senders oficials",
+    "metaDescription": "Descobreix senders oficials amb tracks GPS detallats, perfils d'elevació i anàlisi meteorològica punt a punt. Filtra per dificultat, distància i regió.",
     "searchPlaceholder": "Cercar per nom...",
     "results": "{count} senders trobats",
     "noResults": "Cap sender coincideix amb els filtres",

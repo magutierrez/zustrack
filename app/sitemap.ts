@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://www.zustrack.com';
 
-const PUBLIC_PATHS = ['', '/terms', '/privacy'];
+const PUBLIC_PATHS = ['', '/trail', '/terms', '/privacy'];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const entries: MetadataRoute.Sitemap = [];
@@ -19,8 +19,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       entries.push({
         url: `${BASE_URL}/${locale}${path}`,
         lastModified: new Date(),
-        changeFrequency: path === '' ? 'weekly' : 'monthly',
-        priority: path === '' ? 1 : 0.6,
+        changeFrequency: path === '' ? 'weekly' : path === '/trail' ? 'daily' : 'monthly',
+        priority: path === '' ? 1 : path === '/trail' ? 0.8 : 0.6,
         alternates: {
           languages: {
             ...localizedUrls,
