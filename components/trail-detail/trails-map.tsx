@@ -15,8 +15,10 @@ import maplibregl, { GeoJSONSource } from 'maplibre-gl';
 import Link from 'next/link';
 import type { TrailSearchParams } from '@/lib/trails';
 import { transformRequest } from '@/lib/map-transform';
+import type { TrailMapLayerType } from '@/lib/types';
+import { useTrailMapStyle } from './use-trail-map-style';
+import { TrailLayerControl } from './trail-layer-control';
 
-const MAP_STYLE = `https://api.maptiler.com/maps/outdoor-v4/style.json${process.env.NEXT_PUBLIC_MAPTILER_KEY ? `?key=${process.env.NEXT_PUBLIC_MAPTILER_KEY}` : ''}`;
 
 const EFFORT_COLORS: Record<string, string> = {
   easy: '#10b981',
@@ -80,6 +82,8 @@ interface TrackPreview {
 
 export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
   const mapRef = useRef<MapRef>(null);
+  const [mapType, setMapType] = useState<TrailMapLayerType>('ign-raster');
+  const mapStyle = useTrailMapStyle(mapType);
   const [geojson, setGeojson] = useState<FeatureCollection<Point> | null>(null);
   const [loading, setLoading] = useState(true);
   const [popup, setPopup] = useState<PopupInfo | null>(null);
@@ -118,7 +122,7 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
 
   // Fit bounds to all features after data loads
   useEffect(() => {
-    if (!geojson?.features.length || !mapRef.current) return;
+    if (!geojson?.features?.length || !mapRef.current) return;
 
     const coords = geojson.features.map((f) => f.geometry.coordinates as [number, number]);
     const lngs = coords.map((c) => c[0]);
@@ -242,7 +246,7 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
         </div>
       )}
 
-      {!loading && geojson?.features.length === 0 && (
+      {!loading && geojson?.features?.length === 0 && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-50/80 dark:bg-slate-900/80">
           <span className="text-sm text-slate-500 dark:text-slate-400">{labels.noTrails}</span>
         </div>
@@ -250,7 +254,7 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
 
       <Map
         ref={mapRef}
-        mapStyle={MAP_STYLE}
+        mapStyle={mapStyle}
         mapLib={maplibregl}
         initialViewState={{ longitude: -3.7, latitude: 40.4, zoom: 5 }}
         style={{ width: '100%', height: '100%' }}
@@ -261,7 +265,8 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
         onMouseLeave={handleMouseLeave}
         transformRequest={transformRequest}
       >
-        <NavigationControl position="top-right" />
+        <NavigationControl position="bottom-right" />
+        <TrailLayerControl mapType={mapType} setMapType={setMapType} />
 
         {geojson && (
           <Source

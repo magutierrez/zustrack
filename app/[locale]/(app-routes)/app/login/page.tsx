@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { setRequestLocale } from 'next-intl/server';
 import { LoginPageClient } from './_components/login-page-client';
 
@@ -17,5 +18,9 @@ export default async function LoginPage({ params }: { params: Promise<{ locale: 
   setRequestLocale(locale);
 
   const providers = getAvailableProviders();
-  return <LoginPageClient providers={providers} />;
+  return (
+    <Suspense>
+      <LoginPageClient providers={providers} />
+    </Suspense>
+  );
 }

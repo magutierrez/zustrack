@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { useLocale, useTranslations } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
 import { LocaleSwitcher } from '@/app/_components/locale-switcher';
 import { LogoIcon } from '@/app/_components/logo-icon';
 
@@ -29,7 +30,10 @@ interface LoginPageClientProps {
 export function LoginPageClient({ providers }: LoginPageClientProps) {
   const t = useTranslations('Auth');
   const locale = useLocale();
-  const redirectTo = `/${locale}/app/setup`;
+  const searchParams = useSearchParams();
+  const rawCallback = searchParams.get('callbackUrl');
+  // Only allow relative URLs to prevent open redirect
+  const redirectTo = rawCallback?.startsWith('/') ? rawCallback : `/${locale}/app/setup`;
 
   return (
     <div className="bg-background flex min-h-screen items-center justify-center p-4">

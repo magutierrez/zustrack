@@ -7,7 +7,11 @@ import { parseHashPayload, decodeSharedRoute } from '@/lib/route-sharing';
 import { getRouteFromDb } from '@/lib/db';
 import { useRouteStore } from '@/store/route-store';
 
-export function useSharedRouteLoader(session: Session | null, routeId: string | null) {
+export function useSharedRouteLoader(
+  session: Session | null,
+  routeId: string | null,
+  skipSetupRedirect = false,
+) {
   const router = useRouter();
   const gpxData = useRouteStore((s) => s.gpxData);
   const {
@@ -95,10 +99,10 @@ export function useSharedRouteLoader(session: Session | null, routeId: string | 
         }
       };
       fetchRoute();
-    } else if (!routeId) {
+    } else if (!routeId && !skipSetupRedirect) {
       router.replace('/app/setup');
     }
-  }, [routeId, session?.user?.email, session?.user?.id, setSavedRouteId, setFetchedRoute, router]);
+  }, [routeId, skipSetupRedirect, session?.user?.email, session?.user?.id, setSavedRouteId, setFetchedRoute, router]);
 
   return {
     activityFromHash: (hashPayload?.a as 'cycling' | 'walking') ?? null,

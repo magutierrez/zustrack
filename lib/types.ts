@@ -121,6 +121,8 @@ export interface GPXData {
 
 export type MapLayerType = 'standard' | 'satellite' | 'hybrid' | 'topography';
 
+export type TrailMapLayerType = 'ign-raster' | 'ign-base' | 'osm' | 'pnoa' | 'opentopomap';
+
 export interface MapPopupInfo {
   point: RoutePoint & { slope?: number };
   weather: WeatherData;

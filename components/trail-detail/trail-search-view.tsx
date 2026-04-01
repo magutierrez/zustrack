@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
+import { Header } from '@/app/_components/header';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { fetchTrails } from '@/lib/trails';
 import type { TrailSearchParams } from '@/lib/trails';
@@ -59,8 +60,9 @@ export async function TrailSearchView({ locale, sp }: { locale: string; sp: Trai
 
   return (
     <div className={isMapView ? 'flex h-screen flex-col overflow-hidden bg-slate-50 dark:bg-[#08090f]' : 'min-h-screen bg-slate-50 dark:bg-[#08090f]'}>
-      <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
-        <div className="mx-auto max-w-6xl px-4 py-6">
+      <Header session={null} />
+      <div className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
+        <div className="mx-auto max-w-6xl px-4 py-4">
           <h1 className="mb-4 text-2xl font-bold text-slate-900 dark:text-white">{t('title')}</h1>
           <TrailFilters
             initial={{
@@ -74,7 +76,7 @@ export async function TrailSearchView({ locale, sp }: { locale: string; sp: Trai
             labels={filterLabels}
           />
         </div>
-      </header>
+      </div>
 
       <main className={isMapView ? 'flex-1 overflow-hidden' : 'mx-auto max-w-6xl px-4 py-6 space-y-6'}>
         <div className={isMapView ? 'flex items-center gap-3 px-4 pt-4 pb-2' : 'flex items-center justify-between'}>

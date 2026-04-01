@@ -8,8 +8,8 @@ const intlMiddleware = createMiddleware(routing);
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Always let Next.js auth callbacks pass through
-  if (pathname.startsWith('/api/auth')) {
+  // Always let Next.js auth callbacks and public API routes pass through
+  if (pathname.startsWith('/api/auth') || pathname.startsWith('/api/trails')) {
     return NextResponse.next();
   }
 
@@ -46,15 +46,20 @@ export async function proxy(request: NextRequest) {
   if (!isPublicPath) {
     const session = await auth();
     if (!session?.user) {
-      return NextResponse.redirect(new URL(`/${locale}/app/login`, request.url));
+      const loginUrl = new URL(`/${locale}/app/login`, request.url);
+      loginUrl.searchParams.set('callbackUrl', pathname + request.nextUrl.search);
+      return NextResponse.redirect(loginUrl);
     }
   }
 
-  // Already logged in → skip the login page
+  // Already logged in → skip the login page, honour callbackUrl if present
   if (isLoginPath) {
     const session = await auth();
     if (session?.user) {
-      return NextResponse.redirect(new URL(`/${locale}/app/setup`, request.url));
+      const callbackUrl = request.nextUrl.searchParams.get('callbackUrl');
+      const destination =
+        callbackUrl?.startsWith('/') ? callbackUrl : `/${locale}/app/setup`;
+      return NextResponse.redirect(new URL(destination, request.url));
     }
   }
 

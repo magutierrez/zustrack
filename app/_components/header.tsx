@@ -24,7 +24,7 @@ import { LogoIcon } from '@/app/_components/logo-icon';
 import { Link } from '@/i18n/navigation';
 
 interface HeaderProps {
-  session: Session | null;
+  session?: Session | null;
   mobileMenuContent?: React.ReactNode;
   extraActions?: React.ReactNode;
 }
@@ -75,33 +75,35 @@ export function Header({ session, mobileMenuContent, extraActions }: HeaderProps
           </Sheet>
         )}
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-              <Avatar className="h-9 w-9">
-                <AvatarImage
-                  src={session?.user?.image || undefined}
-                  alt={session?.user?.name || 'User'}
-                />
-                <AvatarFallback>{userInitial}</AvatarFallback>
-              </Avatar>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56" align="end" forceMount>
-            <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
-              <Settings className="mr-2 h-4 w-4" />
-              <span>{t('settings')}</span>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => signOut({ redirectTo: '/app/login' })}>
-              <LogOut className="mr-2 h-4 w-4" />
-              <span>{t('logout')}</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {session && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+                <Avatar className="h-9 w-9">
+                  <AvatarImage
+                    src={session.user?.image || undefined}
+                    alt={session.user?.name || 'User'}
+                  />
+                  <AvatarFallback>{userInitial}</AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="end" forceMount>
+              <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
+                <Settings className="mr-2 h-4 w-4" />
+                <span>{t('settings')}</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => signOut({ redirectTo: '/app/login' })}>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>{t('logout')}</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
 
-      <SettingsModal isOpen={isSettingsOpen} onOpenChange={setIsSettingsOpen} />
+      {session && <SettingsModal isOpen={isSettingsOpen} onOpenChange={setIsSettingsOpen} />}
     </header>
   );
 }
