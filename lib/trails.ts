@@ -194,6 +194,22 @@ export async function getTrailRanges(): Promise<TrailRanges> {
   };
 }
 
+export async function getSimilarTrails(
+  country: string,
+  id: number,
+  difficultyScore: number,
+): Promise<TrailSummary[]> {
+  const { data } = await getSupabase()
+    .from('trails')
+    .select(TRAIL_SUMMARY_COLUMNS)
+    .eq('country', country)
+    .neq('id', id)
+    .gte('difficulty_score', difficultyScore - 10)
+    .lte('difficulty_score', difficultyScore + 10)
+    .limit(3);
+  return (data ?? []) as TrailSummary[];
+}
+
 export async function getTrailStaticParams() {
   const { data } = await getSupabase().from('trails').select('country, slug');
   return (data ?? []).map((row: { country: string; slug: string }) => ({

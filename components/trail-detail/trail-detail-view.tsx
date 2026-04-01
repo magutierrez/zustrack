@@ -1,7 +1,8 @@
-import type { Trail } from '@/lib/trails';
+import type { Trail, TrailSummary } from '@/lib/trails';
+import { getSimilarTrails } from '@/lib/trails';
 import { TrailDetailPageClient } from './trail-detail-page-client';
 
-export function TrailDetailView({
+export async function TrailDetailView({
   trail,
   locale,
   isAuthenticated,
@@ -10,5 +11,18 @@ export function TrailDetailView({
   locale: string;
   isAuthenticated: boolean;
 }) {
-  return <TrailDetailPageClient trail={trail} locale={locale} isAuthenticated={isAuthenticated} />;
+  const similarTrails: TrailSummary[] = await getSimilarTrails(
+    trail.country,
+    trail.id,
+    trail.difficulty_score,
+  );
+
+  return (
+    <TrailDetailPageClient
+      trail={trail}
+      locale={locale}
+      isAuthenticated={isAuthenticated}
+      similarTrails={similarTrails}
+    />
+  );
 }

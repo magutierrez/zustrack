@@ -18,7 +18,7 @@ import {
   Info,
   Map,
 } from 'lucide-react';
-import type { Trail } from '@/lib/trails';
+import type { Trail, TrailSummary } from '@/lib/trails';
 import { StatsGrid } from './stats-grid';
 import { EffortBadge } from './effort-badge';
 import { SuitabilityChips } from './suitability-chips';
@@ -29,6 +29,11 @@ import { TrailElevationChart } from './trail-elevation-chart';
 import { TrailMapWrapper } from './trail-map-wrapper';
 import { EscapePointsSection } from './escape-points-section';
 import { WaterSourcesSection } from './water-sources-section';
+import { TrailGpxDownload } from './trail-gpx-download';
+import { TrailWeatherForecast } from './trail-weather-forecast';
+import { TrailPaceCard } from './trail-pace-card';
+import { TrailCard } from './trail-card';
+import { TrailInfoTabs } from './trail-info-tabs';
 
 type Range = { start: number; end: number };
 type POIPoint = { lat: number; lng: number };
@@ -63,10 +68,12 @@ export function TrailDetailPageClient({
   trail,
   locale,
   isAuthenticated,
+  similarTrails = [],
 }: {
   trail: Trail;
   locale: string;
   isAuthenticated: boolean;
+  similarTrails?: TrailSummary[];
 }) {
   const t = useTranslations('TrailPage');
   const router = useRouter();
@@ -235,6 +242,15 @@ export function TrailDetailPageClient({
                   {seasonLabel}
                 </span>
               </div>
+              {trackProfile.length > 0 && (
+                <div className="pt-1">
+                  <TrailGpxDownload
+                    name={trail.name}
+                    trackProfile={trackProfile}
+                    label={t('downloadGpx')}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Elevation chart */}
@@ -291,6 +307,19 @@ export function TrailDetailPageClient({
                 duration: t('duration'),
                 km: t('km'),
                 meters: t('meters'),
+              }}
+            />
+
+            {/* Weather forecast */}
+            <TrailWeatherForecast
+              lat={trail.start_lat}
+              lng={trail.start_lng}
+              labels={{
+                weatherForecast: t('weatherForecast'),
+                bestDay: t('bestDay'),
+                weatherLoading: t('weatherLoading'),
+                precipitation: t('precipitation'),
+                wind: t('wind'),
               }}
             />
 
@@ -367,40 +396,66 @@ export function TrailDetailPageClient({
               />
             )}
 
-            {/* Escape points */}
-            {trail.escape_points && trail.escape_points.length > 0 && (
-              <EscapePointsSection
-                escapePoints={trail.escape_points}
-                labels={{
-                  escapePoints: t('escapePoints'),
-                  town: t('town'),
-                  road: t('road'),
-                  shelter: t('shelter'),
-                  kmAway: t('kmAway'),
-                  showOnMap: t('showOnMap'),
-                }}
-                activePOI={activePOI}
-                onShowOnMap={handleShowOnMap}
-              />
-            )}
+            {/* Escape points + Water sources + Equipment — tabbed */}
+            <TrailInfoTabs
+              trail={trail}
+              trackProfile={trackProfile}
+              activePOI={activePOI}
+              onShowOnMap={handleShowOnMap}
+              labels={{
+                escapePoints: t('escapePoints'),
+                town: t('town'),
+                road: t('road'),
+                shelter: t('shelter'),
+                waterSources: t('waterSources'),
+                natural: t('natural'),
+                urban: t('urban'),
+                reliable: t('reliable'),
+                seasonal: t('seasonal'),
+                unreliable: t('unreliable'),
+                kmAway: t('kmAway'),
+                showOnMap: t('showOnMap'),
+                waterGapMax: t('waterGapMax'),
+                waterCarryRecommendation: t('waterCarryRecommendation'),
+                liters: t('liters'),
+                equipmentTitle: t('equipmentTitle'),
+                equipmentFootwear: t('equipmentFootwear'),
+                equipmentPoles: t('equipmentPoles'),
+                equipmentWater: t('equipmentWater'),
+                equipmentLayers: t('equipmentLayers'),
+                equipmentSun: t('equipmentSun'),
+                equipmentCrampons: t('equipmentCrampons'),
+                equipmentFirstAid: t('equipmentFirstAid'),
+                equipmentNavigation: t('equipmentNavigation'),
+                essential: t('essential'),
+                recommended: t('recommended'),
+              }}
+            />
 
-            {/* Water sources */}
-            {trail.water_sources && trail.water_sources.length > 0 && (
-              <WaterSourcesSection
-                waterSources={trail.water_sources}
-                labels={{
-                  waterSources: t('waterSources'),
-                  natural: t('natural'),
-                  urban: t('urban'),
-                  reliable: t('reliable'),
-                  seasonal: t('seasonal'),
-                  unreliable: t('unreliable'),
-                  kmAway: t('kmAway'),
-                  showOnMap: t('showOnMap'),
-                }}
-                activePOI={activePOI}
-                onShowOnMap={handleShowOnMap}
-              />
+            {/* Similar trails */}
+            {similarTrails.length > 0 && (
+              <section className="space-y-3">
+                <h2 className="text-lg font-semibold">{t('similarTrails')}</h2>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                  {similarTrails.map((s) => (
+                    <TrailCard
+                      key={s.id}
+                      trail={s as Parameters<typeof TrailCard>[0]['trail']}
+                      locale={locale}
+                      labels={{
+                        easy: t('easy'),
+                        moderate: t('moderate'),
+                        hard: t('hard'),
+                        veryHard: t('veryHard'),
+                        circular: t('circular'),
+                        linear: t('linear'),
+                        km: t('km'),
+                        meters: t('meters'),
+                      }}
+                    />
+                  ))}
+                </div>
+              </section>
             )}
 
             {/* Description */}
