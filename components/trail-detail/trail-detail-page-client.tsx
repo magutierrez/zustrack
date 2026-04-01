@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/app/_components/header';
+import { cn } from '@/lib/utils';
 import {
   ArrowLeft,
   MapPin,
@@ -14,6 +15,8 @@ import {
   Snowflake,
   Thermometer,
   ExternalLink,
+  Info,
+  Map,
 } from 'lucide-react';
 import type { Trail } from '@/lib/trails';
 import { StatsGrid } from './stats-grid';
@@ -68,6 +71,7 @@ export function TrailDetailPageClient({
   const t = useTranslations('TrailPage');
   const router = useRouter();
 
+  const [mobileView, setMobileView] = useState<'info' | 'map'>('info');
   const [selectedRange, setSelectedRange] = useState<Range | null>(null);
   const [hoverDist, setHoverDist] = useState<number | null>(null);
   const [focusPoint, setFocusPoint] = useState<POIPoint | null>(null);
@@ -144,10 +148,43 @@ export function TrailDetailPageClient({
       <div className="flex h-screen flex-col overflow-hidden bg-slate-50 text-slate-900 dark:bg-[#08090f] dark:text-white">
         <Header session={null} />
 
+        {/* Mobile tab bar — Info / Map toggle */}
+        <div className="flex shrink-0 border-b border-slate-200 dark:border-slate-800 lg:hidden">
+          <button
+            onClick={() => setMobileView('info')}
+            className={cn(
+              'flex flex-1 items-center justify-center gap-1.5 py-3 text-sm font-medium transition',
+              mobileView === 'info'
+                ? 'border-b-2 border-slate-900 text-slate-900 dark:border-white dark:text-white'
+                : 'text-slate-400 dark:text-slate-500',
+            )}
+          >
+            <Info className="h-4 w-4" />
+            {t('infoTab')}
+          </button>
+          <button
+            onClick={() => setMobileView('map')}
+            className={cn(
+              'flex flex-1 items-center justify-center gap-1.5 py-3 text-sm font-medium transition',
+              mobileView === 'map'
+                ? 'border-b-2 border-slate-900 text-slate-900 dark:border-white dark:text-white'
+                : 'text-slate-400 dark:text-slate-500',
+            )}
+          >
+            <Map className="h-4 w-4" />
+            {t('mapTab')}
+          </button>
+        </div>
+
         {/* Body */}
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
           {/* LEFT: scrollable content */}
-          <div className="trail-scrollbar flex flex-col gap-8 overflow-y-auto p-4 md:p-8 lg:w-[55%]">
+          <div
+            className={cn(
+              'trail-scrollbar flex-col gap-8 overflow-y-auto p-4 md:p-8 lg:flex lg:w-[55%]',
+              mobileView === 'info' ? 'flex flex-1 pb-24' : 'hidden',
+            )}
+          >
             {/* Back link */}
             <Link
               href={`/${locale}/trail`}
@@ -425,7 +462,12 @@ export function TrailDetailPageClient({
           </div>
 
           {/* RIGHT: map — fills full height */}
-          <div className="h-[70vh] shrink-0 border-t border-slate-200 lg:h-auto lg:flex-1 lg:border-t-0 lg:border-l dark:border-slate-800">
+          <div
+            className={cn(
+              'border-slate-200 dark:border-slate-800 lg:flex-1 lg:border-l',
+              mobileView === 'map' ? 'flex flex-1' : 'hidden lg:block',
+            )}
+          >
             {trackProfile.length > 0 ? (
               <TrailMapWrapper
                 trackProfile={trackProfile}
@@ -448,6 +490,19 @@ export function TrailDetailPageClient({
             )}
           </div>
         </div>
+
+        {/* Sticky CTA — mobile only, shown on info tab */}
+        {mobileView === 'info' && (
+          <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur-sm dark:border-slate-800 dark:bg-[#08090f]/95 lg:hidden">
+            <button
+              onClick={handleAnalyze}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-slate-900 py-3 text-sm font-semibold text-white dark:bg-white dark:text-slate-900"
+            >
+              <MapPin className="h-4 w-4" />
+              {t('analyzeWithZustrack')}
+            </button>
+          </div>
+        )}
       </div>
     </>
   );

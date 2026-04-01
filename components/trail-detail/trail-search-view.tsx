@@ -59,7 +59,13 @@ export async function TrailSearchView({ locale, sp }: { locale: string; sp: Trai
   };
 
   return (
-    <div className={isMapView ? 'flex h-screen flex-col overflow-hidden bg-slate-50 dark:bg-[#08090f]' : 'min-h-screen bg-slate-50 dark:bg-[#08090f]'}>
+    <div
+      className={
+        isMapView
+          ? 'flex h-screen flex-col overflow-hidden bg-slate-50 dark:bg-[#08090f]'
+          : 'min-h-screen bg-slate-50 dark:bg-[#08090f]'
+      }
+    >
       <Header session={null} />
       <div className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
         <div className="mx-auto max-w-6xl px-4 py-4">
@@ -78,14 +84,22 @@ export async function TrailSearchView({ locale, sp }: { locale: string; sp: Trai
         </div>
       </div>
 
-      <main className={isMapView ? 'flex-1 overflow-hidden' : 'mx-auto max-w-6xl px-4 py-6 space-y-6'}>
-        <div className={isMapView ? 'flex items-center gap-3 px-4 pt-4 pb-2' : 'flex items-center justify-between'}>
+      <main
+        className={isMapView ? 'flex-1 overflow-hidden' : 'mx-auto max-w-6xl space-y-6 px-4 py-6'}
+      >
+        <div
+          className={
+            isMapView
+              ? 'flex items-center justify-between px-4 pt-6 pb-4'
+              : 'flex items-center justify-between'
+          }
+        >
           <p className="text-sm text-slate-500 dark:text-slate-400">{t('results', { count })}</p>
           <ViewToggle labels={{ listView: t('listView'), mapView: t('mapView') }} />
         </div>
 
         {isMapView ? (
-          <div className="h-[calc(100vh-12rem)]">
+          <div className="h-[calc(100dvh-12rem)]">
             <TrailsMapWrapper
               searchParams={sp}
               locale={locale}

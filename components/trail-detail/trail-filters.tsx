@@ -113,16 +113,16 @@ export function TrailFilters({
         )}
       </div>
 
-      {/* Filter chips row */}
-      <div className="flex flex-wrap gap-2">
+      {/* Filter chips row — horizontal scroll on mobile */}
+      <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         {/* Effort level */}
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex shrink-0 gap-1.5">
           {EFFORT_OPTIONS.map((opt) => (
             <button
               key={opt.value}
               onClick={() => updateParam('effort', effort === opt.value ? '' : opt.value)}
               className={cn(
-                'rounded-full border px-3 py-1 text-xs font-semibold transition',
+                'shrink-0 rounded-full border px-3 py-1 text-xs font-semibold transition',
                 effort === opt.value
                   ? EFFORT_COLORS[opt.value]
                   : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400',
@@ -133,7 +133,7 @@ export function TrailFilters({
           ))}
         </div>
 
-        <div className="mx-1 h-6 w-px self-center bg-slate-200 dark:bg-slate-700" />
+        <div className="mx-1 h-6 w-px shrink-0 self-center bg-slate-200 dark:bg-slate-700" />
 
         {/* Route type */}
         {(['GR', 'PR', 'SL'] as const).map((t) => (
@@ -141,7 +141,7 @@ export function TrailFilters({
             key={t}
             onClick={() => updateParam('type', type === t ? '' : t)}
             className={cn(
-              'rounded-full border px-3 py-1 text-xs font-bold transition',
+              'shrink-0 rounded-full border px-3 py-1 text-xs font-bold transition',
               type === t
                 ? 'border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-900'
                 : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400',
@@ -151,7 +151,7 @@ export function TrailFilters({
           </button>
         ))}
 
-        <div className="mx-1 h-6 w-px self-center bg-slate-200 dark:bg-slate-700" />
+        <div className="mx-1 h-6 w-px shrink-0 self-center bg-slate-200 dark:bg-slate-700" />
 
         {/* Shape toggle */}
         {[
@@ -163,7 +163,7 @@ export function TrailFilters({
             key={opt.value}
             onClick={() => updateParam('shape', opt.value)}
             className={cn(
-              'rounded-full border px-3 py-1 text-xs font-medium transition',
+              'shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition',
               shape === opt.value
                 ? 'border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-900'
                 : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400',
@@ -173,13 +173,13 @@ export function TrailFilters({
           </button>
         ))}
 
-        <div className="mx-1 h-6 w-px self-center bg-slate-200 dark:bg-slate-700" />
+        <div className="mx-1 h-6 w-px shrink-0 self-center bg-slate-200 dark:bg-slate-700" />
 
         {/* Child-friendly */}
         <button
           onClick={() => updateParam('child', child === 'true' ? '' : 'true')}
           className={cn(
-            'rounded-full border px-3 py-1 text-xs font-medium transition',
+            'shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition',
             child === 'true'
               ? 'border-emerald-400 bg-emerald-50 text-emerald-800 dark:border-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
               : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400',
@@ -192,7 +192,7 @@ export function TrailFilters({
         <button
           onClick={() => updateParam('pet', pet === 'true' ? '' : 'true')}
           className={cn(
-            'rounded-full border px-3 py-1 text-xs font-medium transition',
+            'shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition',
             pet === 'true'
               ? 'border-sky-400 bg-sky-50 text-sky-800 dark:border-sky-700 dark:bg-sky-900/40 dark:text-sky-300'
               : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400',
@@ -205,7 +205,7 @@ export function TrailFilters({
         {hasFilters && (
           <button
             onClick={clearAll}
-            className="flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-medium text-rose-700 transition hover:bg-rose-100 dark:border-rose-800 dark:bg-rose-900/20 dark:text-rose-400"
+            className="flex shrink-0 items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-medium text-rose-700 transition hover:bg-rose-100 dark:border-rose-800 dark:bg-rose-900/20 dark:text-rose-400"
           >
             <X className="h-3 w-3" />
             {labels.clearFilters}
