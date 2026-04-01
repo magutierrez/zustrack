@@ -865,7 +865,10 @@
     "mapView": "Map",
     "mapLoading": "Loading trails…",
     "mapNoTrails": "No trails to show",
-    "viewTrail": "View trail"
+    "viewTrail": "View trail",
+    "filterDistance": "Distance",
+    "filterElevation": "Elevation gain",
+    "filterSeason": "Season"
   },
   "TrailMap": {
     "layers": {

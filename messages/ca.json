@@ -865,7 +865,10 @@
     "mapView": "Mapa",
     "mapLoading": "Carregant senders…",
     "mapNoTrails": "No hi ha senders per mostrar",
-    "viewTrail": "Veure sender"
+    "viewTrail": "Veure sender",
+    "filterDistance": "Distància",
+    "filterElevation": "Desnivell +",
+    "filterSeason": "Temporada"
   },
   "TrailMap": {
     "layers": {

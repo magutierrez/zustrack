@@ -865,7 +865,10 @@
     "mapView": "Mapa",
     "mapLoading": "Cargando senderos…",
     "mapNoTrails": "No hay senderos que mostrar",
-    "viewTrail": "Ver sendero"
+    "viewTrail": "Ver sendero",
+    "filterDistance": "Distancia",
+    "filterElevation": "Desnivel +",
+    "filterSeason": "Temporada"
   },
   "TrailMap": {
     "layers": {

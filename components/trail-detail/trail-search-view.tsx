@@ -2,7 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { Header } from '@/app/_components/header';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { fetchTrails } from '@/lib/trails';
+import { fetchTrails, getTrailRanges } from '@/lib/trails';
 import type { TrailSearchParams } from '@/lib/trails';
 import { TrailCard } from './trail-card';
 import { TrailFilters } from './trail-filters';
@@ -14,7 +14,10 @@ export async function TrailSearchView({ locale, sp }: { locale: string; sp: Trai
   const tTrail = await getTranslations({ locale, namespace: 'TrailPage' });
 
   const isMapView = sp.view === 'map';
-  const { trails, count, page, totalPages } = await fetchTrails(sp);
+  const [{ trails, count, page, totalPages }, ranges] = await Promise.all([
+    fetchTrails(sp),
+    getTrailRanges(),
+  ]);
 
   const filterLabels = {
     searchPlaceholder: t('searchPlaceholder'),
@@ -26,11 +29,19 @@ export async function TrailSearchView({ locale, sp }: { locale: string; sp: Trai
     linear: tTrail('linear'),
     filterChild: t('filterChild'),
     filterPet: t('filterPet'),
+    filterSeason: t('filterSeason'),
+    filterDistance: t('filterDistance'),
+    filterElevation: t('filterElevation'),
     clearFilters: t('clearFilters'),
     easy: tTrail('easy'),
     moderate: tTrail('moderate'),
     hard: tTrail('hard'),
     veryHard: tTrail('veryHard'),
+    km: tTrail('km'),
+    meters: tTrail('meters'),
+    yearRound: tTrail('yearRound'),
+    avoidSummer: tTrail('avoidSummer'),
+    avoidWinter: tTrail('avoidWinter'),
   };
 
   const cardLabels = {
@@ -52,6 +63,11 @@ export async function TrailSearchView({ locale, sp }: { locale: string; sp: Trai
     if (sp.shape) params.set('shape', sp.shape);
     if (sp.child) params.set('child', sp.child);
     if (sp.pet) params.set('pet', sp.pet);
+    if (sp.season) params.set('season', sp.season);
+    if (sp.minDist) params.set('minDist', sp.minDist);
+    if (sp.maxDist) params.set('maxDist', sp.maxDist);
+    if (sp.minGain) params.set('minGain', sp.minGain);
+    if (sp.maxGain) params.set('maxGain', sp.maxGain);
     if (sp.view) params.set('view', sp.view);
     if (p > 1) params.set('page', String(p));
     const qs = params.toString();
@@ -78,8 +94,14 @@ export async function TrailSearchView({ locale, sp }: { locale: string; sp: Trai
               shape: sp.shape ?? '',
               child: sp.child ?? '',
               pet: sp.pet ?? '',
+              minDist: sp.minDist ?? '',
+              maxDist: sp.maxDist ?? '',
+              minGain: sp.minGain ?? '',
+              maxGain: sp.maxGain ?? '',
+              season: sp.season ?? '',
             }}
             labels={filterLabels}
+            ranges={ranges}
           />
         </div>
       </div>

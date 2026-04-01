@@ -91,8 +91,20 @@ export interface TrailSearchParams {
   shape?: string;
   child?: string;
   pet?: string;
+  minDist?: string;
+  maxDist?: string;
+  minGain?: string;
+  maxGain?: string;
+  season?: string; // 'year_round' | 'avoid_summer' | 'avoid_winter'
   page?: string;
   view?: string; // 'list' | 'map'
+}
+
+export interface TrailRanges {
+  minDistance: number;
+  maxDistance: number;
+  minElevation: number;
+  maxElevation: number;
 }
 
 export interface TrailSearchResult {
@@ -147,6 +159,11 @@ export async function fetchTrails(sp: TrailSearchParams): Promise<TrailSearchRes
   if (sp.shape === 'linear') query = query.eq('is_circular', false);
   if (sp.child === 'true') query = query.eq('child_friendly', true);
   if (sp.pet === 'true') query = query.eq('pet_friendly', true);
+  if (sp.minDist) query = query.gte('distance_km', parseFloat(sp.minDist));
+  if (sp.maxDist) query = query.lte('distance_km', parseFloat(sp.maxDist));
+  if (sp.minGain) query = query.gte('elevation_gain_m', parseFloat(sp.minGain));
+  if (sp.maxGain) query = query.lte('elevation_gain_m', parseFloat(sp.maxGain));
+  if (sp.season) query = query.eq('season_best', sp.season);
 
   query = query.order('difficulty_score').range(offset, offset + TRAILS_PAGE_SIZE - 1);
 
@@ -158,6 +175,22 @@ export async function fetchTrails(sp: TrailSearchParams): Promise<TrailSearchRes
     count: total,
     page,
     totalPages: Math.ceil(total / TRAILS_PAGE_SIZE),
+  };
+}
+
+export async function getTrailRanges(): Promise<TrailRanges> {
+  const sb = getSupabase();
+  const [maxDist, minDist, maxGain, minGain] = await Promise.all([
+    sb.from('trails').select('distance_km').order('distance_km', { ascending: false }).limit(1).single(),
+    sb.from('trails').select('distance_km').order('distance_km', { ascending: true }).limit(1).single(),
+    sb.from('trails').select('elevation_gain_m').order('elevation_gain_m', { ascending: false }).limit(1).single(),
+    sb.from('trails').select('elevation_gain_m').order('elevation_gain_m', { ascending: true }).limit(1).single(),
+  ]);
+  return {
+    minDistance: Math.floor((minDist.data as { distance_km: number } | null)?.distance_km ?? 0),
+    maxDistance: Math.ceil((maxDist.data as { distance_km: number } | null)?.distance_km ?? 100),
+    minElevation: Math.floor((minGain.data as { elevation_gain_m: number } | null)?.elevation_gain_m ?? 0),
+    maxElevation: Math.ceil((maxGain.data as { elevation_gain_m: number } | null)?.elevation_gain_m ?? 3000),
   };
 }
 

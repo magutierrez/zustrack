@@ -4,6 +4,8 @@ import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useCallback, useState, useTransition } from 'react';
 import { Search, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Slider } from '@/components/ui/slider';
+import type { TrailRanges } from '@/lib/trails';
 
 interface FilterLabels {
   searchPlaceholder: string;
@@ -15,11 +17,19 @@ interface FilterLabels {
   linear: string;
   filterChild: string;
   filterPet: string;
+  filterSeason: string;
+  filterDistance: string;
+  filterElevation: string;
   clearFilters: string;
   easy: string;
   moderate: string;
   hard: string;
   veryHard: string;
+  km: string;
+  meters: string;
+  yearRound: string;
+  avoidSummer: string;
+  avoidWinter: string;
 }
 
 interface Filters {
@@ -29,6 +39,11 @@ interface Filters {
   shape: string;
   child: string;
   pet: string;
+  minDist: string;
+  maxDist: string;
+  minGain: string;
+  maxGain: string;
+  season: string;
 }
 
 const EFFORT_OPTIONS = [
@@ -45,12 +60,20 @@ const EFFORT_COLORS: Record<string, string> = {
   very_hard: 'bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-900/40 dark:text-rose-300 dark:border-rose-700',
 };
 
+const SEASON_OPTIONS: { value: string; labelKey: keyof FilterLabels }[] = [
+  { value: 'year_round', labelKey: 'yearRound' },
+  { value: 'avoid_summer', labelKey: 'avoidSummer' },
+  { value: 'avoid_winter', labelKey: 'avoidWinter' },
+];
+
 export function TrailFilters({
   initial,
   labels,
+  ranges,
 }: {
   initial: Filters;
   labels: FilterLabels;
+  ranges: TrailRanges;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -58,12 +81,39 @@ export function TrailFilters({
   const [isPending, startTransition] = useTransition();
   const [q, setQ] = useState(initial.q);
 
+  const [distRange, setDistRange] = useState<[number, number]>([
+    initial.minDist ? parseFloat(initial.minDist) : ranges.minDistance,
+    initial.maxDist ? parseFloat(initial.maxDist) : ranges.maxDistance,
+  ]);
+  const [gainRange, setGainRange] = useState<[number, number]>([
+    initial.minGain ? parseFloat(initial.minGain) : ranges.minElevation,
+    initial.maxGain ? parseFloat(initial.maxGain) : ranges.maxElevation,
+  ]);
+
   const updateParam = useCallback(
     (key: string, value: string) => {
       const params = new URLSearchParams(searchParams.toString());
       if (value) params.set(key, value);
       else params.delete(key);
-      params.delete('page'); // reset pagination on filter change
+      params.delete('page');
+      startTransition(() => {
+        router.push(`${pathname}?${params.toString()}`);
+      });
+    },
+    [router, pathname, searchParams],
+  );
+
+  const updateTwoParams = useCallback(
+    (k1: string, v1: string, k2: string, v2: string, isDefault: boolean) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (isDefault) {
+        params.delete(k1);
+        params.delete(k2);
+      } else {
+        params.set(k1, v1);
+        params.set(k2, v2);
+      }
+      params.delete('page');
       startTransition(() => {
         router.push(`${pathname}?${params.toString()}`);
       });
@@ -73,19 +123,32 @@ export function TrailFilters({
 
   const clearAll = useCallback(() => {
     setQ('');
+    setDistRange([ranges.minDistance, ranges.maxDistance]);
+    setGainRange([ranges.minElevation, ranges.maxElevation]);
     startTransition(() => {
       router.push(pathname);
     });
-  }, [router, pathname]);
+  }, [router, pathname, ranges]);
 
   const hasFilters =
-    initial.q || initial.effort || initial.type || initial.shape || initial.child || initial.pet;
+    initial.q ||
+    initial.effort ||
+    initial.type ||
+    initial.shape ||
+    initial.child ||
+    initial.pet ||
+    initial.season ||
+    initial.minDist ||
+    initial.maxDist ||
+    initial.minGain ||
+    initial.maxGain;
 
   const effort = searchParams.get('effort') ?? '';
   const type = searchParams.get('type') ?? '';
   const shape = searchParams.get('shape') ?? '';
   const child = searchParams.get('child') ?? '';
   const pet = searchParams.get('pet') ?? '';
+  const season = searchParams.get('season') ?? '';
 
   return (
     <div className={cn('space-y-3 transition-opacity', isPending && 'opacity-60')}>
@@ -201,6 +264,24 @@ export function TrailFilters({
           🐾 {labels.filterPet}
         </button>
 
+        <div className="mx-1 h-6 w-px shrink-0 self-center bg-slate-200 dark:bg-slate-700" />
+
+        {/* Season */}
+        {SEASON_OPTIONS.map((opt) => (
+          <button
+            key={opt.value}
+            onClick={() => updateParam('season', season === opt.value ? '' : opt.value)}
+            className={cn(
+              'shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition',
+              season === opt.value
+                ? 'border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-900'
+                : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400',
+            )}
+          >
+            {labels[opt.labelKey]}
+          </button>
+        ))}
+
         {/* Clear all */}
         {hasFilters && (
           <button
@@ -211,6 +292,53 @@ export function TrailFilters({
             {labels.clearFilters}
           </button>
         )}
+      </div>
+
+      {/* Slider row — distance and elevation gain */}
+      <div className="grid grid-cols-1 gap-x-6 gap-y-4 pt-1 sm:grid-cols-2">
+        {/* Distance */}
+        <div className="space-y-2">
+          <div className="flex items-baseline justify-between text-xs">
+            <span className="font-medium text-slate-600 dark:text-slate-400">{labels.filterDistance}</span>
+            <span className="text-slate-500 dark:text-slate-500">
+              {distRange[0]}–{distRange[1]} {labels.km}
+            </span>
+          </div>
+          <Slider
+            min={ranges.minDistance}
+            max={ranges.maxDistance}
+            step={1}
+            value={distRange}
+            onValueChange={(v) => setDistRange(v as [number, number])}
+            onValueCommit={(v) => {
+              const [a, b] = v;
+              const isDefault = a === ranges.minDistance && b === ranges.maxDistance;
+              updateTwoParams('minDist', String(a), 'maxDist', String(b), isDefault);
+            }}
+          />
+        </div>
+
+        {/* Elevation gain */}
+        <div className="space-y-2">
+          <div className="flex items-baseline justify-between text-xs">
+            <span className="font-medium text-slate-600 dark:text-slate-400">{labels.filterElevation}</span>
+            <span className="text-slate-500 dark:text-slate-500">
+              {gainRange[0]}–{gainRange[1]} {labels.meters}
+            </span>
+          </div>
+          <Slider
+            min={ranges.minElevation}
+            max={ranges.maxElevation}
+            step={50}
+            value={gainRange}
+            onValueChange={(v) => setGainRange(v as [number, number])}
+            onValueCommit={(v) => {
+              const [a, b] = v;
+              const isDefault = a === ranges.minElevation && b === ranges.maxElevation;
+              updateTwoParams('minGain', String(a), 'maxGain', String(b), isDefault);
+            }}
+          />
+        </div>
       </div>
     </div>
   );
