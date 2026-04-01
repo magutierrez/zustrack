@@ -868,7 +868,10 @@
     "viewTrail": "Veure sender",
     "filterDistance": "Distància",
     "filterElevation": "Desnivell +",
-    "filterSeason": "Temporada"
+    "filterSeason": "Temporada",
+    "filterMore": "Filtres",
+    "filterProfile": "Accessibilitat",
+    "viewResults": "Veure resultats"
   },
   "TrailMap": {
     "layers": {

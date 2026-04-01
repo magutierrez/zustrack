@@ -868,7 +868,10 @@
     "viewTrail": "View trail",
     "filterDistance": "Distance",
     "filterElevation": "Elevation gain",
-    "filterSeason": "Season"
+    "filterSeason": "Season",
+    "filterMore": "Filters",
+    "filterProfile": "Accessibility",
+    "viewResults": "View results"
   },
   "TrailMap": {
     "layers": {

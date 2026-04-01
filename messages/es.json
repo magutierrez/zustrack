@@ -868,7 +868,10 @@
     "viewTrail": "Ver sendero",
     "filterDistance": "Distancia",
     "filterElevation": "Desnivel +",
-    "filterSeason": "Temporada"
+    "filterSeason": "Temporada",
+    "filterMore": "Filtros",
+    "filterProfile": "Accesibilidad",
+    "viewResults": "Ver resultados"
   },
   "TrailMap": {
     "layers": {
