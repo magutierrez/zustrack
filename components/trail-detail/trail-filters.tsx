@@ -476,9 +476,9 @@ export function TrailFilters({
         <VSep />
         <FilterSection label={labels.filterShape}>{shapeChips}</FilterSection>
         <VSep />
-        <FilterSection label={labels.filterSeason}>{seasonChips}</FilterSection>
-        <VSep />
         <FilterSection label={labels.filterProfile}>{profileChips}</FilterSection>
+        <VSep />
+        <FilterSection label={labels.filterSeason}>{seasonChips}</FilterSection>
       </div>
 
       {/* ── Row 3 desktop: sliders ──────────────────────────────────────── */}
