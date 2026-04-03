@@ -98,6 +98,7 @@ export function enrichWeatherPoint(
     cloudCover: weather.cloudCover ?? 0,
     isShaded: solarExposure === 'shade',
     slopePercent,
+    humidity: weather.humidity,
   });
 
   return {

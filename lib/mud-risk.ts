@@ -45,6 +45,7 @@ function getEvaporationFactor(
   windSpeed: number,
   cloudCover: number,
   isShaded: boolean,
+  humidity?: number,
 ): number {
   let base: number;
   if (temperature >= 25) base = 0.7;
@@ -61,6 +62,18 @@ function getEvaporationFactor(
 
   // Forest / shade slows evaporation significantly
   if (isShaded) base *= 0.5;
+
+  // Dew point deficit: when air is near-saturated, evaporation is physically limited.
+  // Approximated from relative humidity: deficit = (100 - RH) / 5  (Magnus simplification)
+  if (humidity !== undefined) {
+    const deficit = (100 - humidity) / 5;
+    let dewMultiplier: number;
+    if (deficit < 2) dewMultiplier = 0.1;       // RH > 90%: air nearly saturated, evaporation stops
+    else if (deficit < 5) dewMultiplier = 0.4;  // RH > 75%: very humid
+    else if (deficit < 10) dewMultiplier = 0.7; // RH > 50%: moderately humid
+    else dewMultiplier = 1.0;                   // dry air, no penalty
+    base *= dewMultiplier;
+  }
 
   return base;
 }
@@ -83,11 +96,12 @@ export interface MudRiskParams {
   cloudCover: number;
   isShaded: boolean;
   slopePercent: number;
+  humidity?: number; // relative humidity 0–100, used to derive dew point deficit
 }
 
 /** Returns a score in [0, 1]. 0 = no mud, 1 = worst mud. */
 export function computeMudRiskScore(params: MudRiskParams): number {
-  const { past72hPrecipMm, surface, temperature, windSpeed, cloudCover, isShaded, slopePercent } =
+  const { past72hPrecipMm, surface, temperature, windSpeed, cloudCover, isShaded, slopePercent, humidity } =
     params;
 
   const surfaceRetention = getSurfaceRetention(surface);
@@ -98,7 +112,7 @@ export function computeMudRiskScore(params: MudRiskParams): number {
   // No meaningful rain → no mud
   if (precipFactor === 0) return 0;
 
-  const evapFactor = getEvaporationFactor(temperature, windSpeed, cloudCover, isShaded);
+  const evapFactor = getEvaporationFactor(temperature, windSpeed, cloudCover, isShaded, humidity);
   const slopeFactor = getSlopeFactor(slopePercent);
 
   const score = precipFactor * surfaceRetention * (1 - evapFactor) * slopeFactor;
