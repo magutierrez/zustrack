@@ -107,12 +107,18 @@ export default function TrailMap({
   const mapStyle = useTrailMapStyle(mapType);
   const { terrainLoading } = useTrailTerrain(mapRef, mapStyle, enable3D);
 
-  // Tilt map when switching 3D on/off
+  // Tilt map when switching 3D on/off.
+  // When enabling 3D, wait for the terrain tiles to finish loading before pitching
+  // so the camera doesn't tilt over an empty/glitchy terrain.
   useEffect(() => {
     const map = mapRef.current?.getMap();
     if (!map) return;
-    map.easeTo({ pitch: enable3D ? 60 : 0, duration: 600 });
-  }, [enable3D, mapRef]);
+    if (!enable3D) {
+      map.easeTo({ pitch: 0, duration: 600 });
+    } else if (!terrainLoading) {
+      map.easeTo({ pitch: 60, duration: 600 });
+    }
+  }, [enable3D, terrainLoading, mapRef]);
 
   const coordinates = trackProfile.map((p) => [p.lng, p.lat]);
 
@@ -266,7 +272,7 @@ export default function TrailMap({
       >
         <NavigationControl position="bottom-right" />
         <TrailLayerControl mapType={mapType} setMapType={setMapType} />
-        <div className="absolute top-[100px] right-3 z-10">
+        <div className="absolute top-14 right-3 z-10">
           <Button
             variant={enable3D ? 'default' : 'secondary'}
             size="icon"

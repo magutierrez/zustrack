@@ -21,7 +21,7 @@ export function TrailLayerControl({ mapType, setMapType }: TrailLayerControlProp
   const t = useTranslations('TrailMap');
 
   return (
-    <div className="absolute top-14 right-3 z-10">
+    <div className="absolute top-2 right-3 z-10">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="secondary" size="icon" className="h-10 w-10 shadow-md">
