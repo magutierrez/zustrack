@@ -19,7 +19,6 @@ import type { TrailMapLayerType } from '@/lib/types';
 import { useTrailMapStyle } from './use-trail-map-style';
 import { TrailLayerControl } from './trail-layer-control';
 
-
 const EFFORT_COLORS: Record<string, string> = {
   easy: '#10b981',
   moderate: '#0ea5e9',
@@ -82,7 +81,7 @@ interface TrackPreview {
 
 export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
   const mapRef = useRef<MapRef>(null);
-  const [mapType, setMapType] = useState<TrailMapLayerType>('ign-raster');
+  const [mapType, setMapType] = useState<TrailMapLayerType>('osm');
   const mapStyle = useTrailMapStyle(mapType);
   const [geojson, setGeojson] = useState<FeatureCollection<Point> | null>(null);
   const [loading, setLoading] = useState(true);

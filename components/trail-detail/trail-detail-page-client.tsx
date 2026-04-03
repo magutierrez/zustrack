@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/app/_components/header';
+import { cn } from '@/lib/utils';
 import {
   ArrowLeft,
   MapPin,
@@ -14,8 +15,10 @@ import {
   Snowflake,
   Thermometer,
   ExternalLink,
+  Info,
+  Map,
 } from 'lucide-react';
-import type { Trail } from '@/lib/trails';
+import type { Trail, TrailSummary } from '@/lib/trails';
 import { StatsGrid } from './stats-grid';
 import { EffortBadge } from './effort-badge';
 import { SuitabilityChips } from './suitability-chips';
@@ -26,6 +29,11 @@ import { TrailElevationChart } from './trail-elevation-chart';
 import { TrailMapWrapper } from './trail-map-wrapper';
 import { EscapePointsSection } from './escape-points-section';
 import { WaterSourcesSection } from './water-sources-section';
+import { TrailGpxDownload } from './trail-gpx-download';
+import { TrailWeatherForecast } from './trail-weather-forecast';
+import { TrailPaceCard } from './trail-pace-card';
+import { TrailCard } from './trail-card';
+import { TrailInfoTabs } from './trail-info-tabs';
 
 type Range = { start: number; end: number };
 type POIPoint = { lat: number; lng: number };
@@ -60,14 +68,17 @@ export function TrailDetailPageClient({
   trail,
   locale,
   isAuthenticated,
+  similarTrails = [],
 }: {
   trail: Trail;
   locale: string;
   isAuthenticated: boolean;
+  similarTrails?: TrailSummary[];
 }) {
   const t = useTranslations('TrailPage');
   const router = useRouter();
 
+  const [mobileView, setMobileView] = useState<'info' | 'map'>('info');
   const [selectedRange, setSelectedRange] = useState<Range | null>(null);
   const [hoverDist, setHoverDist] = useState<number | null>(null);
   const [focusPoint, setFocusPoint] = useState<POIPoint | null>(null);
@@ -144,10 +155,43 @@ export function TrailDetailPageClient({
       <div className="flex h-screen flex-col overflow-hidden bg-slate-50 text-slate-900 dark:bg-[#08090f] dark:text-white">
         <Header session={null} />
 
+        {/* Mobile tab bar — Info / Map toggle */}
+        <div className="flex shrink-0 border-b border-slate-200 dark:border-slate-800 lg:hidden">
+          <button
+            onClick={() => setMobileView('info')}
+            className={cn(
+              'flex flex-1 items-center justify-center gap-1.5 py-3 text-sm font-medium transition',
+              mobileView === 'info'
+                ? 'border-b-2 border-slate-900 text-slate-900 dark:border-white dark:text-white'
+                : 'text-slate-400 dark:text-slate-500',
+            )}
+          >
+            <Info className="h-4 w-4" />
+            {t('infoTab')}
+          </button>
+          <button
+            onClick={() => setMobileView('map')}
+            className={cn(
+              'flex flex-1 items-center justify-center gap-1.5 py-3 text-sm font-medium transition',
+              mobileView === 'map'
+                ? 'border-b-2 border-slate-900 text-slate-900 dark:border-white dark:text-white'
+                : 'text-slate-400 dark:text-slate-500',
+            )}
+          >
+            <Map className="h-4 w-4" />
+            {t('mapTab')}
+          </button>
+        </div>
+
         {/* Body */}
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
           {/* LEFT: scrollable content */}
-          <div className="trail-scrollbar flex flex-col gap-8 overflow-y-auto p-4 md:p-8 lg:w-[55%]">
+          <div
+            className={cn(
+              'trail-scrollbar flex-col gap-8 overflow-y-auto p-4 md:p-8 lg:flex lg:w-[55%]',
+              mobileView === 'info' ? 'flex flex-1 pb-24' : 'hidden',
+            )}
+          >
             {/* Back link */}
             <Link
               href={`/${locale}/trail`}
@@ -198,6 +242,15 @@ export function TrailDetailPageClient({
                   {seasonLabel}
                 </span>
               </div>
+              {trackProfile.length > 0 && (
+                <div className="pt-1">
+                  <TrailGpxDownload
+                    name={trail.name}
+                    trackProfile={trackProfile}
+                    label={t('downloadGpx')}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Elevation chart */}
@@ -254,6 +307,19 @@ export function TrailDetailPageClient({
                 duration: t('duration'),
                 km: t('km'),
                 meters: t('meters'),
+              }}
+            />
+
+            {/* Weather forecast */}
+            <TrailWeatherForecast
+              lat={trail.start_lat}
+              lng={trail.start_lng}
+              labels={{
+                weatherForecast: t('weatherForecast'),
+                bestDay: t('bestDay'),
+                weatherLoading: t('weatherLoading'),
+                precipitation: t('precipitation'),
+                wind: t('wind'),
               }}
             />
 
@@ -330,40 +396,66 @@ export function TrailDetailPageClient({
               />
             )}
 
-            {/* Escape points */}
-            {trail.escape_points && trail.escape_points.length > 0 && (
-              <EscapePointsSection
-                escapePoints={trail.escape_points}
-                labels={{
-                  escapePoints: t('escapePoints'),
-                  town: t('town'),
-                  road: t('road'),
-                  shelter: t('shelter'),
-                  kmAway: t('kmAway'),
-                  showOnMap: t('showOnMap'),
-                }}
-                activePOI={activePOI}
-                onShowOnMap={handleShowOnMap}
-              />
-            )}
+            {/* Escape points + Water sources + Equipment — tabbed */}
+            <TrailInfoTabs
+              trail={trail}
+              trackProfile={trackProfile}
+              activePOI={activePOI}
+              onShowOnMap={handleShowOnMap}
+              labels={{
+                escapePoints: t('escapePoints'),
+                town: t('town'),
+                road: t('road'),
+                shelter: t('shelter'),
+                waterSources: t('waterSources'),
+                natural: t('natural'),
+                urban: t('urban'),
+                reliable: t('reliable'),
+                seasonal: t('seasonal'),
+                unreliable: t('unreliable'),
+                kmAway: t('kmAway'),
+                showOnMap: t('showOnMap'),
+                waterGapMax: t('waterGapMax'),
+                waterCarryRecommendation: t('waterCarryRecommendation'),
+                liters: t('liters'),
+                equipmentTitle: t('equipmentTitle'),
+                equipmentFootwear: t('equipmentFootwear'),
+                equipmentPoles: t('equipmentPoles'),
+                equipmentWater: t('equipmentWater'),
+                equipmentLayers: t('equipmentLayers'),
+                equipmentSun: t('equipmentSun'),
+                equipmentCrampons: t('equipmentCrampons'),
+                equipmentFirstAid: t('equipmentFirstAid'),
+                equipmentNavigation: t('equipmentNavigation'),
+                essential: t('essential'),
+                recommended: t('recommended'),
+              }}
+            />
 
-            {/* Water sources */}
-            {trail.water_sources && trail.water_sources.length > 0 && (
-              <WaterSourcesSection
-                waterSources={trail.water_sources}
-                labels={{
-                  waterSources: t('waterSources'),
-                  natural: t('natural'),
-                  urban: t('urban'),
-                  reliable: t('reliable'),
-                  seasonal: t('seasonal'),
-                  unreliable: t('unreliable'),
-                  kmAway: t('kmAway'),
-                  showOnMap: t('showOnMap'),
-                }}
-                activePOI={activePOI}
-                onShowOnMap={handleShowOnMap}
-              />
+            {/* Similar trails */}
+            {similarTrails.length > 0 && (
+              <section className="space-y-3">
+                <h2 className="text-lg font-semibold">{t('similarTrails')}</h2>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                  {similarTrails.map((s) => (
+                    <TrailCard
+                      key={s.id}
+                      trail={s as Parameters<typeof TrailCard>[0]['trail']}
+                      locale={locale}
+                      labels={{
+                        easy: t('easy'),
+                        moderate: t('moderate'),
+                        hard: t('hard'),
+                        veryHard: t('veryHard'),
+                        circular: t('circular'),
+                        linear: t('linear'),
+                        km: t('km'),
+                        meters: t('meters'),
+                      }}
+                    />
+                  ))}
+                </div>
+              </section>
             )}
 
             {/* Description */}
@@ -425,7 +517,12 @@ export function TrailDetailPageClient({
           </div>
 
           {/* RIGHT: map — fills full height */}
-          <div className="h-[70vh] shrink-0 border-t border-slate-200 lg:h-auto lg:flex-1 lg:border-t-0 lg:border-l dark:border-slate-800">
+          <div
+            className={cn(
+              'border-slate-200 dark:border-slate-800 lg:flex-1 lg:border-l',
+              mobileView === 'map' ? 'flex flex-1' : 'hidden lg:block',
+            )}
+          >
             {trackProfile.length > 0 ? (
               <TrailMapWrapper
                 trackProfile={trackProfile}
@@ -448,6 +545,19 @@ export function TrailDetailPageClient({
             )}
           </div>
         </div>
+
+        {/* Sticky CTA — mobile only, shown on info tab */}
+        {mobileView === 'info' && (
+          <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur-sm dark:border-slate-800 dark:bg-[#08090f]/95 lg:hidden">
+            <button
+              onClick={handleAnalyze}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-slate-900 py-3 text-sm font-semibold text-white dark:bg-white dark:text-slate-900"
+            >
+              <MapPin className="h-4 w-4" />
+              {t('analyzeWithZustrack')}
+            </button>
+          </div>
+        )}
       </div>
     </>
   );

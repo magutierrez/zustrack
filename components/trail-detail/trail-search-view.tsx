@@ -2,7 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { Header } from '@/app/_components/header';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { fetchTrails } from '@/lib/trails';
+import { fetchTrails, getTrailRanges } from '@/lib/trails';
 import type { TrailSearchParams } from '@/lib/trails';
 import { TrailCard } from './trail-card';
 import { TrailFilters } from './trail-filters';
@@ -14,23 +14,36 @@ export async function TrailSearchView({ locale, sp }: { locale: string; sp: Trai
   const tTrail = await getTranslations({ locale, namespace: 'TrailPage' });
 
   const isMapView = sp.view === 'map';
-  const { trails, count, page, totalPages } = await fetchTrails(sp);
+  const [{ trails, count, page, totalPages }, ranges] = await Promise.all([
+    fetchTrails(sp),
+    getTrailRanges(),
+  ]);
 
   const filterLabels = {
     searchPlaceholder: t('searchPlaceholder'),
     filterEffort: t('filterEffort'),
     filterType: t('filterType'),
     filterShape: t('filterShape'),
-    allShapes: t('allShapes'),
     circular: tTrail('circular'),
     linear: tTrail('linear'),
     filterChild: t('filterChild'),
     filterPet: t('filterPet'),
+    filterSeason: t('filterSeason'),
+    filterDistance: t('filterDistance'),
+    filterElevation: t('filterElevation'),
+    filterProfile: t('filterProfile'),
+    filterMore: t('filterMore'),
     clearFilters: t('clearFilters'),
+    viewResults: t('viewResults'),
     easy: tTrail('easy'),
     moderate: tTrail('moderate'),
     hard: tTrail('hard'),
     veryHard: tTrail('veryHard'),
+    km: tTrail('km'),
+    meters: tTrail('meters'),
+    yearRound: tTrail('yearRound'),
+    avoidSummer: tTrail('avoidSummer'),
+    avoidWinter: tTrail('avoidWinter'),
   };
 
   const cardLabels = {
@@ -52,6 +65,11 @@ export async function TrailSearchView({ locale, sp }: { locale: string; sp: Trai
     if (sp.shape) params.set('shape', sp.shape);
     if (sp.child) params.set('child', sp.child);
     if (sp.pet) params.set('pet', sp.pet);
+    if (sp.season) params.set('season', sp.season);
+    if (sp.minDist) params.set('minDist', sp.minDist);
+    if (sp.maxDist) params.set('maxDist', sp.maxDist);
+    if (sp.minGain) params.set('minGain', sp.minGain);
+    if (sp.maxGain) params.set('maxGain', sp.maxGain);
     if (sp.view) params.set('view', sp.view);
     if (p > 1) params.set('page', String(p));
     const qs = params.toString();
@@ -59,7 +77,13 @@ export async function TrailSearchView({ locale, sp }: { locale: string; sp: Trai
   };
 
   return (
-    <div className={isMapView ? 'flex h-screen flex-col overflow-hidden bg-slate-50 dark:bg-[#08090f]' : 'min-h-screen bg-slate-50 dark:bg-[#08090f]'}>
+    <div
+      className={
+        isMapView
+          ? 'flex h-screen flex-col overflow-hidden bg-slate-50 dark:bg-[#08090f]'
+          : 'min-h-screen bg-slate-50 dark:bg-[#08090f]'
+      }
+    >
       <Header session={null} />
       <div className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
         <div className="mx-auto max-w-6xl px-4 py-4">
@@ -72,20 +96,34 @@ export async function TrailSearchView({ locale, sp }: { locale: string; sp: Trai
               shape: sp.shape ?? '',
               child: sp.child ?? '',
               pet: sp.pet ?? '',
+              minDist: sp.minDist ?? '',
+              maxDist: sp.maxDist ?? '',
+              minGain: sp.minGain ?? '',
+              maxGain: sp.maxGain ?? '',
+              season: sp.season ?? '',
             }}
             labels={filterLabels}
+            ranges={ranges}
           />
         </div>
       </div>
 
-      <main className={isMapView ? 'flex-1 overflow-hidden' : 'mx-auto max-w-6xl px-4 py-6 space-y-6'}>
-        <div className={isMapView ? 'flex items-center gap-3 px-4 pt-4 pb-2' : 'flex items-center justify-between'}>
+      <main
+        className={isMapView ? 'flex-1 overflow-hidden' : 'mx-auto max-w-6xl space-y-6 px-4 py-6'}
+      >
+        <div
+          className={
+            isMapView
+              ? 'flex items-center justify-between px-4 pt-6 pb-4'
+              : 'flex items-center justify-between'
+          }
+        >
           <p className="text-sm text-slate-500 dark:text-slate-400">{t('results', { count })}</p>
           <ViewToggle labels={{ listView: t('listView'), mapView: t('mapView') }} />
         </div>
 
         {isMapView ? (
-          <div className="h-[calc(100vh-12rem)]">
+          <div className="h-[calc(100dvh-12rem)]">
             <TrailsMapWrapper
               searchParams={sp}
               locale={locale}

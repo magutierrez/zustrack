@@ -21,14 +21,14 @@ export function TrailLayerControl({ mapType, setMapType }: TrailLayerControlProp
   const t = useTranslations('TrailMap');
 
   return (
-    <div className="absolute top-14 right-3 z-10">
+    <div className="absolute top-2 right-3 z-10">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="secondary" size="icon" className="h-10 w-10 shadow-md">
             <Layers className="h-5 w-5" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent align="end" className="min-w-[170px]">
           <DropdownMenuRadioGroup
             value={mapType}
             onValueChange={(v) => setMapType(v as TrailMapLayerType)}
@@ -36,9 +36,7 @@ export function TrailLayerControl({ mapType, setMapType }: TrailLayerControlProp
             <DropdownMenuRadioItem value="ign-raster">
               {t('layers.ignRaster')}
             </DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value="ign-base">
-              {t('layers.ignBase')}
-            </DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="ign-base">{t('layers.ignBase')}</DropdownMenuRadioItem>
             <DropdownMenuRadioItem value="osm">{t('layers.osm')}</DropdownMenuRadioItem>
             <DropdownMenuRadioItem value="pnoa">{t('layers.pnoa')}</DropdownMenuRadioItem>
             <DropdownMenuRadioItem value="opentopomap">

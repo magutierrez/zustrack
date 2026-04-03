@@ -23,8 +23,8 @@ interface TrackPoint {
 
 // Colors per escape point type
 const ESCAPE_COLORS: Record<EscapePoint['type'], string> = {
-  town: '#f97316',   // orange
-  road: '#3b82f6',   // blue
+  town: '#f97316', // orange
+  road: '#3b82f6', // blue
   shelter: '#a855f7', // purple
 };
 
@@ -42,7 +42,6 @@ interface TrailMapProps {
   onFocusPointConsumed?: () => void;
   activePOI?: { lat: number; lng: number } | null;
 }
-
 
 /** Build color-stop stops for MapLibre line-gradient from slope values */
 function buildGradientStops(points: TrackPoint[]): (string | number)[] {
@@ -79,7 +78,11 @@ function buildGradientStops(points: TrackPoint[]): (string | number)[] {
   return stops;
 }
 
-function isActivePOI(activePOI: { lat: number; lng: number } | null | undefined, lat: number, lng: number) {
+function isActivePOI(
+  activePOI: { lat: number; lng: number } | null | undefined,
+  lat: number,
+  lng: number,
+) {
   if (!activePOI) return false;
   return Math.abs(activePOI.lat - lat) < 0.00001 && Math.abs(activePOI.lng - lng) < 0.00001;
 }
@@ -99,17 +102,23 @@ export default function TrailMap({
   activePOI,
 }: TrailMapProps) {
   const mapRef = useRef<MapRef | null>(null);
-  const [mapType, setMapType] = useState<TrailMapLayerType>('ign-raster');
+  const [mapType, setMapType] = useState<TrailMapLayerType>('osm');
   const [enable3D, setEnable3D] = useState(false);
   const mapStyle = useTrailMapStyle(mapType);
   const { terrainLoading } = useTrailTerrain(mapRef, mapStyle, enable3D);
 
-  // Tilt map when switching 3D on/off
+  // Tilt map when switching 3D on/off.
+  // When enabling 3D, wait for the terrain tiles to finish loading before pitching
+  // so the camera doesn't tilt over an empty/glitchy terrain.
   useEffect(() => {
     const map = mapRef.current?.getMap();
     if (!map) return;
-    map.easeTo({ pitch: enable3D ? 60 : 0, duration: 600 });
-  }, [enable3D, mapRef]);
+    if (!enable3D) {
+      map.easeTo({ pitch: 0, duration: 600 });
+    } else if (!terrainLoading) {
+      map.easeTo({ pitch: 60, duration: 600 });
+    }
+  }, [enable3D, terrainLoading, mapRef]);
 
   const coordinates = trackProfile.map((p) => [p.lng, p.lat]);
 
@@ -137,9 +146,7 @@ export default function TrailMap({
   // Highlight GeoJSON for the selected segment
   const highlightGeoJSON = useMemo<GeoJSON.FeatureCollection | null>(() => {
     if (!selectedRange) return null;
-    const pts = trackProfile.filter(
-      (p) => p.d >= selectedRange.start && p.d <= selectedRange.end,
-    );
+    const pts = trackProfile.filter((p) => p.d >= selectedRange.start && p.d <= selectedRange.end);
     if (pts.length < 2) return null;
     return {
       type: 'FeatureCollection',
@@ -169,13 +176,19 @@ export default function TrailMap({
         const ptLngs = pts.map((p) => p.lng);
         const ptLats = pts.map((p) => p.lat);
         map.fitBounds(
-          [[Math.min(...ptLngs), Math.min(...ptLats)], [Math.max(...ptLngs), Math.max(...ptLats)]],
+          [
+            [Math.min(...ptLngs), Math.min(...ptLats)],
+            [Math.max(...ptLngs), Math.max(...ptLats)],
+          ],
           { padding: 60, duration: 800 },
         );
       }
     } else {
       map.fitBounds(
-        [[minLng, minLat], [maxLng, maxLat]],
+        [
+          [minLng, minLat],
+          [maxLng, maxLat],
+        ],
         { padding: 40, duration: 800 },
       );
     }
@@ -199,7 +212,10 @@ export default function TrailMap({
     let bestDiff = Math.abs(best.d - hoverDist);
     for (const p of trackProfile) {
       const diff = Math.abs(p.d - hoverDist);
-      if (diff < bestDiff) { best = p; bestDiff = diff; }
+      if (diff < bestDiff) {
+        best = p;
+        bestDiff = diff;
+      }
     }
     return best;
   }, [hoverDist, trackProfile]);
@@ -214,7 +230,10 @@ export default function TrailMap({
         const dlat = p.lat - lat;
         const dlng = p.lng - lng;
         const dsq = dlat * dlat + dlng * dlng;
-        if (dsq < bestDistSq) { bestDistSq = dsq; best = p; }
+        if (dsq < bestDistSq) {
+          bestDistSq = dsq;
+          best = p;
+        }
       }
       // ~0.003° ≈ 330 m threshold
       onHoverDist(bestDistSq < 0.003 * 0.003 ? best.d : null);
@@ -239,7 +258,10 @@ export default function TrailMap({
         mapStyle={mapStyle}
         onLoad={(e) => {
           e.target.fitBounds(
-            [[minLng, minLat], [maxLng, maxLat]],
+            [
+              [minLng, minLat],
+              [maxLng, maxLat],
+            ],
             { padding: 40, duration: 0 },
           );
         }}
@@ -250,11 +272,11 @@ export default function TrailMap({
       >
         <NavigationControl position="bottom-right" />
         <TrailLayerControl mapType={mapType} setMapType={setMapType} />
-        <div className="absolute top-[100px] right-3 z-10">
+        <div className="absolute top-14 right-3 z-10">
           <Button
             variant={enable3D ? 'default' : 'secondary'}
             size="icon"
-            className="h-10 w-10 shadow-md text-xs font-bold"
+            className="h-10 w-10 text-xs font-bold shadow-md"
             onClick={() => setEnable3D((v) => !v)}
             disabled={terrainLoading}
             title={enable3D ? '2D' : '3D'}
@@ -280,12 +302,7 @@ export default function TrailMap({
             paint={{
               'line-width': 4,
               'line-opacity': baseOpacity,
-              'line-gradient': [
-                'interpolate',
-                ['linear'],
-                ['line-progress'],
-                ...gradientStops,
-              ],
+              'line-gradient': ['interpolate', ['linear'], ['line-progress'], ...gradientStops],
             }}
           />
         </Source>
@@ -323,7 +340,7 @@ export default function TrailMap({
                 </div>
                 <div
                   style={{ borderTopColor: color }}
-                  className="h-0 w-0 border-l-[5px] border-r-[5px] border-t-[6px] border-l-transparent border-r-transparent"
+                  className="h-0 w-0 border-t-[6px] border-r-[5px] border-l-[5px] border-r-transparent border-l-transparent"
                 />
               </div>
             </Marker>
@@ -339,7 +356,7 @@ export default function TrailMap({
                 <div className="flex h-7 w-7 items-center justify-center rounded-full bg-sky-500 text-[9px] font-black text-white shadow-lg ring-2 ring-white ring-offset-1">
                   💧
                 </div>
-                <div className="h-0 w-0 border-l-[5px] border-r-[5px] border-t-[6px] border-l-transparent border-r-transparent border-t-sky-500" />
+                <div className="h-0 w-0 border-t-[6px] border-r-[5px] border-l-[5px] border-t-sky-500 border-r-transparent border-l-transparent" />
               </div>
             </Marker>
           );
@@ -354,14 +371,19 @@ export default function TrailMap({
                 <div className="flex h-7 w-7 items-center justify-center rounded-full bg-violet-500 text-[11px] font-black text-white shadow-lg ring-2 ring-white ring-offset-1">
                   ▲
                 </div>
-                <div className="h-0 w-0 border-l-[5px] border-r-[5px] border-t-[6px] border-l-transparent border-r-transparent border-t-violet-500" />
+                <div className="h-0 w-0 border-t-[6px] border-r-[5px] border-l-[5px] border-t-violet-500 border-r-transparent border-l-transparent" />
               </div>
             </Marker>
           )}
 
         {/* Start marker */}
         {trackProfile.length > 0 && (
-          <StartEndMarker lng={trackProfile[0].lng} lat={trackProfile[0].lat} color="#10b981" label="S" />
+          <StartEndMarker
+            lng={trackProfile[0].lng}
+            lat={trackProfile[0].lat}
+            color="#10b981"
+            label="S"
+          />
         )}
 
         {/* End marker (linear only) */}
