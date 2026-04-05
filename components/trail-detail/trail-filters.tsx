@@ -272,11 +272,13 @@ export function TrailFilters({
   labels,
   ranges,
   regions,
+  sidebar = false,
 }: {
   initial: Filters;
   labels: FilterLabels;
   ranges: TrailRanges;
   regions: string[];
+  sidebar?: boolean;
 }) {
   const router        = useRouter();
   const pathname      = usePathname();
@@ -460,6 +462,79 @@ export function TrailFilters({
   );
 
   // ── Render ───────────────────────────────────────────────────────────────
+
+  if (sidebar) {
+    return (
+      <div className={cn('space-y-4 transition-opacity', isPending && 'opacity-60')}>
+        {/* Search */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') updateParam('q', q); }}
+            onBlur={() => updateParam('q', q)}
+            placeholder={labels.searchPlaceholder}
+            className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-9 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder-slate-500"
+          />
+          {q && (
+            <button
+              onClick={() => { setQ(''); updateParam('q', ''); }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+
+        <FilterSection label={labels.filterEffort}>{effortChips}</FilterSection>
+        <FilterSection label={labels.filterType}>{typeChips}</FilterSection>
+        <FilterSection label={labels.filterShape}>{shapeChips}</FilterSection>
+        <FilterSection label={labels.filterSeason}>{seasonChips}</FilterSection>
+        <FilterSection label={labels.filterProfile}>{profileChips}</FilterSection>
+        {regions.length > 0 && (
+          <FilterSection label={labels.filterRegion}>{regionCombobox}</FilterSection>
+        )}
+
+        <div className="space-y-3">
+          <SliderCard
+            label={labels.filterDistance}
+            value={distRange}
+            unit={labels.km}
+            min={ranges.minDistance}
+            max={ranges.maxDistance}
+            step={1}
+            onChange={setDistRange}
+            onCommit={commitDist}
+          />
+          <SliderCard
+            label={labels.filterElevation}
+            value={gainRange}
+            unit={labels.meters}
+            min={ranges.minElevation}
+            max={ranges.maxElevation}
+            step={50}
+            onChange={setGainRange}
+            onCommit={commitGain}
+          />
+        </div>
+
+        {hasFilters && (
+          <button
+            onClick={clearAll}
+            className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:text-white"
+          >
+            <X className="h-3.5 w-3.5" />
+            {labels.clearFilters}
+            <span className="rounded-full bg-slate-900 px-1.5 py-0.5 text-[10px] font-bold text-white dark:bg-white dark:text-slate-900">
+              {activeCount}
+            </span>
+          </button>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className={cn('space-y-3 transition-opacity', isPending && 'opacity-60')}>
