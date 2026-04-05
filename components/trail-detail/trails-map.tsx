@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import Map, {
   Layer,
   type MapLayerMouseEvent,
@@ -172,6 +172,12 @@ export function TrailsMap({ searchParams, locale, country, labels }: TrailsMapPr
   const mapRef = useRef<MapRef>(null);
   const [mapType, setMapType] = useState<TrailMapLayerType>('osm');
   const mapStyle = useTrailMapStyle(mapType);
+
+  const initialView = useMemo(() => {
+    if (country === 'it') return { longitude: 12.5, latitude: 41.9, zoom: 5 };
+    return { longitude: -3.7, latitude: 40.4, zoom: 5 };
+  }, [country]);
+
   const [geojson, setGeojson] = useState<FeatureCollection<Point> | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedTrail, setSelectedTrail] = useState<SelectedTrailInfo | null>(null);
@@ -213,6 +219,7 @@ export function TrailsMap({ searchParams, locale, country, labels }: TrailsMapPr
     searchParams.maxGain,
     searchParams.season,
     searchParams.region,
+    country,
   ]);
 
   // Fit bounds to all features after data loads
@@ -365,7 +372,7 @@ export function TrailsMap({ searchParams, locale, country, labels }: TrailsMapPr
         ref={mapRef}
         mapStyle={mapStyle}
         mapLib={maplibregl}
-        initialViewState={{ longitude: -3.7, latitude: 40.4, zoom: 5 }}
+        initialViewState={initialView}
         style={{ width: '100%', height: '100%' }}
         interactiveLayerIds={['trail-clusters', 'trail-points']}
         cursor={cursor}

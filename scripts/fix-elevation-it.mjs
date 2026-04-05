@@ -149,24 +149,47 @@ function bestSeason(avgElev, maxElev) {
 async function fetchOpenMeteoElevation(points) {
   const batchSize = 100;
   const results = [];
-  
+
   for (let i = 0; i < points.length; i += batchSize) {
     const slice = points.slice(i, i + batchSize);
-    const lats = slice.map(p => p.lat).join(',');
-    const lons = slice.map(p => p.lon).join(',');
-    
+    const lats = slice.map((p) => p.lat).join(',');
+    const lons = slice.map((p) => p.lon).join(',');
+
     const url = `https://api.open-meteo.com/v1/elevation?latitude=${lats}&longitude=${lons}`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`Open-Meteo Elevation API error: ${res.statusText}`);
-    const data = await res.json();
-    
-    data.elevation.forEach((ele, idx) => {
-      results.push({ ...slice[idx], ele });
-    });
-    
-    if (i + batchSize < points.length) await sleep(200); // Respect rate limits
+
+    let retryCount = 0;
+    const maxRetries = 5;
+    let success = false;
+
+    while (!success && retryCount < maxRetries) {
+      try {
+        const res = await fetch(url);
+
+        if (res.status === 429) {
+          const waitTime = Math.pow(2, retryCount) * 2000;
+          console.warn(`   ⚠️  Rate limited (429). Retrying in ${waitTime / 1000}s...`);
+          await sleep(waitTime);
+          retryCount++;
+          continue;
+        }
+
+        if (!res.ok) throw new Error(`Open-Meteo Elevation API error: ${res.statusText}`);
+
+        const data = await res.json();
+        data.elevation.forEach((ele, idx) => {
+          results.push({ ...slice[idx], ele });
+        });
+        success = true;
+      } catch (err) {
+        if (retryCount === maxRetries - 1) throw err;
+        retryCount++;
+        await sleep(1000);
+      }
+    }
+
+    if (i + batchSize < points.length) await sleep(1000); // Wait 1s between successful batches
   }
-  
+
   return results;
 }
 

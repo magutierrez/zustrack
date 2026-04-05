@@ -38,6 +38,7 @@ const hasFlag = (flag) => args.includes(flag);
 
 const DRY_RUN = hasFlag('--dry-run');
 const LIMIT   = getArg('--limit') ? parseInt(getArg('--limit'), 10) : null;
+const COUNTRY = getArg('--country');
 const PAGE_SIZE = 500;
 
 // ---------------------------------------------------------------------------
@@ -143,6 +144,7 @@ function recalcDifficulty(distanceKm, elevationGainM, maxSlopePct) {
 // ---------------------------------------------------------------------------
 async function main() {
   console.log('\n🔍 Fix Bad Elevation Script');
+  console.log(`   Country : ${COUNTRY ?? 'all'}`);
   console.log(`   Dry run : ${DRY_RUN}`);
   console.log(`   Limit   : ${LIMIT ?? 'all matching'}\n`);
 
@@ -152,7 +154,7 @@ async function main() {
   let from = 0;
 
   while (true) {
-    const { data, error } = await supabase
+    let query = supabase
       .from('trails')
       .select('id, slug, distance_km, elevation_gain_m, elevation_loss_m, elevation_min_m, elevation_max_m, avg_elevation_m, max_slope_pct, estimated_duration_min, difficulty_score, effort_level, child_friendly, pet_friendly, track_profile')
       .or('elevation_min_m.lt.-100,elevation_gain_m.gt.10000')
@@ -160,6 +162,9 @@ async function main() {
       .order('id')
       .range(from, from + PAGE_SIZE - 1);
 
+    if (COUNTRY) query = query.eq('country', COUNTRY);
+
+    const { data, error } = await query;
     if (error) { console.error('Fetch error:', error.message); process.exit(1); }
     if (!data || data.length === 0) break;
 

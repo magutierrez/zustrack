@@ -28,6 +28,7 @@ const hasFlag = (flag) => args.includes(flag);
 const DRY_RUN = hasFlag('--dry-run');
 const LIMIT = getArg('--limit') ? parseInt(getArg('--limit'), 10) : null;
 const MIN_SLOPE = getArg('--min-slope') ? parseFloat(getArg('--min-slope')) : 0;
+const COUNTRY = getArg('--country');
 const PAGE_SIZE = 500;
 
 // ---------------------------------------------------------------------------
@@ -96,6 +97,7 @@ function recalcDifficulty(distanceKm, elevationGainM, maxSlopePct) {
 
 async function main() {
   console.log(`\n📐 Fix Slopes Script`);
+  console.log(`   Country    : ${COUNTRY ?? 'all'}`);
   console.log(`   Min slope  : ≥${MIN_SLOPE}%`);
   console.log(`   Limit      : ${LIMIT ?? 'all matching'}`);
   console.log(`   Dry run    : ${DRY_RUN}\n`);
@@ -113,6 +115,7 @@ async function main() {
       .range(from, from + PAGE_SIZE - 1);
 
     if (MIN_SLOPE > 0) query = query.gte('max_slope_pct', MIN_SLOPE);
+    if (COUNTRY) query = query.eq('country', COUNTRY);
 
     const { data, error } = await query;
     if (error) { console.error('Supabase fetch error:', error.message); process.exit(1); }
