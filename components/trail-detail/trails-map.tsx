@@ -385,6 +385,12 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
               paint={{ 'line-color': '#000000', 'line-width': 5, 'line-opacity': 0.12 }}
             />
             <Layer
+              id="track-preview-casing"
+              type="line"
+              layout={{ 'line-cap': 'round', 'line-join': 'round' }}
+              paint={{ 'line-color': '#ffffff', 'line-width': 5, 'line-opacity': 0.9 }}
+            />
+            <Layer
               id="track-preview-line"
               type="line"
               layout={{ 'line-cap': 'round', 'line-join': 'round' }}

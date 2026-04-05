@@ -295,6 +295,13 @@ export default function TrailMap({
             paint={{ 'line-color': '#000', 'line-width': 7, 'line-opacity': 0.15 * baseOpacity }}
           />
           <Layer
+            id="trail-casing"
+            type="line"
+            source="trail"
+            layout={{ 'line-join': 'round', 'line-cap': 'round' }}
+            paint={{ 'line-color': '#ffffff', 'line-width': 6.5, 'line-opacity': 0.9 * baseOpacity }}
+          />
+          <Layer
             id="trail-line"
             type="line"
             source="trail"
