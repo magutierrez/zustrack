@@ -4,7 +4,6 @@ import { useRef, useEffect, useMemo, useCallback, useState } from 'react';
 import Map, { NavigationControl, Source, Layer, Marker, type MapRef } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { getSlopeColorHex } from '@/lib/slope-colors';
-import { haversineDistance } from '@/lib/gpx-parser';
 import { transformRequest } from '@/lib/map-transform';
 import type { TrailMapLayerType } from '@/lib/types';
 import { useTrailMapStyle } from './use-trail-map-style';
@@ -32,7 +31,7 @@ interface TrailMapProps {
   trackProfile: TrackPoint[];
   name: string;
   isCircular: boolean;
-  selectedRange?: { start: number; end: number } | null;
+  selectedRange?: { start: number; end: number; color?: string } | null;
   onReset?: () => void;
   hoverDist?: number | null;
   onHoverDist?: (dist: number | null) => void;
@@ -45,32 +44,59 @@ interface TrailMapProps {
 
 /** Build color-stop stops for MapLibre line-gradient from slope values */
 function buildGradientStops(points: TrackPoint[]): (string | number)[] {
-  if (points.length < 2) return [0, '#10b981'];
-  const totalDist = points[points.length - 1].d;
-  if (totalDist === 0) return [0, '#10b981'];
+  const n = points.length;
+  if (n < 2) return [0, '#10b981', 1, '#10b981'];
+
+  const startDist = points[0].d;
+  const endDist = points[n - 1].d;
+  const totalDist = endDist - startDist;
+
+  if (totalDist <= 0) return [0, '#10b981', 1, '#10b981'];
+
+  // 1. Raw point-to-point slopes
+  const rawSlopes = new Array<number>(n).fill(0);
+  for (let i = 1; i < n; i++) {
+    const distDiffM = (points[i].d - points[i - 1].d) * 1000;
+    const eleDiffM = (points[i].e ?? 0) - (points[i - 1].e ?? 0);
+    if (distDiffM > 0.1) rawSlopes[i] = (eleDiffM / distDiffM) * 100;
+  }
+
+  // 2. 400 m sliding-window smoothing (same as hazard chart)
+  const halfWindowKm = 0.2;
+  const smoothSlopes = new Array<number>(n).fill(0);
+  let left = 0,
+    right = -1,
+    wSum = 0,
+    wCount = 0;
+  for (let i = 0; i < n; i++) {
+    const center = points[i].d;
+    while (right + 1 < n && points[right + 1].d <= center + halfWindowKm) {
+      right++;
+      wSum += rawSlopes[right];
+      wCount++;
+    }
+    while (left <= right && points[left].d < center - halfWindowKm) {
+      wSum -= rawSlopes[left];
+      left++;
+      wCount--;
+    }
+    smoothSlopes[i] = wCount > 0 ? wSum / wCount : 0;
+  }
 
   const stops: (string | number)[] = [];
   let lastProgress = -1;
 
-  for (let i = 0; i < points.length; i++) {
+  for (let i = 0; i < n; i++) {
     const p = points[i];
-    const progress = Math.min(1, Math.max(0, p.d / totalDist));
+    const progress = Math.min(1, Math.max(0, (p.d - startDist) / totalDist));
     // MapLibre requires strictly ascending stop values — skip duplicates
-    if (progress <= lastProgress) continue;
+    if (progress <= lastProgress && i > 0) continue;
 
-    let slope = 0;
-    if (i > 0) {
-      const prev = points[i - 1];
-      const distM = haversineDistance(prev.lat, prev.lng, p.lat, p.lng) * 1000;
-      if (distM > 1 && prev.e !== null && p.e !== null) {
-        slope = ((p.e - prev.e) / distM) * 100;
-      }
-    }
-    stops.push(progress, getSlopeColorHex(slope));
+    stops.push(progress, getSlopeColorHex(smoothSlopes[i]));
     lastProgress = progress;
   }
 
-  if (stops.length === 0) return [0, '#10b981'];
+  if (stops.length === 0) return [0, '#10b981', 1, '#10b981'];
   // Ensure the gradient always starts at 0 and ends at 1
   if ((stops[0] as number) > 0) stops.unshift(0, stops[1]);
   if ((stops[stops.length - 2] as number) < 1) stops.push(1, stops[stops.length - 1]);
@@ -143,12 +169,13 @@ export default function TrailMap({
   const minLng = Math.min(...lngs);
   const maxLng = Math.max(...lngs);
 
-  // Highlight GeoJSON for the selected segment
-  const highlightGeoJSON = useMemo<GeoJSON.FeatureCollection | null>(() => {
-    if (!selectedRange) return null;
+  // Highlight GeoJSON and gradient for the selected segment
+  const { highlightGeoJSON, highlightGradientStops } = useMemo(() => {
+    if (!selectedRange) return { highlightGeoJSON: null, highlightGradientStops: null };
     const pts = trackProfile.filter((p) => p.d >= selectedRange.start && p.d <= selectedRange.end);
-    if (pts.length < 2) return null;
-    return {
+    if (pts.length < 2) return { highlightGeoJSON: null, highlightGradientStops: null };
+
+    const geojson: GeoJSON.FeatureCollection = {
       type: 'FeatureCollection',
       features: [
         {
@@ -160,6 +187,11 @@ export default function TrailMap({
           },
         },
       ],
+    };
+
+    return {
+      highlightGeoJSON: geojson,
+      highlightGradientStops: buildGradientStops(pts),
     };
   }, [selectedRange, trackProfile]);
 
@@ -315,19 +347,32 @@ export default function TrailMap({
         </Source>
 
         {/* Segment highlight overlay */}
-        {selectedRange && highlightGeoJSON && (
-          <Source id="trail-highlight" type="geojson" data={highlightGeoJSON}>
+        {selectedRange && highlightGeoJSON && highlightGradientStops && (
+          <Source id="trail-highlight" type="geojson" data={highlightGeoJSON} lineMetrics>
             <Layer
               id="trail-highlight-glow"
               type="line"
               layout={{ 'line-join': 'round', 'line-cap': 'round' }}
-              paint={{ 'line-color': '#fff', 'line-width': 9, 'line-opacity': 0.4, 'line-blur': 4 }}
+              paint={{
+                'line-color': '#fff',
+                'line-width': 10,
+                'line-opacity': 0.6,
+                'line-blur': 3,
+              }}
             />
             <Layer
               id="trail-highlight-line"
               type="line"
               layout={{ 'line-join': 'round', 'line-cap': 'round' }}
-              paint={{ 'line-color': '#f59e0b', 'line-width': 5 }}
+              paint={{
+                'line-width': 6,
+                'line-gradient': [
+                  'interpolate',
+                  ['linear'],
+                  ['line-progress'],
+                  ...highlightGradientStops,
+                ],
+              }}
             />
           </Source>
         )}
