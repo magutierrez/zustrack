@@ -780,6 +780,7 @@
       "GR": "Sendero de Gran Recorrido (GR)",
       "PR": "Sendero de Pequeño Recorrido (PR)",
       "SL": "Sendero Local (SL)",
+      "CAI": "Sendero CAI (Club Alpino Italiano)",
       "unknown": "Sendero"
     },
     "backToTrails": "Todos los senderos",

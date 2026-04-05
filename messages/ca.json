@@ -780,6 +780,7 @@
       "GR": "Sender de Gran Recorregut (GR)",
       "PR": "Sender de Petit Recorregut (PR)",
       "SL": "Sender Local (SL)",
+      "CAI": "Sender CAI (Club Alpino Italiano)",
       "unknown": "Sender"
     },
     "backToTrails": "Tots els senders",

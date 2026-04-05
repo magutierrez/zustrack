@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import Map, {
   Layer,
   type MapLayerMouseEvent,
@@ -115,6 +115,7 @@ interface SelectedTrailInfo {
 interface TrailsMapProps {
   searchParams: TrailSearchParams;
   locale: string;
+  country: string;
   labels: {
     viewTrail: string;
     loading: string;
@@ -134,9 +135,10 @@ interface TrailsMapProps {
   };
 }
 
-function buildGeoUrl(sp: TrailSearchParams): string {
+function buildGeoUrl(sp: TrailSearchParams, country: string): string {
   const params = new URLSearchParams();
-  if (sp.q) params.set('q', sp.q);
+  params.set('country', country);
+  if (sp.q)       params.set('q',       sp.q);
   if (sp.effort) params.set('effort', sp.effort);
   if (sp.type) params.set('type', sp.type);
   if (sp.shape) params.set('shape', sp.shape);
@@ -166,10 +168,16 @@ interface TrackPreview {
   gradientStops: (string | number)[];
 }
 
-export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
+export function TrailsMap({ searchParams, locale, country, labels }: TrailsMapProps) {
   const mapRef = useRef<MapRef>(null);
   const [mapType, setMapType] = useState<TrailMapLayerType>('osm');
   const mapStyle = useTrailMapStyle(mapType);
+
+  const initialView = useMemo(() => {
+    if (country === 'it') return { longitude: 12.5, latitude: 41.9, zoom: 5 };
+    return { longitude: -3.7, latitude: 40.4, zoom: 5 };
+  }, [country]);
+
   const [geojson, setGeojson] = useState<FeatureCollection<Point> | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedTrail, setSelectedTrail] = useState<SelectedTrailInfo | null>(null);
@@ -184,7 +192,7 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
     setSelectedTrail(null);
     setTrackPreview(null);
 
-    fetch(buildGeoUrl(searchParams))
+    fetch(buildGeoUrl(searchParams, country))
       .then((r) => r.json())
       .then((data: FeatureCollection<Point>) => {
         if (cancelled) return;
@@ -211,6 +219,7 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
     searchParams.maxGain,
     searchParams.season,
     searchParams.region,
+    country,
   ]);
 
   // Fit bounds to all features after data loads
@@ -363,7 +372,7 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
         ref={mapRef}
         mapStyle={mapStyle}
         mapLib={maplibregl}
-        initialViewState={{ longitude: -3.7, latitude: 40.4, zoom: 5 }}
+        initialViewState={initialView}
         style={{ width: '100%', height: '100%' }}
         interactiveLayerIds={['trail-clusters', 'trail-points']}
         cursor={cursor}

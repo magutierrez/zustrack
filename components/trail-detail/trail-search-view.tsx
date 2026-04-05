@@ -9,15 +9,23 @@ import { TrailFilters } from './trail-filters';
 import { ViewToggle } from './view-toggle';
 import { TrailsMapWrapper } from './trails-map-wrapper';
 
-export async function TrailSearchView({ locale, sp }: { locale: string; sp: TrailSearchParams }) {
+export async function TrailSearchView({
+  locale,
+  country,
+  sp,
+}: {
+  locale: string;
+  country: string;
+  sp: TrailSearchParams;
+}) {
   const t = await getTranslations({ locale, namespace: 'TrailSearchPage' });
   const tTrail = await getTranslations({ locale, namespace: 'TrailPage' });
 
   const isMapView = sp.view === 'map';
   const [{ trails, count, page, totalPages }, ranges, regions] = await Promise.all([
-    fetchTrails(sp),
-    getTrailRanges(),
-    getRegions('es'),
+    fetchTrails(country, sp),
+    getTrailRanges(country),
+    getRegions(country),
   ]);
 
   const filterLabels = {
@@ -111,7 +119,7 @@ export async function TrailSearchView({ locale, sp }: { locale: string; sp: Trai
     if (sp.view) params.set('view', sp.view);
     if (p > 1) params.set('page', String(p));
     const qs = params.toString();
-    return `/${locale}/trail${qs ? `?${qs}` : ''}`;
+    return `/${locale}/trail/${country}${qs ? `?${qs}` : ''}`;
   };
 
   // ── Map view: sidebar + full map ─────────────────────────────────────────
@@ -123,7 +131,7 @@ export async function TrailSearchView({ locale, sp }: { locale: string; sp: Trai
 
         <div className="flex flex-1 overflow-hidden">
           {/* Sidebar – desktop only (lg+) */}
-          <aside className="hidden lg:flex lg:w-72 shrink-0 flex-col gap-4 overflow-y-auto border-r border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
+          <aside className="hidden shrink-0 flex-col gap-4 overflow-y-auto border-r border-slate-200 bg-white p-4 lg:flex lg:w-90 dark:border-slate-800 dark:bg-slate-950">
             <div>
               <h1 className="text-xl font-bold text-slate-900 dark:text-white">{t('title')}</h1>
               <div className="mt-2 flex items-center justify-between">
@@ -145,7 +153,7 @@ export async function TrailSearchView({ locale, sp }: { locale: string; sp: Trai
           {/* Main: mobile bar + map */}
           <div className="flex flex-1 flex-col overflow-hidden">
             {/* Mobile filter bar (< lg) */}
-            <div className="lg:hidden border-b border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-950">
+            <div className="border-b border-slate-200 bg-white px-4 py-3 lg:hidden dark:border-slate-800 dark:bg-slate-950">
               <div className="mb-2 flex items-center justify-between">
                 <h1 className="text-lg font-bold text-slate-900 dark:text-white">{t('title')}</h1>
                 <ViewToggle labels={{ listView: t('listView'), mapView: t('mapView') }} />
@@ -163,11 +171,12 @@ export async function TrailSearchView({ locale, sp }: { locale: string; sp: Trai
             </div>
 
             {/* Map */}
-            <div className="flex-1 min-h-0">
+            <div className="min-h-0 flex-1">
               <TrailsMapWrapper
                 searchParams={sp}
                 locale={locale}
                 labels={mapLabels}
+                country={country}
               />
             </div>
           </div>

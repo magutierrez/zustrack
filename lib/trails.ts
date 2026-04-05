@@ -147,11 +147,13 @@ export async function getTrail(country: string, slug: string): Promise<Trail | n
   return data as Trail;
 }
 
-export async function fetchTrails(sp: TrailSearchParams): Promise<TrailSearchResult> {
+export async function fetchTrails(country: string, sp: TrailSearchParams): Promise<TrailSearchResult> {
   const page = Math.max(1, parseInt(sp.page ?? '1', 10));
   const offset = (page - 1) * TRAILS_PAGE_SIZE;
 
   let query = getSupabase().from('trails').select(TRAIL_SUMMARY_COLUMNS, { count: 'exact' });
+
+  query = query.eq('country', country);
 
   if (sp.q) query = query.ilike('name', `%${sp.q}%`);
   if (sp.effort) query = query.eq('effort_level', sp.effort);
@@ -180,13 +182,13 @@ export async function fetchTrails(sp: TrailSearchParams): Promise<TrailSearchRes
   };
 }
 
-export async function getTrailRanges(): Promise<TrailRanges> {
+export async function getTrailRanges(country: string): Promise<TrailRanges> {
   const sb = getSupabase();
   const [maxDist, minDist, maxGain, minGain] = await Promise.all([
-    sb.from('trails').select('distance_km').order('distance_km', { ascending: false }).limit(1).single(),
-    sb.from('trails').select('distance_km').order('distance_km', { ascending: true }).limit(1).single(),
-    sb.from('trails').select('elevation_gain_m').order('elevation_gain_m', { ascending: false }).limit(1).single(),
-    sb.from('trails').select('elevation_gain_m').order('elevation_gain_m', { ascending: true }).limit(1).single(),
+    sb.from('trails').select('distance_km').eq('country', country).order('distance_km', { ascending: false }).limit(1).single(),
+    sb.from('trails').select('distance_km').eq('country', country).order('distance_km', { ascending: true }).limit(1).single(),
+    sb.from('trails').select('elevation_gain_m').eq('country', country).order('elevation_gain_m', { ascending: false }).limit(1).single(),
+    sb.from('trails').select('elevation_gain_m').eq('country', country).order('elevation_gain_m', { ascending: true }).limit(1).single(),
   ]);
   return {
     minDistance: Math.floor((minDist.data as { distance_km: number } | null)?.distance_km ?? 0),

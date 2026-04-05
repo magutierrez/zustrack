@@ -14,6 +14,9 @@ export async function GET(req: NextRequest) {
     .select('id,slug,country,name,trail_code,effort_level,distance_km,start_lat,start_lng,elevation_gain_m,elevation_loss_m,elevation_min_m,elevation_max_m')
     .limit(10000);
 
+  const country = sp.get('country');
+  if (country) query = query.eq('country', country);
+
   const q = sp.get('q');
   const effort = sp.get('effort');
   const type = sp.get('type');
