@@ -777,9 +777,10 @@
     "region": "Region",
     "place": "Start municipality",
     "trailType": {
-      "GR": "Long-distance trail (GR)",
-      "PR": "Short-distance trail (PR)",
-      "SL": "Local trail (SL)",
+      "GR": "Long Distance Trail (GR)",
+      "PR": "Short Distance Trail (PR)",
+      "SL": "Local Trail (SL)",
+      "CAI": "CAI Trail (Club Alpino Italiano)",
       "unknown": "Trail"
     },
     "backToTrails": "All trails",

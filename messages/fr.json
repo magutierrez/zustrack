@@ -765,6 +765,7 @@
       "GR": "Grande Randonnée (GR)",
       "PR": "Petite Randonnée (PR)",
       "SL": "Sentier local (SL)",
+      "CAI": "Sentier CAI (Club Alpino Italiano)",
       "unknown": "Sentier"
     },
     "backToTrails": "Tous les sentiers",

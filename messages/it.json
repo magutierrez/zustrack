@@ -765,6 +765,7 @@
       "GR": "Grande Percorso (GR)",
       "PR": "Piccolo Percorso (PR)",
       "SL": "Sentiero Locale (SL)",
+      "CAI": "Sentiero CAI",
       "unknown": "Sentiero"
     },
     "backToTrails": "Tutti i sentieri",
