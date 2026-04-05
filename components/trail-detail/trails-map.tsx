@@ -1,21 +1,22 @@
 'use client';
 
-import { useRef, useEffect, useState, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Map, {
+  Layer,
+  type MapLayerMouseEvent,
+  type MapRef,
   NavigationControl,
   Source,
-  Layer,
-  Popup,
-  type MapRef,
-  type MapLayerMouseEvent,
 } from 'react-map-gl/maplibre';
-import type { PositionAnchor } from 'maplibre-gl';
-import 'maplibre-gl/dist/maplibre-gl.css';
-import type { FeatureCollection, Point, LineString } from 'geojson';
 import maplibregl, { GeoJSONSource } from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
+import type { FeatureCollection, LineString, Point } from 'geojson';
 import Link from 'next/link';
+import { X } from 'lucide-react';
 import type { TrailSearchParams } from '@/lib/trails';
 import { transformRequest } from '@/lib/map-transform';
+import { addArrowImage } from '@/lib/map-utils';
+import { getSlopeColorHex } from '@/lib/slope-colors';
 import type { TrailMapLayerType } from '@/lib/types';
 import { useTrailMapStyle } from './use-trail-map-style';
 import { TrailLayerControl } from './trail-layer-control';
@@ -27,34 +28,88 @@ const EFFORT_COLORS: Record<string, string> = {
   very_hard: '#f43f5e',
 };
 
-interface PopupInfo {
+interface TrackPoint {
+  lat: number;
+  lng: number;
+  d: number;
+  e: number | null;
+}
+
+/** Build color-stop stops for MapLibre line-gradient from slope values */
+function buildGradientStops(points: TrackPoint[]): (string | number)[] {
+  const n = points.length;
+  if (n < 2) return [0, '#10b981', 1, '#10b981'];
+
+  const startDist = points[0].d;
+  const endDist = points[n - 1].d;
+  const totalDist = endDist - startDist;
+
+  if (totalDist <= 0) return [0, '#10b981', 1, '#10b981'];
+
+  // 1. Raw point-to-point slopes
+  const rawSlopes = new Array<number>(n).fill(0);
+  for (let i = 1; i < n; i++) {
+    const distDiffM = (points[i].d - points[i - 1].d) * 1000;
+    const eleDiffM = (points[i].e ?? 0) - (points[i - 1].e ?? 0);
+    if (distDiffM > 0.1) rawSlopes[i] = (eleDiffM / distDiffM) * 100;
+  }
+
+  // 2. 400 m sliding-window smoothing (same as hazard chart)
+  const halfWindowKm = 0.2;
+  const smoothSlopes = new Array<number>(n).fill(0);
+  let left = 0,
+    right = -1,
+    wSum = 0,
+    wCount = 0;
+  for (let i = 0; i < n; i++) {
+    const center = points[i].d;
+    while (right + 1 < n && points[right + 1].d <= center + halfWindowKm) {
+      right++;
+      wSum += rawSlopes[right];
+      wCount++;
+    }
+    while (left <= right && points[left].d < center - halfWindowKm) {
+      wSum -= rawSlopes[left];
+      left++;
+      wCount--;
+    }
+    smoothSlopes[i] = wCount > 0 ? wSum / wCount : 0;
+  }
+
+  const stops: (string | number)[] = [];
+  let lastProgress = -1;
+
+  for (let i = 0; i < n; i++) {
+    const p = points[i];
+    const progress = Math.min(1, Math.max(0, (p.d - startDist) / totalDist));
+    // MapLibre requires strictly ascending stop values — skip duplicates
+    if (progress <= lastProgress && i > 0) continue;
+
+    stops.push(progress, getSlopeColorHex(smoothSlopes[i]));
+    lastProgress = progress;
+  }
+
+  if (stops.length === 0) return [0, '#10b981', 1, '#10b981'];
+  // Ensure the gradient always starts at 0 and ends at 1
+  if ((stops[0] as number) > 0) stops.unshift(0, stops[1]);
+  if ((stops[stops.length - 2] as number) < 1) stops.push(1, stops[stops.length - 1]);
+
+  return stops;
+}
+
+interface SelectedTrailInfo {
   lng: number;
   lat: number;
-  anchor: PositionAnchor;
   name: string;
   trail_code: string | null;
   distance_km: number;
   effort_level: string;
   slug: string;
   country: string;
-}
-
-function computeAnchor(mapRef: React.RefObject<MapRef | null>, lng: number, lat: number): PositionAnchor {
-  const map = mapRef.current?.getMap();
-  if (!map) return 'bottom';
-  const canvas = map.getCanvas();
-  const pt = map.project([lng, lat]);
-  const h = canvas.clientHeight;
-  const w = canvas.clientWidth;
-  const top = pt.y < h * 0.4;
-  const left = pt.x < w * 0.3;
-  const right = pt.x > w * 0.7;
-  if (top && left) return 'top-left';
-  if (top && right) return 'top-right';
-  if (top) return 'top';
-  if (left) return 'bottom-left';
-  if (right) return 'bottom-right';
-  return 'bottom';
+  elevation_gain_m?: number;
+  elevation_loss_m?: number;
+  elevation_min_m?: number;
+  elevation_max_m?: number;
 }
 
 interface TrailsMapProps {
@@ -71,23 +126,28 @@ interface TrailsMapProps {
       veryHard: string;
     };
     km: string;
+    meters: string;
+    elevationGain: string;
+    elevationLoss: string;
+    lowPoint: string;
+    highPoint: string;
   };
 }
 
 function buildGeoUrl(sp: TrailSearchParams): string {
   const params = new URLSearchParams();
-  if (sp.q)       params.set('q',       sp.q);
-  if (sp.effort)  params.set('effort',  sp.effort);
-  if (sp.type)    params.set('type',    sp.type);
-  if (sp.shape)   params.set('shape',   sp.shape);
-  if (sp.child)   params.set('child',   sp.child);
-  if (sp.pet)     params.set('pet',     sp.pet);
+  if (sp.q) params.set('q', sp.q);
+  if (sp.effort) params.set('effort', sp.effort);
+  if (sp.type) params.set('type', sp.type);
+  if (sp.shape) params.set('shape', sp.shape);
+  if (sp.child) params.set('child', sp.child);
+  if (sp.pet) params.set('pet', sp.pet);
   if (sp.minDist) params.set('minDist', sp.minDist);
   if (sp.maxDist) params.set('maxDist', sp.maxDist);
   if (sp.minGain) params.set('minGain', sp.minGain);
   if (sp.maxGain) params.set('maxGain', sp.maxGain);
-  if (sp.season)  params.set('season',  sp.season);
-  if (sp.region)  params.set('region',  sp.region);
+  if (sp.season) params.set('season', sp.season);
+  if (sp.region) params.set('region', sp.region);
   const qs = params.toString();
   return `/api/trails/geo${qs ? `?${qs}` : ''}`;
 }
@@ -103,6 +163,7 @@ function getEffortLabel(effort: string, labels: TrailsMapProps['labels']): strin
 interface TrackPreview {
   geojson: FeatureCollection<LineString>;
   color: string;
+  gradientStops: (string | number)[];
 }
 
 export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
@@ -111,7 +172,7 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
   const mapStyle = useTrailMapStyle(mapType);
   const [geojson, setGeojson] = useState<FeatureCollection<Point> | null>(null);
   const [loading, setLoading] = useState(true);
-  const [popup, setPopup] = useState<PopupInfo | null>(null);
+  const [selectedTrail, setSelectedTrail] = useState<SelectedTrailInfo | null>(null);
   const [trackPreview, setTrackPreview] = useState<TrackPreview | null>(null);
   const [trackLoading, setTrackLoading] = useState(false);
   const [cursor, setCursor] = useState<string>('grab');
@@ -120,7 +181,7 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    setPopup(null);
+    setSelectedTrail(null);
     setTrackPreview(null);
 
     fetch(buildGeoUrl(searchParams))
@@ -178,7 +239,7 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
   }, [geojson]);
 
   const clearTrailSelection = useCallback(() => {
-    setPopup(null);
+    setSelectedTrail(null);
     setTrackPreview(null);
     setTrackLoading(false);
   }, []);
@@ -211,16 +272,19 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
         const coords = (feature.geometry as GeoJSON.Point).coordinates as [number, number];
         const effortLevel = props.effort_level as string;
 
-        setPopup({
+        setSelectedTrail({
           lng: coords[0],
           lat: coords[1],
-          anchor: computeAnchor(mapRef, coords[0], coords[1]),
           name: props.name as string,
           trail_code: props.trail_code as string | null,
           distance_km: props.distance_km as number,
           effort_level: effortLevel,
           slug: props.slug as string,
           country: props.country as string,
+          elevation_gain_m: props.elevation_gain_m as number | undefined,
+          elevation_loss_m: props.elevation_loss_m as number | undefined,
+          elevation_min_m: props.elevation_min_m as number | undefined,
+          elevation_max_m: props.elevation_max_m as number | undefined,
         });
         setTrackPreview(null);
         setTrackLoading(true);
@@ -230,6 +294,7 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
           .then((r) => r.json())
           .then(
             (data: {
+              profile: TrackPoint[];
               coordinates: [number, number][];
               bbox: [number, number, number, number] | null;
             }) => {
@@ -237,6 +302,7 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
               if (data.coordinates.length >= 2) {
                 setTrackPreview({
                   color: EFFORT_COLORS[effortLevel] ?? '#94a3b8',
+                  gradientStops: buildGradientStops(data.profile),
                   geojson: {
                     type: 'FeatureCollection',
                     features: [
@@ -256,7 +322,11 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
                     [data.bbox[0], data.bbox[1]],
                     [data.bbox[2], data.bbox[3]],
                   ],
-                  { padding: { top: 80, bottom: 60, left: 60, right: 60 }, maxZoom: 14, duration: 700 },
+                  {
+                    padding: { top: 80, bottom: 60, left: 60, right: 60 },
+                    maxZoom: 14,
+                    duration: 700,
+                  },
                 );
               } else {
                 mapRef.current?.flyTo({ center: coords, zoom: 13, duration: 600 });
@@ -298,6 +368,11 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
         interactiveLayerIds={['trail-clusters', 'trail-points']}
         cursor={cursor}
         onClick={handleClick}
+        onLoad={(e) => {
+          const map = e.target as maplibregl.Map;
+          addArrowImage(map);
+          map.on('style.load', () => addArrowImage(map));
+        }}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         transformRequest={transformRequest}
@@ -332,6 +407,8 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
                 'circle-radius': ['step', ['get', 'point_count'], 16, 20, 24, 100, 32],
                 'circle-stroke-width': 2,
                 'circle-stroke-color': '#ffffff',
+                'circle-opacity': selectedTrail ? 0.3 : 1,
+                'circle-stroke-opacity': selectedTrail ? 0.3 : 1,
               }}
             />
 
@@ -345,7 +422,10 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
                 'text-font': ['Noto Sans Bold'],
                 'text-size': 12,
               }}
-              paint={{ 'text-color': '#ffffff' }}
+              paint={{
+                'text-color': '#ffffff',
+                'text-opacity': selectedTrail ? 0.3 : 1,
+              }}
             />
 
             {/* Individual trail points colored by effort */}
@@ -370,6 +450,8 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
                 'circle-radius': 7,
                 'circle-stroke-width': 1.5,
                 'circle-stroke-color': '#ffffff',
+                'circle-opacity': selectedTrail ? 0.3 : 1,
+                'circle-stroke-opacity': selectedTrail ? 0.3 : 1,
               }}
             />
           </Source>
@@ -377,73 +459,189 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
 
         {/* Trail track preview — shown on click */}
         {trackPreview && (
-          <Source id="track-preview" type="geojson" data={trackPreview.geojson}>
+          <Source id="track-preview" type="geojson" data={trackPreview.geojson} lineMetrics>
+            {/* Outer Glow / Shadow */}
             <Layer
               id="track-preview-shadow"
               type="line"
               layout={{ 'line-cap': 'round', 'line-join': 'round' }}
-              paint={{ 'line-color': '#000000', 'line-width': 5, 'line-opacity': 0.12 }}
+              paint={{
+                'line-color': '#000000',
+                'line-width': 10,
+                'line-opacity': 0.25,
+                'line-blur': 3,
+              }}
             />
+            {/* High-contrast casing */}
             <Layer
               id="track-preview-casing"
               type="line"
               layout={{ 'line-cap': 'round', 'line-join': 'round' }}
-              paint={{ 'line-color': '#ffffff', 'line-width': 5, 'line-opacity': 0.9 }}
+              paint={{
+                'line-color': '#ffffff',
+                'line-width': 7,
+                'line-opacity': 1,
+              }}
             />
+            {/* Main colored line with slope gradient */}
             <Layer
               id="track-preview-line"
               type="line"
               layout={{ 'line-cap': 'round', 'line-join': 'round' }}
-              paint={{ 'line-color': trackPreview.color, 'line-width': 3, 'line-opacity': 0.85 }}
+              paint={{
+                'line-width': 4.5,
+                'line-opacity': 1,
+                'line-gradient': [
+                  'interpolate',
+                  ['linear'],
+                  ['line-progress'],
+                  ...trackPreview.gradientStops,
+                ],
+              }}
+            />
+            <Layer
+              id="track-preview-direction-arrows"
+              type="symbol"
+              layout={{
+                'symbol-placement': 'line',
+                'symbol-spacing': 120,
+                'icon-image': 'route-arrow',
+                'icon-size': ['interpolate', ['linear'], ['zoom'], 10, 0.45, 18, 0.85],
+                'icon-allow-overlap': true,
+                'icon-keep-upright': false,
+                'icon-rotation-alignment': 'map',
+              }}
+              paint={{
+                'icon-color': mapType === 'osm' ? '#1368CE' : '#000000',
+                'icon-opacity': 0.6,
+              }}
             />
           </Source>
         )}
 
-        {popup && (
-          <Popup
-            longitude={popup.lng}
-            latitude={popup.lat}
-            anchor={popup.anchor}
-            onClose={clearTrailSelection}
-            closeButton={false}
-            maxWidth="260px"
-          >
-            <div className="p-2 text-slate-900 dark:text-white">
-              <div className="mb-1 flex items-center gap-2">
-                {popup.trail_code && (
+        {selectedTrail && (
+          <div className="absolute top-4 left-1/2 z-20 w-[90%] max-w-sm -translate-x-1/2 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900">
+            <div className="relative p-4">
+              <button
+                onClick={clearTrailSelection}
+                className="absolute top-3 right-3 rounded-full p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
+                aria-label="Close"
+              >
+                <X className="h-4 w-4" />
+              </button>
+
+              <div className="mb-2 flex flex-wrap items-center gap-2 pr-6">
+                {selectedTrail.trail_code && (
                   <span
-                    className="rounded-full px-2 py-0.5 text-xs font-bold text-white"
-                    style={{ backgroundColor: EFFORT_COLORS[popup.effort_level] ?? '#94a3b8' }}
+                    className="rounded-full px-2.5 py-0.5 text-[10px] font-bold text-white shadow-sm"
+                    style={{
+                      backgroundColor: EFFORT_COLORS[selectedTrail.effort_level] ?? '#94a3b8',
+                    }}
                   >
-                    {popup.trail_code}
+                    {selectedTrail.trail_code}
                   </span>
                 )}
-                <span className="text-xs text-slate-500">
-                  {getEffortLabel(popup.effort_level, labels)}
+                <span
+                  className="rounded-full px-2 py-0.5 text-[10px] font-bold shadow-sm"
+                  style={{
+                    backgroundColor: `${EFFORT_COLORS[selectedTrail.effort_level] ?? '#94a3b8'}20`,
+                    color: EFFORT_COLORS[selectedTrail.effort_level] ?? '#94a3b8',
+                  }}
+                >
+                  {getEffortLabel(selectedTrail.effort_level, labels)}
                 </span>
               </div>
-              <p className="mb-1 text-sm leading-snug font-semibold">{popup.name}</p>
-              <p className="mb-2 text-xs text-slate-500">
-                {popup.distance_km.toFixed(1)} {labels.km}
-              </p>
+
+              <h3 className="mb-3 line-clamp-2 pr-6 text-sm leading-tight font-bold text-slate-900 dark:text-white">
+                {selectedTrail.name}
+              </h3>
+
+              <div className="mb-4 grid grid-cols-3 gap-2">
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-bold tracking-wider text-slate-500 uppercase">
+                    {labels.km}
+                  </span>
+                  <span className="text-xs font-semibold text-slate-900 tabular-nums dark:text-white">
+                    {selectedTrail.distance_km.toFixed(1)}
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-bold tracking-wider text-emerald-500 uppercase">
+                    D+
+                  </span>
+                  <span className="text-xs font-semibold text-slate-900 tabular-nums dark:text-white">
+                    {selectedTrail.elevation_gain_m != null
+                      ? `${selectedTrail.elevation_gain_m}m`
+                      : '--'}
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-bold tracking-wider text-red-500 uppercase">
+                    D-
+                  </span>
+                  <span className="text-xs font-semibold text-slate-900 tabular-nums dark:text-white">
+                    {selectedTrail.elevation_loss_m != null
+                      ? `${selectedTrail.elevation_loss_m}m`
+                      : '--'}
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <span
+                    className="line-clamp-1 text-[9px] font-bold tracking-wider text-slate-500 uppercase"
+                    title={labels.lowPoint}
+                  >
+                    {labels.lowPoint}
+                  </span>
+                  <span className="text-xs font-semibold text-slate-900 tabular-nums dark:text-white">
+                    {selectedTrail.elevation_min_m != null
+                      ? `${selectedTrail.elevation_min_m}m`
+                      : '--'}
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <span
+                    className="line-clamp-1 text-[9px] font-bold tracking-wider text-slate-500 uppercase"
+                    title={labels.highPoint}
+                  >
+                    {labels.highPoint}
+                  </span>
+                  <span className="text-xs font-semibold text-slate-900 tabular-nums dark:text-white">
+                    {selectedTrail.elevation_max_m != null
+                      ? `${selectedTrail.elevation_max_m}m`
+                      : '--'}
+                  </span>
+                </div>
+              </div>
+
               {trackLoading ? (
-                <div className="flex items-center justify-center gap-2 rounded-md bg-slate-100 px-3 py-1.5 dark:bg-slate-800">
-                  <svg className="h-3 w-3 animate-spin text-slate-400" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <div className="flex h-9 w-full items-center justify-center gap-2 rounded-lg bg-slate-100 dark:bg-slate-800">
+                  <svg
+                    className="h-3.5 w-3.5 animate-spin text-slate-400"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
                   </svg>
-                  <span className="text-xs text-slate-400">{labels.loading}</span>
+                  <span className="text-xs font-medium text-slate-500">{labels.loading}</span>
                 </div>
               ) : (
                 <Link
-                  href={`/${locale}/trail/${popup.country}/${popup.slug}`}
-                  className="block rounded-md bg-slate-900 px-3 py-1.5 text-center text-xs font-medium text-white hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
+                  href={`/${locale}/trail/${selectedTrail.country}/${selectedTrail.slug}`}
+                  className="flex h-9 w-full items-center justify-center rounded-lg bg-slate-900 text-xs font-bold text-white transition-colors hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
                 >
                   {labels.viewTrail}
                 </Link>
               )}
             </div>
-          </Popup>
+          </div>
         )}
       </Map>
     </div>

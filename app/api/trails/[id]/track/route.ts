@@ -1,17 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const MAX_PREVIEW_POINTS = 40;
+const MAX_PREVIEW_POINTS = 300;
 
-function downsample(points: { lat: number; lng: number }[]): [number, number][] {
+interface TrackPoint {
+  lat: number;
+  lng: number;
+  d: number;
+  e: number | null;
+}
+
+function downsample(points: TrackPoint[]): TrackPoint[] {
   if (points.length <= MAX_PREVIEW_POINTS) {
-    return points.map((p) => [p.lng, p.lat]);
+    return points;
   }
   const step = (points.length - 1) / (MAX_PREVIEW_POINTS - 1);
-  const result: [number, number][] = [];
+  const result: TrackPoint[] = [];
   for (let i = 0; i < MAX_PREVIEW_POINTS; i++) {
-    const p = points[Math.round(i * step)];
-    result.push([p.lng, p.lat]);
+    result.push(points[Math.round(i * step)]);
   }
   return result;
 }
@@ -41,7 +47,8 @@ export async function GET(
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
-  const coordinates = data.track_profile ? downsample(data.track_profile as { lat: number; lng: number }[]) : [];
+  const trackProfile = (data.track_profile as TrackPoint[]) || [];
+  const sampledProfile = downsample(trackProfile);
 
   const bbox =
     data.bbox_min_lng != null && data.bbox_min_lat != null &&
@@ -50,7 +57,11 @@ export async function GET(
       : null;
 
   return NextResponse.json(
-    { coordinates, bbox },
+    {
+      profile: sampledProfile,
+      coordinates: sampledProfile.map(p => [p.lng, p.lat]),
+      bbox
+    },
     { headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' } },
   );
 }

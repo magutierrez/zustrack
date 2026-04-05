@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
 
   let query = supabase
     .from('trails')
-    .select('id,slug,country,name,trail_code,effort_level,distance_km,start_lat,start_lng')
+    .select('id,slug,country,name,trail_code,effort_level,distance_km,start_lat,start_lng,elevation_gain_m,elevation_loss_m,elevation_min_m,elevation_max_m')
     .limit(10000);
 
   const q = sp.get('q');
@@ -61,6 +61,10 @@ export async function GET(req: NextRequest) {
         trail_code: t.trail_code,
         effort_level: t.effort_level,
         distance_km: t.distance_km,
+        elevation_gain_m: t.elevation_gain_m,
+        elevation_loss_m: t.elevation_loss_m,
+        elevation_min_m: t.elevation_min_m,
+        elevation_max_m: t.elevation_max_m,
       },
     }));
 
