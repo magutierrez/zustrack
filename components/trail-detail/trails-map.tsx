@@ -9,6 +9,7 @@ import Map, {
   type MapRef,
   type MapLayerMouseEvent,
 } from 'react-map-gl/maplibre';
+import type { PositionAnchor } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type { FeatureCollection, Point, LineString } from 'geojson';
 import maplibregl, { GeoJSONSource } from 'maplibre-gl';
@@ -29,12 +30,31 @@ const EFFORT_COLORS: Record<string, string> = {
 interface PopupInfo {
   lng: number;
   lat: number;
+  anchor: PositionAnchor;
   name: string;
   trail_code: string | null;
   distance_km: number;
   effort_level: string;
   slug: string;
   country: string;
+}
+
+function computeAnchor(mapRef: React.RefObject<MapRef | null>, lng: number, lat: number): PositionAnchor {
+  const map = mapRef.current?.getMap();
+  if (!map) return 'bottom';
+  const canvas = map.getCanvas();
+  const pt = map.project([lng, lat]);
+  const h = canvas.clientHeight;
+  const w = canvas.clientWidth;
+  const top = pt.y < h * 0.4;
+  const left = pt.x < w * 0.3;
+  const right = pt.x > w * 0.7;
+  if (top && left) return 'top-left';
+  if (top && right) return 'top-right';
+  if (top) return 'top';
+  if (left) return 'bottom-left';
+  if (right) return 'bottom-right';
+  return 'bottom';
 }
 
 interface TrailsMapProps {
@@ -56,12 +76,18 @@ interface TrailsMapProps {
 
 function buildGeoUrl(sp: TrailSearchParams): string {
   const params = new URLSearchParams();
-  if (sp.q) params.set('q', sp.q);
-  if (sp.effort) params.set('effort', sp.effort);
-  if (sp.type) params.set('type', sp.type);
-  if (sp.shape) params.set('shape', sp.shape);
-  if (sp.child) params.set('child', sp.child);
-  if (sp.pet) params.set('pet', sp.pet);
+  if (sp.q)       params.set('q',       sp.q);
+  if (sp.effort)  params.set('effort',  sp.effort);
+  if (sp.type)    params.set('type',    sp.type);
+  if (sp.shape)   params.set('shape',   sp.shape);
+  if (sp.child)   params.set('child',   sp.child);
+  if (sp.pet)     params.set('pet',     sp.pet);
+  if (sp.minDist) params.set('minDist', sp.minDist);
+  if (sp.maxDist) params.set('maxDist', sp.maxDist);
+  if (sp.minGain) params.set('minGain', sp.minGain);
+  if (sp.maxGain) params.set('maxGain', sp.maxGain);
+  if (sp.season)  params.set('season',  sp.season);
+  if (sp.region)  params.set('region',  sp.region);
   const qs = params.toString();
   return `/api/trails/geo${qs ? `?${qs}` : ''}`;
 }
@@ -87,6 +113,7 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
   const [loading, setLoading] = useState(true);
   const [popup, setPopup] = useState<PopupInfo | null>(null);
   const [trackPreview, setTrackPreview] = useState<TrackPreview | null>(null);
+  const [trackLoading, setTrackLoading] = useState(false);
   const [cursor, setCursor] = useState<string>('grab');
 
   // Fetch GeoJSON whenever filters change
@@ -117,6 +144,12 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
     searchParams.shape,
     searchParams.child,
     searchParams.pet,
+    searchParams.minDist,
+    searchParams.maxDist,
+    searchParams.minGain,
+    searchParams.maxGain,
+    searchParams.season,
+    searchParams.region,
   ]);
 
   // Fit bounds to all features after data loads
@@ -147,6 +180,7 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
   const clearTrailSelection = useCallback(() => {
     setPopup(null);
     setTrackPreview(null);
+    setTrackLoading(false);
   }, []);
 
   const handleClick = useCallback(
@@ -180,6 +214,7 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
         setPopup({
           lng: coords[0],
           lat: coords[1],
+          anchor: computeAnchor(mapRef, coords[0], coords[1]),
           name: props.name as string,
           trail_code: props.trail_code as string | null,
           distance_km: props.distance_km as number,
@@ -188,6 +223,7 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
           country: props.country as string,
         });
         setTrackPreview(null);
+        setTrackLoading(true);
 
         // Fetch track preview and zoom to trail bounds
         fetch(`/api/trails/${props.id as number}/track`)
@@ -197,6 +233,7 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
               coordinates: [number, number][];
               bbox: [number, number, number, number] | null;
             }) => {
+              setTrackLoading(false);
               if (data.coordinates.length >= 2) {
                 setTrackPreview({
                   color: EFFORT_COLORS[effortLevel] ?? '#94a3b8',
@@ -219,7 +256,7 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
                     [data.bbox[0], data.bbox[1]],
                     [data.bbox[2], data.bbox[3]],
                   ],
-                  { padding: 60, maxZoom: 14, duration: 700 },
+                  { padding: { top: 80, bottom: 60, left: 60, right: 60 }, maxZoom: 14, duration: 700 },
                 );
               } else {
                 mapRef.current?.flyTo({ center: coords, zoom: 13, duration: 600 });
@@ -227,6 +264,7 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
             },
           )
           .catch(() => {
+            setTrackLoading(false);
             mapRef.current?.flyTo({ center: coords, zoom: 13, duration: 600 });
           });
       }
@@ -359,7 +397,7 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
           <Popup
             longitude={popup.lng}
             latitude={popup.lat}
-            anchor="bottom"
+            anchor={popup.anchor}
             onClose={clearTrailSelection}
             closeButton={false}
             maxWidth="260px"
@@ -382,12 +420,22 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
               <p className="mb-2 text-xs text-slate-500">
                 {popup.distance_km.toFixed(1)} {labels.km}
               </p>
-              <Link
-                href={`/${locale}/trail/${popup.country}/${popup.slug}`}
-                className="block rounded-md bg-slate-900 px-3 py-1.5 text-center text-xs font-medium text-white hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
-              >
-                {labels.viewTrail}
-              </Link>
+              {trackLoading ? (
+                <div className="flex items-center justify-center gap-2 rounded-md bg-slate-100 px-3 py-1.5 dark:bg-slate-800">
+                  <svg className="h-3 w-3 animate-spin text-slate-400" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                  </svg>
+                  <span className="text-xs text-slate-400">{labels.loading}</span>
+                </div>
+              ) : (
+                <Link
+                  href={`/${locale}/trail/${popup.country}/${popup.slug}`}
+                  className="block rounded-md bg-slate-900 px-3 py-1.5 text-center text-xs font-medium text-white hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
+                >
+                  {labels.viewTrail}
+                </Link>
+              )}
             </div>
           </Popup>
         )}
