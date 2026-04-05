@@ -32,6 +32,7 @@ interface MapPopupProps {
   onDeleteAnnotation?: (id: string) => void;
   savedRouteId?: string | null;
   currentAnnotation?: Annotation | null;
+  hideNotes?: boolean;
 }
 
 function getWindEffectIcon(effect: string) {
@@ -58,6 +59,7 @@ export function MapPopup({
   onDeleteAnnotation,
   savedRouteId,
   currentAnnotation,
+  hideNotes = false,
 }: MapPopupProps) {
   const [showStreetView, setShowStreetView] = useState(false);
   const [streetViewAvailable, setStreetViewAvailable] = useState<boolean | null>(null);
@@ -143,7 +145,7 @@ export function MapPopup({
     ? tw(popupInfo.weather.weatherCode.toString() as any)
     : WEATHER_CODES[popupInfo.weather.weatherCode]?.description || tt('unknownWeather');
 
-  const noteSection = showNote ? (
+  const noteSection = !hideNotes && showNote ? (
     currentAnnotation && !isEditing ? (
       // Display existing note inline
       <div className="bg-amber-500/10 mt-2 rounded-lg px-2.5 py-2">
@@ -253,27 +255,29 @@ export function MapPopup({
             </span>
           )}
           {/* Note toggle button */}
-          <button
-            className={`flex h-6 w-6 items-center justify-center rounded-full transition-colors ${
-              currentAnnotation
-                ? 'bg-amber-500 text-white'
-                : showNote
-                  ? 'bg-amber-500/20 text-amber-600'
-                  : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
-            }`}
-            title={ta('addNote')}
-            onClick={() => {
-              if (showNote && !currentAnnotation) {
-                setShowNote(false);
-                setNoteText('');
-              } else {
-                setShowNote(true);
-                if (!currentAnnotation) setIsEditing(false);
-              }
-            }}
-          >
-            <MessageSquare className="h-3 w-3" />
-          </button>
+          {!hideNotes && (
+            <button
+              className={`flex h-6 w-6 items-center justify-center rounded-full transition-colors ${
+                currentAnnotation
+                  ? 'bg-amber-500 text-white'
+                  : showNote
+                    ? 'bg-amber-500/20 text-amber-600'
+                    : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+              }`}
+              title={ta('addNote')}
+              onClick={() => {
+                if (showNote && !currentAnnotation) {
+                  setShowNote(false);
+                  setNoteText('');
+                } else {
+                  setShowNote(true);
+                  if (!currentAnnotation) setIsEditing(false);
+                }
+              }}
+            >
+              <MessageSquare className="h-3 w-3" />
+            </button>
+          )}
         </div>
       </div>
 

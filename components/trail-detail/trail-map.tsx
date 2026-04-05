@@ -12,6 +12,10 @@ import { useTrailTerrain } from './use-trail-terrain';
 import { Button } from '@/components/ui/button';
 import type { EscapePoint } from './escape-points-section';
 import type { WaterSource } from './water-sources-section';
+import { MapPopup } from '@/components/route-map/map-popup';
+import type { MapPopupInfo } from '@/lib/types';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { calculateBearing } from '@/lib/geometry';
 
 interface TrackPoint {
   lat: number;
@@ -132,6 +136,78 @@ export default function TrailMap({
   const [enable3D, setEnable3D] = useState(false);
   const mapStyle = useTrailMapStyle(mapType);
   const { terrainLoading } = useTrailTerrain(mapRef, mapStyle, enable3D);
+  const isMobile = useIsMobile();
+
+  const [popupInfo, setPopupInfo] = useState<MapPopupInfo | null>(null);
+
+  const handleMapClick = useCallback(
+    (e: any) => {
+      const { lng, lat } = e.lngLat;
+      if (trackProfile.length === 0) return;
+
+      let best = trackProfile[0];
+      let bestIdx = 0;
+      let bestDistSq = Infinity;
+
+      for (let i = 0; i < trackProfile.length; i++) {
+        const p = trackProfile[i];
+        const dlat = p.lat - lat;
+        const dlng = p.lng - lng;
+        const dsq = dlat * dlat + dlng * dlng;
+        if (dsq < bestDistSq) {
+          bestDistSq = dsq;
+          best = p;
+          bestIdx = i;
+        }
+      }
+
+      // ~0.003° ≈ 330 m threshold
+      if (bestDistSq > 0.003 * 0.003) {
+        setPopupInfo(null);
+        return;
+      }
+
+      let slope = 0;
+      let bearing = 0;
+
+      if (bestIdx < trackProfile.length - 1) {
+        const p1 = trackProfile[bestIdx];
+        const p2 = trackProfile[bestIdx + 1];
+        bearing = calculateBearing({ lat: p1.lat, lon: p1.lng }, { lat: p2.lat, lon: p2.lng });
+        const distDiff = (p2.d - p1.d) * 1000;
+        const eleDiff = (p2.e || 0) - (p1.e || 0);
+        slope = distDiff > 0.1 ? (eleDiff / distDiff) * 100 : 0;
+      }
+
+      setPopupInfo({
+        point: {
+          lat: best.lat,
+          lon: best.lng,
+          distanceFromStart: best.d,
+          ele: best.e ?? undefined,
+          slope,
+        },
+        weather: {
+          temperature: 0,
+          apparentTemperature: 0,
+          humidity: 0,
+          precipitation: 0,
+          precipitationProbability: 0,
+          weatherCode: 0,
+          windSpeed: 0,
+          windDirection: 0,
+          windGusts: 0,
+          cloudCover: 0,
+          visibility: 0,
+          time: new Date().toISOString(),
+        },
+        windEffect: 'tailwind',
+        index: -1,
+        bearing,
+      });
+    },
+    [trackProfile],
+  );
 
   // Tilt map when switching 3D on/off.
   // When enabling 3D, wait for the terrain tiles to finish loading before pitching
@@ -288,6 +364,7 @@ export default function TrailMap({
         }}
         style={{ width: '100%', height: '100%' }}
         mapStyle={mapStyle}
+        onClick={handleMapClick}
         onLoad={(e) => {
           e.target.fitBounds(
             [
@@ -454,7 +531,24 @@ export default function TrailMap({
             <div className="h-3.5 w-3.5 rounded-full border-2 border-white bg-amber-400 shadow-md" />
           </Marker>
         )}
+
+        {popupInfo && !isMobile && (
+          <MapPopup
+            popupInfo={popupInfo}
+            onClose={() => setPopupInfo(null)}
+            hideNotes={true}
+          />
+        )}
       </Map>
+
+      {popupInfo && isMobile && (
+        <MapPopup
+          popupInfo={popupInfo}
+          onClose={() => setPopupInfo(null)}
+          mobileMode
+          hideNotes={true}
+        />
+      )}
     </div>
   );
 }
