@@ -14,6 +14,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import type { FeatureCollection, Point, LineString } from 'geojson';
 import maplibregl, { GeoJSONSource } from 'maplibre-gl';
 import Link from 'next/link';
+import { X } from 'lucide-react';
 import type { TrailSearchParams } from '@/lib/trails';
 import { transformRequest } from '@/lib/map-transform';
 import type { TrailMapLayerType } from '@/lib/types';
@@ -27,34 +28,19 @@ const EFFORT_COLORS: Record<string, string> = {
   very_hard: '#f43f5e',
 };
 
-interface PopupInfo {
+interface SelectedTrailInfo {
   lng: number;
   lat: number;
-  anchor: PositionAnchor;
   name: string;
   trail_code: string | null;
   distance_km: number;
   effort_level: string;
   slug: string;
   country: string;
-}
-
-function computeAnchor(mapRef: React.RefObject<MapRef | null>, lng: number, lat: number): PositionAnchor {
-  const map = mapRef.current?.getMap();
-  if (!map) return 'bottom';
-  const canvas = map.getCanvas();
-  const pt = map.project([lng, lat]);
-  const h = canvas.clientHeight;
-  const w = canvas.clientWidth;
-  const top = pt.y < h * 0.4;
-  const left = pt.x < w * 0.3;
-  const right = pt.x > w * 0.7;
-  if (top && left) return 'top-left';
-  if (top && right) return 'top-right';
-  if (top) return 'top';
-  if (left) return 'bottom-left';
-  if (right) return 'bottom-right';
-  return 'bottom';
+  elevation_gain_m?: number;
+  elevation_loss_m?: number;
+  elevation_min_m?: number;
+  elevation_max_m?: number;
 }
 
 interface TrailsMapProps {
@@ -71,6 +57,11 @@ interface TrailsMapProps {
       veryHard: string;
     };
     km: string;
+    meters: string;
+    elevationGain: string;
+    elevationLoss: string;
+    lowPoint: string;
+    highPoint: string;
   };
 }
 
@@ -111,7 +102,7 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
   const mapStyle = useTrailMapStyle(mapType);
   const [geojson, setGeojson] = useState<FeatureCollection<Point> | null>(null);
   const [loading, setLoading] = useState(true);
-  const [popup, setPopup] = useState<PopupInfo | null>(null);
+  const [selectedTrail, setSelectedTrail] = useState<SelectedTrailInfo | null>(null);
   const [trackPreview, setTrackPreview] = useState<TrackPreview | null>(null);
   const [trackLoading, setTrackLoading] = useState(false);
   const [cursor, setCursor] = useState<string>('grab');
@@ -120,7 +111,7 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    setPopup(null);
+    setSelectedTrail(null);
     setTrackPreview(null);
 
     fetch(buildGeoUrl(searchParams))
@@ -178,7 +169,7 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
   }, [geojson]);
 
   const clearTrailSelection = useCallback(() => {
-    setPopup(null);
+    setSelectedTrail(null);
     setTrackPreview(null);
     setTrackLoading(false);
   }, []);
@@ -211,16 +202,19 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
         const coords = (feature.geometry as GeoJSON.Point).coordinates as [number, number];
         const effortLevel = props.effort_level as string;
 
-        setPopup({
+        setSelectedTrail({
           lng: coords[0],
           lat: coords[1],
-          anchor: computeAnchor(mapRef, coords[0], coords[1]),
           name: props.name as string,
           trail_code: props.trail_code as string | null,
           distance_km: props.distance_km as number,
           effort_level: effortLevel,
           slug: props.slug as string,
           country: props.country as string,
+          elevation_gain_m: props.elevation_gain_m as number | undefined,
+          elevation_loss_m: props.elevation_loss_m as number | undefined,
+          elevation_min_m: props.elevation_min_m as number | undefined,
+          elevation_max_m: props.elevation_max_m as number | undefined,
         });
         setTrackPreview(null);
         setTrackLoading(true);
@@ -399,51 +393,102 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
           </Source>
         )}
 
-        {popup && (
-          <Popup
-            longitude={popup.lng}
-            latitude={popup.lat}
-            anchor={popup.anchor}
-            onClose={clearTrailSelection}
-            closeButton={false}
-            maxWidth="260px"
-          >
-            <div className="p-2 text-slate-900 dark:text-white">
-              <div className="mb-1 flex items-center gap-2">
-                {popup.trail_code && (
+        {selectedTrail && (
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 w-[90%] max-w-sm rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900 overflow-hidden">
+            <div className="relative p-4">
+              <button
+                onClick={clearTrailSelection}
+                className="absolute top-3 right-3 rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300 transition-colors"
+                aria-label="Close"
+              >
+                <X className="h-4 w-4" />
+              </button>
+
+              <div className="mb-2 flex flex-wrap items-center gap-2 pr-6">
+                {selectedTrail.trail_code && (
                   <span
-                    className="rounded-full px-2 py-0.5 text-xs font-bold text-white"
-                    style={{ backgroundColor: EFFORT_COLORS[popup.effort_level] ?? '#94a3b8' }}
+                    className="rounded-full px-2.5 py-0.5 text-[10px] font-bold text-white shadow-sm"
+                    style={{ backgroundColor: EFFORT_COLORS[selectedTrail.effort_level] ?? '#94a3b8' }}
                   >
-                    {popup.trail_code}
+                    {selectedTrail.trail_code}
                   </span>
                 )}
-                <span className="text-xs text-slate-500">
-                  {getEffortLabel(popup.effort_level, labels)}
+                <span
+                  className="rounded-full px-2 py-0.5 text-[10px] font-bold shadow-sm"
+                  style={{
+                    backgroundColor: `${EFFORT_COLORS[selectedTrail.effort_level] ?? '#94a3b8'}20`,
+                    color: EFFORT_COLORS[selectedTrail.effort_level] ?? '#94a3b8',
+                  }}
+                >
+                  {getEffortLabel(selectedTrail.effort_level, labels)}
                 </span>
               </div>
-              <p className="mb-1 text-sm leading-snug font-semibold">{popup.name}</p>
-              <p className="mb-2 text-xs text-slate-500">
-                {popup.distance_km.toFixed(1)} {labels.km}
-              </p>
+
+              <h3 className="mb-3 pr-6 text-sm font-bold leading-tight text-slate-900 dark:text-white line-clamp-2">
+                {selectedTrail.name}
+              </h3>
+
+              <div className="mb-4 grid grid-cols-3 gap-2">
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-bold tracking-wider uppercase text-slate-500">
+                    {labels.km}
+                  </span>
+                  <span className="text-xs font-semibold tabular-nums text-slate-900 dark:text-white">
+                    {selectedTrail.distance_km.toFixed(1)}
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-bold tracking-wider uppercase text-emerald-500">
+                    D+
+                  </span>
+                  <span className="text-xs font-semibold tabular-nums text-slate-900 dark:text-white">
+                    {selectedTrail.elevation_gain_m != null ? `${selectedTrail.elevation_gain_m}m` : '--'}
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-bold tracking-wider uppercase text-red-500">
+                    D-
+                  </span>
+                  <span className="text-xs font-semibold tabular-nums text-slate-900 dark:text-white">
+                    {selectedTrail.elevation_loss_m != null ? `${selectedTrail.elevation_loss_m}m` : '--'}
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-bold tracking-wider uppercase text-slate-500 line-clamp-1" title={labels.lowPoint}>
+                    {labels.lowPoint}
+                  </span>
+                  <span className="text-xs font-semibold tabular-nums text-slate-900 dark:text-white">
+                    {selectedTrail.elevation_min_m != null ? `${selectedTrail.elevation_min_m}m` : '--'}
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-bold tracking-wider uppercase text-slate-500 line-clamp-1" title={labels.highPoint}>
+                    {labels.highPoint}
+                  </span>
+                  <span className="text-xs font-semibold tabular-nums text-slate-900 dark:text-white">
+                    {selectedTrail.elevation_max_m != null ? `${selectedTrail.elevation_max_m}m` : '--'}
+                  </span>
+                </div>
+              </div>
+
               {trackLoading ? (
-                <div className="flex items-center justify-center gap-2 rounded-md bg-slate-100 px-3 py-1.5 dark:bg-slate-800">
-                  <svg className="h-3 w-3 animate-spin text-slate-400" viewBox="0 0 24 24" fill="none">
+                <div className="flex h-9 w-full items-center justify-center gap-2 rounded-lg bg-slate-100 dark:bg-slate-800">
+                  <svg className="h-3.5 w-3.5 animate-spin text-slate-400" viewBox="0 0 24 24" fill="none">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
                   </svg>
-                  <span className="text-xs text-slate-400">{labels.loading}</span>
+                  <span className="text-xs font-medium text-slate-500">{labels.loading}</span>
                 </div>
               ) : (
                 <Link
-                  href={`/${locale}/trail/${popup.country}/${popup.slug}`}
-                  className="block rounded-md bg-slate-900 px-3 py-1.5 text-center text-xs font-medium text-white hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
+                  href={`/${locale}/trail/${selectedTrail.country}/${selectedTrail.slug}`}
+                  className="flex h-9 w-full items-center justify-center rounded-lg bg-slate-900 text-xs font-bold text-white transition-colors hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
                 >
                   {labels.viewTrail}
                 </Link>
               )}
             </div>
-          </Popup>
+          </div>
         )}
       </Map>
     </div>

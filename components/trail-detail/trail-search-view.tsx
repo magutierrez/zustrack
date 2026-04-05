@@ -87,6 +87,11 @@ export async function TrailSearchView({ locale, sp }: { locale: string; sp: Trai
       veryHard: tTrail('veryHard'),
     },
     km: tTrail('km'),
+    meters: tTrail('meters'),
+    elevationGain: tTrail('elevationGain'),
+    elevationLoss: tTrail('elevationLoss'),
+    lowPoint: tTrail('lowPoint'),
+    highPoint: tTrail('highPoint'),
   };
 
   const buildPageUrl = (p: number) => {

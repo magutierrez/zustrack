@@ -21,6 +21,11 @@ interface TrailsMapWrapperProps {
     noTrails: string;
     effort: { easy: string; moderate: string; hard: string; veryHard: string };
     km: string;
+    meters: string;
+    elevationGain: string;
+    elevationLoss: string;
+    lowPoint: string;
+    highPoint: string;
   };
 }
 
