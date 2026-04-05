@@ -898,6 +898,9 @@
     "filterSeason": "Season",
     "filterMore": "Filters",
     "filterProfile": "Accessibility",
+    "filterRegion": "Region",
+    "regionPlaceholder": "Search region…",
+    "noRegions": "No regions found",
     "viewResults": "View results"
   },
   "TrailMap": {

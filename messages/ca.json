@@ -898,6 +898,9 @@
     "filterSeason": "Temporada",
     "filterMore": "Filtres",
     "filterProfile": "Accessibilitat",
+    "filterRegion": "Regió",
+    "regionPlaceholder": "Cerca regió…",
+    "noRegions": "Sense resultats",
     "viewResults": "Veure resultats"
   },
   "TrailMap": {

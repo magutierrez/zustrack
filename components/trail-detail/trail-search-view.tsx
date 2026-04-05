@@ -2,7 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { Header } from '@/app/_components/header';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { fetchTrails, getTrailRanges } from '@/lib/trails';
+import { fetchTrails, getTrailRanges, getRegions } from '@/lib/trails';
 import type { TrailSearchParams } from '@/lib/trails';
 import { TrailCard } from './trail-card';
 import { TrailFilters } from './trail-filters';
@@ -14,9 +14,10 @@ export async function TrailSearchView({ locale, sp }: { locale: string; sp: Trai
   const tTrail = await getTranslations({ locale, namespace: 'TrailPage' });
 
   const isMapView = sp.view === 'map';
-  const [{ trails, count, page, totalPages }, ranges] = await Promise.all([
+  const [{ trails, count, page, totalPages }, ranges, regions] = await Promise.all([
     fetchTrails(sp),
     getTrailRanges(),
+    getRegions('es'),
   ]);
 
   const filterLabels = {
@@ -44,6 +45,9 @@ export async function TrailSearchView({ locale, sp }: { locale: string; sp: Trai
     yearRound: tTrail('yearRound'),
     avoidSummer: tTrail('avoidSummer'),
     avoidWinter: tTrail('avoidWinter'),
+    filterRegion: t('filterRegion'),
+    regionPlaceholder: t('regionPlaceholder'),
+    noRegions: t('noRegions'),
   };
 
   const cardLabels = {
@@ -66,6 +70,7 @@ export async function TrailSearchView({ locale, sp }: { locale: string; sp: Trai
     if (sp.child) params.set('child', sp.child);
     if (sp.pet) params.set('pet', sp.pet);
     if (sp.season) params.set('season', sp.season);
+    if (sp.region) params.set('region', sp.region);
     if (sp.minDist) params.set('minDist', sp.minDist);
     if (sp.maxDist) params.set('maxDist', sp.maxDist);
     if (sp.minGain) params.set('minGain', sp.minGain);
@@ -101,9 +106,11 @@ export async function TrailSearchView({ locale, sp }: { locale: string; sp: Trai
               minGain: sp.minGain ?? '',
               maxGain: sp.maxGain ?? '',
               season: sp.season ?? '',
+              region: sp.region ?? '',
             }}
             labels={filterLabels}
             ranges={ranges}
+            regions={regions}
           />
         </div>
       </div>

@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useCallback, useState, useTransition } from 'react';
-import { Search, X, SlidersHorizontal } from 'lucide-react';
+import { Search, X, SlidersHorizontal, ChevronsUpDown, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Slider } from '@/components/ui/slider';
 import {
@@ -13,6 +13,15 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
 import type { TrailRanges } from '@/lib/trails';
 
 // ---------------------------------------------------------------------------
@@ -44,6 +53,9 @@ interface FilterLabels {
   yearRound: string;
   avoidSummer: string;
   avoidWinter: string;
+  filterRegion: string;
+  regionPlaceholder: string;
+  noRegions: string;
 }
 
 interface Filters {
@@ -58,6 +70,7 @@ interface Filters {
   minGain: string;
   maxGain: string;
   season: string;
+  region: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -185,6 +198,71 @@ function SliderCard({
   );
 }
 
+function RegionCombobox({
+  regions,
+  value,
+  onChange,
+  placeholder,
+  noRegions,
+  allLabel,
+}: {
+  regions: string[];
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+  noRegions: string;
+  allLabel: string;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          className={cn(
+            'flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-all',
+            value
+              ? 'border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-900'
+              : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400',
+          )}
+        >
+          <span className="max-w-[140px] truncate">{value || allLabel}</span>
+          <ChevronsUpDown className="h-3 w-3 shrink-0 opacity-50" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[220px] p-0" align="start">
+        <Command>
+          <CommandInput placeholder={placeholder} className="h-9" />
+          <CommandList>
+            <CommandEmpty>{noRegions}</CommandEmpty>
+            <CommandGroup>
+              {value && (
+                <CommandItem
+                  value="__all__"
+                  onSelect={() => { onChange(''); setOpen(false); }}
+                  className="text-slate-500"
+                >
+                  {allLabel}
+                </CommandItem>
+              )}
+              {regions.map((r) => (
+                <CommandItem
+                  key={r}
+                  value={r}
+                  onSelect={(selected) => { onChange(selected === value ? '' : selected); setOpen(false); }}
+                >
+                  <Check className={cn('mr-2 h-3.5 w-3.5', value === r ? 'opacity-100' : 'opacity-0')} />
+                  {r}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Main component
 // ---------------------------------------------------------------------------
@@ -193,10 +271,12 @@ export function TrailFilters({
   initial,
   labels,
   ranges,
+  regions,
 }: {
   initial: Filters;
   labels: FilterLabels;
   ranges: TrailRanges;
+  regions: string[];
 }) {
   const router        = useRouter();
   const pathname      = usePathname();
@@ -241,7 +321,7 @@ export function TrailFilters({
     setDistRange([ranges.minDistance, ranges.maxDistance]);
     setGainRange([ranges.minElevation, ranges.maxElevation]);
     startTransition(() => router.push(pathname));
-  }, [router, pathname, ranges]);
+  }, [router, pathname, ranges]);  // region is cleared by router.push(pathname) which removes all params
 
   // ── Derived state ────────────────────────────────────────────────────────
 
@@ -251,6 +331,7 @@ export function TrailFilters({
   const child  = searchParams.get('child')  ?? '';
   const pet    = searchParams.get('pet')    ?? '';
   const season = searchParams.get('season') ?? '';
+  const region = searchParams.get('region') ?? '';
 
   const activeCount = [
     initial.effort,
@@ -259,6 +340,7 @@ export function TrailFilters({
     initial.child === 'true' ? 'x' : '',
     initial.pet   === 'true' ? 'x' : '',
     initial.season,
+    initial.region,
     initial.minDist,
     initial.maxDist,
     initial.minGain,
@@ -339,6 +421,17 @@ export function TrailFilters({
         🐾 {labels.filterPet}
       </Chip>
     </>
+  );
+
+  const regionCombobox = (
+    <RegionCombobox
+      regions={regions}
+      value={region}
+      onChange={(v) => updateParam('region', v)}
+      placeholder={labels.regionPlaceholder}
+      noRegions={labels.noRegions}
+      allLabel={labels.filterRegion}
+    />
   );
 
   const sliders = (
@@ -449,6 +542,9 @@ export function TrailFilters({
               <FilterSection label={labels.filterShape}>{shapeChips}</FilterSection>
               <FilterSection label={labels.filterSeason}>{seasonChips}</FilterSection>
               <FilterSection label={labels.filterProfile}>{profileChips}</FilterSection>
+              {regions.length > 0 && (
+                <FilterSection label={labels.filterRegion}>{regionCombobox}</FilterSection>
+              )}
               <div className="space-y-1.5">
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                   {labels.filterDistance} / {labels.filterElevation}
@@ -479,6 +575,12 @@ export function TrailFilters({
         <FilterSection label={labels.filterProfile}>{profileChips}</FilterSection>
         <VSep />
         <FilterSection label={labels.filterSeason}>{seasonChips}</FilterSection>
+        {regions.length > 0 && (
+          <>
+            <VSep />
+            <FilterSection label={labels.filterRegion}>{regionCombobox}</FilterSection>
+          </>
+        )}
       </div>
 
       {/* ── Row 3 desktop: sliders ──────────────────────────────────────── */}
