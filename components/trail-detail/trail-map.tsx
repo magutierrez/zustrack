@@ -3,8 +3,10 @@
 import { useRef, useEffect, useMemo, useCallback, useState } from 'react';
 import Map, { NavigationControl, Source, Layer, Marker, type MapRef } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import maplibregl from 'maplibre-gl';
 import { getSlopeColorHex } from '@/lib/slope-colors';
 import { transformRequest } from '@/lib/map-transform';
+import { addArrowImage } from '@/lib/map-utils';
 import type { TrailMapLayerType } from '@/lib/types';
 import { useTrailMapStyle } from './use-trail-map-style';
 import { TrailLayerControl } from './trail-layer-control';
@@ -366,7 +368,10 @@ export default function TrailMap({
         mapStyle={mapStyle}
         onClick={handleMapClick}
         onLoad={(e) => {
-          e.target.fitBounds(
+          const map = e.target as maplibregl.Map;
+          addArrowImage(map);
+          map.on('style.load', () => addArrowImage(map));
+          map.fitBounds(
             [
               [minLng, minLat],
               [maxLng, maxLat],
@@ -421,8 +426,24 @@ export default function TrailMap({
               'line-gradient': ['interpolate', ['linear'], ['line-progress'], ...gradientStops],
             }}
           />
-        </Source>
-
+          <Layer
+            id="trail-direction-arrows"
+            type="symbol"
+            layout={{
+              'symbol-placement': 'line',
+              'symbol-spacing': 120,
+              'icon-image': 'route-arrow',
+              'icon-size': ['interpolate', ['linear'], ['zoom'], 10, 0.45, 18, 0.85],
+              'icon-allow-overlap': true,
+              'icon-keep-upright': false,
+              'icon-rotation-alignment': 'map',
+            }}
+            paint={{
+              'icon-color': mapType === 'osm' ? '#1368CE' : '#000000',
+              'icon-opacity': 0.6 * baseOpacity,
+            }}
+          />
+          </Source>
         {/* Segment highlight overlay */}
         {selectedRange && highlightGeoJSON && highlightGradientStops && (
           <Source id="trail-highlight" type="geojson" data={highlightGeoJSON} lineMetrics>

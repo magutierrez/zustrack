@@ -1,22 +1,21 @@
 'use client';
 
-import { useRef, useEffect, useState, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Map, {
+  Layer,
+  type MapLayerMouseEvent,
+  type MapRef,
   NavigationControl,
   Source,
-  Layer,
-  Popup,
-  type MapRef,
-  type MapLayerMouseEvent,
 } from 'react-map-gl/maplibre';
-import type { PositionAnchor } from 'maplibre-gl';
-import 'maplibre-gl/dist/maplibre-gl.css';
-import type { FeatureCollection, Point, LineString } from 'geojson';
 import maplibregl, { GeoJSONSource } from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
+import type { FeatureCollection, LineString, Point } from 'geojson';
 import Link from 'next/link';
 import { X } from 'lucide-react';
 import type { TrailSearchParams } from '@/lib/trails';
 import { transformRequest } from '@/lib/map-transform';
+import { addArrowImage } from '@/lib/map-utils';
 import { getSlopeColorHex } from '@/lib/slope-colors';
 import type { TrailMapLayerType } from '@/lib/types';
 import { useTrailMapStyle } from './use-trail-map-style';
@@ -137,18 +136,18 @@ interface TrailsMapProps {
 
 function buildGeoUrl(sp: TrailSearchParams): string {
   const params = new URLSearchParams();
-  if (sp.q)       params.set('q',       sp.q);
-  if (sp.effort)  params.set('effort',  sp.effort);
-  if (sp.type)    params.set('type',    sp.type);
-  if (sp.shape)   params.set('shape',   sp.shape);
-  if (sp.child)   params.set('child',   sp.child);
-  if (sp.pet)     params.set('pet',     sp.pet);
+  if (sp.q) params.set('q', sp.q);
+  if (sp.effort) params.set('effort', sp.effort);
+  if (sp.type) params.set('type', sp.type);
+  if (sp.shape) params.set('shape', sp.shape);
+  if (sp.child) params.set('child', sp.child);
+  if (sp.pet) params.set('pet', sp.pet);
   if (sp.minDist) params.set('minDist', sp.minDist);
   if (sp.maxDist) params.set('maxDist', sp.maxDist);
   if (sp.minGain) params.set('minGain', sp.minGain);
   if (sp.maxGain) params.set('maxGain', sp.maxGain);
-  if (sp.season)  params.set('season',  sp.season);
-  if (sp.region)  params.set('region',  sp.region);
+  if (sp.season) params.set('season', sp.season);
+  if (sp.region) params.set('region', sp.region);
   const qs = params.toString();
   return `/api/trails/geo${qs ? `?${qs}` : ''}`;
 }
@@ -323,7 +322,11 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
                     [data.bbox[0], data.bbox[1]],
                     [data.bbox[2], data.bbox[3]],
                   ],
-                  { padding: { top: 80, bottom: 60, left: 60, right: 60 }, maxZoom: 14, duration: 700 },
+                  {
+                    padding: { top: 80, bottom: 60, left: 60, right: 60 },
+                    maxZoom: 14,
+                    duration: 700,
+                  },
                 );
               } else {
                 mapRef.current?.flyTo({ center: coords, zoom: 13, duration: 600 });
@@ -365,6 +368,11 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
         interactiveLayerIds={['trail-clusters', 'trail-points']}
         cursor={cursor}
         onClick={handleClick}
+        onLoad={(e) => {
+          const map = e.target as maplibregl.Map;
+          addArrowImage(map);
+          map.on('style.load', () => addArrowImage(map));
+        }}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         transformRequest={transformRequest}
@@ -491,15 +499,32 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
                 ],
               }}
             />
+            <Layer
+              id="track-preview-direction-arrows"
+              type="symbol"
+              layout={{
+                'symbol-placement': 'line',
+                'symbol-spacing': 120,
+                'icon-image': 'route-arrow',
+                'icon-size': ['interpolate', ['linear'], ['zoom'], 10, 0.45, 18, 0.85],
+                'icon-allow-overlap': true,
+                'icon-keep-upright': false,
+                'icon-rotation-alignment': 'map',
+              }}
+              paint={{
+                'icon-color': mapType === 'osm' ? '#1368CE' : '#000000',
+                'icon-opacity': 0.6,
+              }}
+            />
           </Source>
         )}
 
         {selectedTrail && (
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 w-[90%] max-w-sm rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900 overflow-hidden">
+          <div className="absolute top-4 left-1/2 z-20 w-[90%] max-w-sm -translate-x-1/2 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900">
             <div className="relative p-4">
               <button
                 onClick={clearTrailSelection}
-                className="absolute top-3 right-3 rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300 transition-colors"
+                className="absolute top-3 right-3 rounded-full p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
                 aria-label="Close"
               >
                 <X className="h-4 w-4" />
@@ -509,7 +534,9 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
                 {selectedTrail.trail_code && (
                   <span
                     className="rounded-full px-2.5 py-0.5 text-[10px] font-bold text-white shadow-sm"
-                    style={{ backgroundColor: EFFORT_COLORS[selectedTrail.effort_level] ?? '#94a3b8' }}
+                    style={{
+                      backgroundColor: EFFORT_COLORS[selectedTrail.effort_level] ?? '#94a3b8',
+                    }}
                   >
                     {selectedTrail.trail_code}
                   </span>
@@ -525,57 +552,82 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
                 </span>
               </div>
 
-              <h3 className="mb-3 pr-6 text-sm font-bold leading-tight text-slate-900 dark:text-white line-clamp-2">
+              <h3 className="mb-3 line-clamp-2 pr-6 text-sm leading-tight font-bold text-slate-900 dark:text-white">
                 {selectedTrail.name}
               </h3>
 
               <div className="mb-4 grid grid-cols-3 gap-2">
                 <div className="flex flex-col">
-                  <span className="text-[9px] font-bold tracking-wider uppercase text-slate-500">
+                  <span className="text-[9px] font-bold tracking-wider text-slate-500 uppercase">
                     {labels.km}
                   </span>
-                  <span className="text-xs font-semibold tabular-nums text-slate-900 dark:text-white">
+                  <span className="text-xs font-semibold text-slate-900 tabular-nums dark:text-white">
                     {selectedTrail.distance_km.toFixed(1)}
                   </span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[9px] font-bold tracking-wider uppercase text-emerald-500">
+                  <span className="text-[9px] font-bold tracking-wider text-emerald-500 uppercase">
                     D+
                   </span>
-                  <span className="text-xs font-semibold tabular-nums text-slate-900 dark:text-white">
-                    {selectedTrail.elevation_gain_m != null ? `${selectedTrail.elevation_gain_m}m` : '--'}
+                  <span className="text-xs font-semibold text-slate-900 tabular-nums dark:text-white">
+                    {selectedTrail.elevation_gain_m != null
+                      ? `${selectedTrail.elevation_gain_m}m`
+                      : '--'}
                   </span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[9px] font-bold tracking-wider uppercase text-red-500">
+                  <span className="text-[9px] font-bold tracking-wider text-red-500 uppercase">
                     D-
                   </span>
-                  <span className="text-xs font-semibold tabular-nums text-slate-900 dark:text-white">
-                    {selectedTrail.elevation_loss_m != null ? `${selectedTrail.elevation_loss_m}m` : '--'}
+                  <span className="text-xs font-semibold text-slate-900 tabular-nums dark:text-white">
+                    {selectedTrail.elevation_loss_m != null
+                      ? `${selectedTrail.elevation_loss_m}m`
+                      : '--'}
                   </span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[9px] font-bold tracking-wider uppercase text-slate-500 line-clamp-1" title={labels.lowPoint}>
+                  <span
+                    className="line-clamp-1 text-[9px] font-bold tracking-wider text-slate-500 uppercase"
+                    title={labels.lowPoint}
+                  >
                     {labels.lowPoint}
                   </span>
-                  <span className="text-xs font-semibold tabular-nums text-slate-900 dark:text-white">
-                    {selectedTrail.elevation_min_m != null ? `${selectedTrail.elevation_min_m}m` : '--'}
+                  <span className="text-xs font-semibold text-slate-900 tabular-nums dark:text-white">
+                    {selectedTrail.elevation_min_m != null
+                      ? `${selectedTrail.elevation_min_m}m`
+                      : '--'}
                   </span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[9px] font-bold tracking-wider uppercase text-slate-500 line-clamp-1" title={labels.highPoint}>
+                  <span
+                    className="line-clamp-1 text-[9px] font-bold tracking-wider text-slate-500 uppercase"
+                    title={labels.highPoint}
+                  >
                     {labels.highPoint}
                   </span>
-                  <span className="text-xs font-semibold tabular-nums text-slate-900 dark:text-white">
-                    {selectedTrail.elevation_max_m != null ? `${selectedTrail.elevation_max_m}m` : '--'}
+                  <span className="text-xs font-semibold text-slate-900 tabular-nums dark:text-white">
+                    {selectedTrail.elevation_max_m != null
+                      ? `${selectedTrail.elevation_max_m}m`
+                      : '--'}
                   </span>
                 </div>
               </div>
 
               {trackLoading ? (
                 <div className="flex h-9 w-full items-center justify-center gap-2 rounded-lg bg-slate-100 dark:bg-slate-800">
-                  <svg className="h-3.5 w-3.5 animate-spin text-slate-400" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <svg
+                    className="h-3.5 w-3.5 animate-spin text-slate-400"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
                   </svg>
                   <span className="text-xs font-medium text-slate-500">{labels.loading}</span>
