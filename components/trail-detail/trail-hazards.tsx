@@ -310,7 +310,7 @@ export function TrailHazards({
 }: {
   trackProfile: TrackPoint[];
   selectedRange?: { start: number; end: number } | null;
-  onSegmentSelect?: (start: number, end: number) => void;
+  onSegmentSelect?: (start: number, end: number, color: string) => void;
   onReset?: () => void;
 }) {
   const t = useTranslations('Hazards');
@@ -495,7 +495,7 @@ export function TrailHazards({
                   variant="outline"
                   size="sm"
                   className="h-7 gap-1.5 px-2 text-[10px] font-bold uppercase transition-colors hover:bg-amber-50 hover:text-amber-700 dark:hover:bg-amber-900/20 dark:hover:text-amber-400"
-                  onClick={() => onSegmentSelect?.(seg.startDist, seg.endDist)}
+                  onClick={() => onSegmentSelect?.(seg.startDist, seg.endDist, fillColor)}
                 >
                   <Map className="h-3 w-3" />
                   {t('showOnMap')}

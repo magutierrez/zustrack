@@ -17,7 +17,7 @@ interface Props {
   trackProfile: TrackPoint[];
   name: string;
   isCircular: boolean;
-  selectedRange?: { start: number; end: number } | null;
+  selectedRange?: { start: number; end: number; color?: string } | null;
   onReset?: () => void;
   hoverDist?: number | null;
   onHoverDist?: (dist: number | null) => void;

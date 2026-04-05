@@ -35,7 +35,7 @@ import { TrailPaceCard } from './trail-pace-card';
 import { TrailCard } from './trail-card';
 import { TrailInfoTabs } from './trail-info-tabs';
 
-type Range = { start: number; end: number };
+type Range = { start: number; end: number; color?: string };
 type POIPoint = { lat: number; lng: number };
 
 function SeasonIcon({ season }: { season: string }) {
@@ -280,7 +280,7 @@ export function TrailDetailPageClient({
               <TrailHazards
                 trackProfile={trackProfile}
                 selectedRange={selectedRange}
-                onSegmentSelect={(start, end) => setSelectedRange({ start, end })}
+                onSegmentSelect={(start, end, color) => setSelectedRange({ start, end, color })}
                 onReset={() => setSelectedRange(null)}
               />
             )}

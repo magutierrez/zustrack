@@ -96,6 +96,7 @@ export interface TrailSearchParams {
   minGain?: string;
   maxGain?: string;
   season?: string; // 'year_round' | 'avoid_summer' | 'avoid_winter'
+  region?: string;
   page?: string;
   view?: string; // 'list' | 'map'
 }
@@ -164,6 +165,7 @@ export async function fetchTrails(sp: TrailSearchParams): Promise<TrailSearchRes
   if (sp.minGain) query = query.gte('elevation_gain_m', parseFloat(sp.minGain));
   if (sp.maxGain) query = query.lte('elevation_gain_m', parseFloat(sp.maxGain));
   if (sp.season) query = query.eq('season_best', sp.season);
+  if (sp.region) query = query.eq('region', sp.region);
 
   query = query.order('difficulty_score').range(offset, offset + TRAILS_PAGE_SIZE - 1);
 
@@ -192,6 +194,19 @@ export async function getTrailRanges(): Promise<TrailRanges> {
     minElevation: Math.floor((minGain.data as { elevation_gain_m: number } | null)?.elevation_gain_m ?? 0),
     maxElevation: Math.ceil((maxGain.data as { elevation_gain_m: number } | null)?.elevation_gain_m ?? 3000),
   };
+}
+
+export async function getRegions(country: string): Promise<string[]> {
+  const { data } = await getSupabase()
+    .from('trails')
+    .select('region')
+    .eq('country', country)
+    .not('region', 'is', null);
+  const seen = new Set<string>();
+  for (const row of (data ?? []) as { region: string | null }[]) {
+    if (row.region) seen.add(row.region);
+  }
+  return Array.from(seen).sort();
 }
 
 export async function getSimilarTrails(

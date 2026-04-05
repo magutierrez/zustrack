@@ -4,7 +4,6 @@ import { useRef, useEffect, useMemo, useCallback, useState } from 'react';
 import Map, { NavigationControl, Source, Layer, Marker, type MapRef } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { getSlopeColorHex } from '@/lib/slope-colors';
-import { haversineDistance } from '@/lib/gpx-parser';
 import { transformRequest } from '@/lib/map-transform';
 import type { TrailMapLayerType } from '@/lib/types';
 import { useTrailMapStyle } from './use-trail-map-style';
@@ -13,6 +12,10 @@ import { useTrailTerrain } from './use-trail-terrain';
 import { Button } from '@/components/ui/button';
 import type { EscapePoint } from './escape-points-section';
 import type { WaterSource } from './water-sources-section';
+import { MapPopup } from '@/components/route-map/map-popup';
+import type { MapPopupInfo } from '@/lib/types';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { calculateBearing } from '@/lib/geometry';
 
 interface TrackPoint {
   lat: number;
@@ -32,7 +35,7 @@ interface TrailMapProps {
   trackProfile: TrackPoint[];
   name: string;
   isCircular: boolean;
-  selectedRange?: { start: number; end: number } | null;
+  selectedRange?: { start: number; end: number; color?: string } | null;
   onReset?: () => void;
   hoverDist?: number | null;
   onHoverDist?: (dist: number | null) => void;
@@ -45,32 +48,59 @@ interface TrailMapProps {
 
 /** Build color-stop stops for MapLibre line-gradient from slope values */
 function buildGradientStops(points: TrackPoint[]): (string | number)[] {
-  if (points.length < 2) return [0, '#10b981'];
-  const totalDist = points[points.length - 1].d;
-  if (totalDist === 0) return [0, '#10b981'];
+  const n = points.length;
+  if (n < 2) return [0, '#10b981', 1, '#10b981'];
+
+  const startDist = points[0].d;
+  const endDist = points[n - 1].d;
+  const totalDist = endDist - startDist;
+
+  if (totalDist <= 0) return [0, '#10b981', 1, '#10b981'];
+
+  // 1. Raw point-to-point slopes
+  const rawSlopes = new Array<number>(n).fill(0);
+  for (let i = 1; i < n; i++) {
+    const distDiffM = (points[i].d - points[i - 1].d) * 1000;
+    const eleDiffM = (points[i].e ?? 0) - (points[i - 1].e ?? 0);
+    if (distDiffM > 0.1) rawSlopes[i] = (eleDiffM / distDiffM) * 100;
+  }
+
+  // 2. 400 m sliding-window smoothing (same as hazard chart)
+  const halfWindowKm = 0.2;
+  const smoothSlopes = new Array<number>(n).fill(0);
+  let left = 0,
+    right = -1,
+    wSum = 0,
+    wCount = 0;
+  for (let i = 0; i < n; i++) {
+    const center = points[i].d;
+    while (right + 1 < n && points[right + 1].d <= center + halfWindowKm) {
+      right++;
+      wSum += rawSlopes[right];
+      wCount++;
+    }
+    while (left <= right && points[left].d < center - halfWindowKm) {
+      wSum -= rawSlopes[left];
+      left++;
+      wCount--;
+    }
+    smoothSlopes[i] = wCount > 0 ? wSum / wCount : 0;
+  }
 
   const stops: (string | number)[] = [];
   let lastProgress = -1;
 
-  for (let i = 0; i < points.length; i++) {
+  for (let i = 0; i < n; i++) {
     const p = points[i];
-    const progress = Math.min(1, Math.max(0, p.d / totalDist));
+    const progress = Math.min(1, Math.max(0, (p.d - startDist) / totalDist));
     // MapLibre requires strictly ascending stop values — skip duplicates
-    if (progress <= lastProgress) continue;
+    if (progress <= lastProgress && i > 0) continue;
 
-    let slope = 0;
-    if (i > 0) {
-      const prev = points[i - 1];
-      const distM = haversineDistance(prev.lat, prev.lng, p.lat, p.lng) * 1000;
-      if (distM > 1 && prev.e !== null && p.e !== null) {
-        slope = ((p.e - prev.e) / distM) * 100;
-      }
-    }
-    stops.push(progress, getSlopeColorHex(slope));
+    stops.push(progress, getSlopeColorHex(smoothSlopes[i]));
     lastProgress = progress;
   }
 
-  if (stops.length === 0) return [0, '#10b981'];
+  if (stops.length === 0) return [0, '#10b981', 1, '#10b981'];
   // Ensure the gradient always starts at 0 and ends at 1
   if ((stops[0] as number) > 0) stops.unshift(0, stops[1]);
   if ((stops[stops.length - 2] as number) < 1) stops.push(1, stops[stops.length - 1]);
@@ -106,6 +136,78 @@ export default function TrailMap({
   const [enable3D, setEnable3D] = useState(false);
   const mapStyle = useTrailMapStyle(mapType);
   const { terrainLoading } = useTrailTerrain(mapRef, mapStyle, enable3D);
+  const isMobile = useIsMobile();
+
+  const [popupInfo, setPopupInfo] = useState<MapPopupInfo | null>(null);
+
+  const handleMapClick = useCallback(
+    (e: any) => {
+      const { lng, lat } = e.lngLat;
+      if (trackProfile.length === 0) return;
+
+      let best = trackProfile[0];
+      let bestIdx = 0;
+      let bestDistSq = Infinity;
+
+      for (let i = 0; i < trackProfile.length; i++) {
+        const p = trackProfile[i];
+        const dlat = p.lat - lat;
+        const dlng = p.lng - lng;
+        const dsq = dlat * dlat + dlng * dlng;
+        if (dsq < bestDistSq) {
+          bestDistSq = dsq;
+          best = p;
+          bestIdx = i;
+        }
+      }
+
+      // ~0.003° ≈ 330 m threshold
+      if (bestDistSq > 0.003 * 0.003) {
+        setPopupInfo(null);
+        return;
+      }
+
+      let slope = 0;
+      let bearing = 0;
+
+      if (bestIdx < trackProfile.length - 1) {
+        const p1 = trackProfile[bestIdx];
+        const p2 = trackProfile[bestIdx + 1];
+        bearing = calculateBearing({ lat: p1.lat, lon: p1.lng }, { lat: p2.lat, lon: p2.lng });
+        const distDiff = (p2.d - p1.d) * 1000;
+        const eleDiff = (p2.e || 0) - (p1.e || 0);
+        slope = distDiff > 0.1 ? (eleDiff / distDiff) * 100 : 0;
+      }
+
+      setPopupInfo({
+        point: {
+          lat: best.lat,
+          lon: best.lng,
+          distanceFromStart: best.d,
+          ele: best.e ?? undefined,
+          slope,
+        },
+        weather: {
+          temperature: 0,
+          apparentTemperature: 0,
+          humidity: 0,
+          precipitation: 0,
+          precipitationProbability: 0,
+          weatherCode: 0,
+          windSpeed: 0,
+          windDirection: 0,
+          windGusts: 0,
+          cloudCover: 0,
+          visibility: 0,
+          time: new Date().toISOString(),
+        },
+        windEffect: 'tailwind',
+        index: -1,
+        bearing,
+      });
+    },
+    [trackProfile],
+  );
 
   // Tilt map when switching 3D on/off.
   // When enabling 3D, wait for the terrain tiles to finish loading before pitching
@@ -143,12 +245,13 @@ export default function TrailMap({
   const minLng = Math.min(...lngs);
   const maxLng = Math.max(...lngs);
 
-  // Highlight GeoJSON for the selected segment
-  const highlightGeoJSON = useMemo<GeoJSON.FeatureCollection | null>(() => {
-    if (!selectedRange) return null;
+  // Highlight GeoJSON and gradient for the selected segment
+  const { highlightGeoJSON, highlightGradientStops } = useMemo(() => {
+    if (!selectedRange) return { highlightGeoJSON: null, highlightGradientStops: null };
     const pts = trackProfile.filter((p) => p.d >= selectedRange.start && p.d <= selectedRange.end);
-    if (pts.length < 2) return null;
-    return {
+    if (pts.length < 2) return { highlightGeoJSON: null, highlightGradientStops: null };
+
+    const geojson: GeoJSON.FeatureCollection = {
       type: 'FeatureCollection',
       features: [
         {
@@ -160,6 +263,11 @@ export default function TrailMap({
           },
         },
       ],
+    };
+
+    return {
+      highlightGeoJSON: geojson,
+      highlightGradientStops: buildGradientStops(pts),
     };
   }, [selectedRange, trackProfile]);
 
@@ -256,6 +364,7 @@ export default function TrailMap({
         }}
         style={{ width: '100%', height: '100%' }}
         mapStyle={mapStyle}
+        onClick={handleMapClick}
         onLoad={(e) => {
           e.target.fitBounds(
             [
@@ -295,6 +404,13 @@ export default function TrailMap({
             paint={{ 'line-color': '#000', 'line-width': 7, 'line-opacity': 0.15 * baseOpacity }}
           />
           <Layer
+            id="trail-casing"
+            type="line"
+            source="trail"
+            layout={{ 'line-join': 'round', 'line-cap': 'round' }}
+            paint={{ 'line-color': '#ffffff', 'line-width': 6.5, 'line-opacity': 0.9 * baseOpacity }}
+          />
+          <Layer
             id="trail-line"
             type="line"
             source="trail"
@@ -308,19 +424,32 @@ export default function TrailMap({
         </Source>
 
         {/* Segment highlight overlay */}
-        {selectedRange && highlightGeoJSON && (
-          <Source id="trail-highlight" type="geojson" data={highlightGeoJSON}>
+        {selectedRange && highlightGeoJSON && highlightGradientStops && (
+          <Source id="trail-highlight" type="geojson" data={highlightGeoJSON} lineMetrics>
             <Layer
               id="trail-highlight-glow"
               type="line"
               layout={{ 'line-join': 'round', 'line-cap': 'round' }}
-              paint={{ 'line-color': '#fff', 'line-width': 9, 'line-opacity': 0.4, 'line-blur': 4 }}
+              paint={{
+                'line-color': '#fff',
+                'line-width': 10,
+                'line-opacity': 0.6,
+                'line-blur': 3,
+              }}
             />
             <Layer
               id="trail-highlight-line"
               type="line"
               layout={{ 'line-join': 'round', 'line-cap': 'round' }}
-              paint={{ 'line-color': '#f59e0b', 'line-width': 5 }}
+              paint={{
+                'line-width': 6,
+                'line-gradient': [
+                  'interpolate',
+                  ['linear'],
+                  ['line-progress'],
+                  ...highlightGradientStops,
+                ],
+              }}
             />
           </Source>
         )}
@@ -402,7 +531,24 @@ export default function TrailMap({
             <div className="h-3.5 w-3.5 rounded-full border-2 border-white bg-amber-400 shadow-md" />
           </Marker>
         )}
+
+        {popupInfo && !isMobile && (
+          <MapPopup
+            popupInfo={popupInfo}
+            onClose={() => setPopupInfo(null)}
+            hideNotes={true}
+          />
+        )}
       </Map>
+
+      {popupInfo && isMobile && (
+        <MapPopup
+          popupInfo={popupInfo}
+          onClose={() => setPopupInfo(null)}
+          mobileMode
+          hideNotes={true}
+        />
+      )}
     </div>
   );
 }

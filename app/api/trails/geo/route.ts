@@ -21,6 +21,13 @@ export async function GET(req: NextRequest) {
   const child = sp.get('child');
   const pet = sp.get('pet');
 
+  const minDist = sp.get('minDist');
+  const maxDist = sp.get('maxDist');
+  const minGain = sp.get('minGain');
+  const maxGain = sp.get('maxGain');
+  const season  = sp.get('season');
+  const region  = sp.get('region');
+
   if (q) query = query.ilike('name', `%${q}%`);
   if (effort) query = query.eq('effort_level', effort);
   if (type) query = query.eq('route_type', type);
@@ -28,6 +35,12 @@ export async function GET(req: NextRequest) {
   if (shape === 'linear') query = query.eq('is_circular', false);
   if (child === 'true') query = query.eq('child_friendly', true);
   if (pet === 'true') query = query.eq('pet_friendly', true);
+  if (minDist) query = query.gte('distance_km', parseFloat(minDist));
+  if (maxDist) query = query.lte('distance_km', parseFloat(maxDist));
+  if (minGain) query = query.gte('elevation_gain_m', parseFloat(minGain));
+  if (maxGain) query = query.lte('elevation_gain_m', parseFloat(maxGain));
+  if (season)  query = query.eq('season_best', season);
+  if (region)  query = query.eq('region', region);
 
   const { data, error } = await query;
 
