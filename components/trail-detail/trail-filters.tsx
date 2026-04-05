@@ -78,23 +78,25 @@ interface Filters {
 // ---------------------------------------------------------------------------
 
 const EFFORT_OPTIONS = [
-  { value: 'easy',      labelKey: 'easy'      as keyof FilterLabels },
-  { value: 'moderate',  labelKey: 'moderate'  as keyof FilterLabels },
-  { value: 'hard',      labelKey: 'hard'      as keyof FilterLabels },
-  { value: 'very_hard', labelKey: 'veryHard'  as keyof FilterLabels },
+  { value: 'easy', labelKey: 'easy' as keyof FilterLabels },
+  { value: 'moderate', labelKey: 'moderate' as keyof FilterLabels },
+  { value: 'hard', labelKey: 'hard' as keyof FilterLabels },
+  { value: 'very_hard', labelKey: 'veryHard' as keyof FilterLabels },
 ];
 
 const EFFORT_COLORS: Record<string, string> = {
-  easy:      'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-700',
-  moderate:  'bg-sky-100 text-sky-800 border-sky-300 dark:bg-sky-900/40 dark:text-sky-300 dark:border-sky-700',
-  hard:      'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-700',
-  very_hard: 'bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-900/40 dark:text-rose-300 dark:border-rose-700',
+  easy: 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-700',
+  moderate:
+    'bg-sky-100 text-sky-800 border-sky-300 dark:bg-sky-900/40 dark:text-sky-300 dark:border-sky-700',
+  hard: 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-700',
+  very_hard:
+    'bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-900/40 dark:text-rose-300 dark:border-rose-700',
 };
 
 const SEASON_OPTIONS: { value: string; labelKey: keyof FilterLabels }[] = [
-  { value: 'year_round',    labelKey: 'yearRound'    },
-  { value: 'avoid_summer',  labelKey: 'avoidSummer'  },
-  { value: 'avoid_winter',  labelKey: 'avoidWinter'  },
+  { value: 'year_round', labelKey: 'yearRound' },
+  { value: 'avoid_summer', labelKey: 'avoidSummer' },
+  { value: 'avoid_winter', labelKey: 'avoidWinter' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -104,7 +106,7 @@ const SEASON_OPTIONS: { value: string; labelKey: keyof FilterLabels }[] = [
 function FilterSection({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-1.5">
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+      <p className="text-[10px] font-semibold tracking-wider text-slate-400 uppercase dark:text-slate-500">
         {label}
       </p>
       <div className="flex flex-wrap gap-1.5">{children}</div>
@@ -113,7 +115,7 @@ function FilterSection({ label, children }: { label: string; children: React.Rea
 }
 
 function VSep() {
-  return <div className="hidden w-px self-stretch bg-slate-200 dark:bg-slate-700 md:block" />;
+  return <div className="hidden w-px self-stretch bg-slate-200 md:block dark:bg-slate-700" />;
 }
 
 function Chip({
@@ -133,7 +135,8 @@ function Chip({
       className={cn(
         'rounded-full border px-3 py-1 text-xs font-medium transition-all',
         active
-          ? color ?? 'border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-900'
+          ? (color ??
+              'border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-900')
           : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400',
       )}
     >
@@ -149,6 +152,7 @@ function SliderCard({
   min,
   max,
   step,
+  histogram,
   onChange,
   onCommit,
 }: {
@@ -158,10 +162,19 @@ function SliderCard({
   min: number;
   max: number;
   step: number;
+  histogram?: number[];
   onChange: (v: [number, number]) => void;
   onCommit: (v: number[]) => void;
 }) {
   const isFiltered = value[0] !== min || value[1] !== max;
+
+  // Histogram logic
+  const hasHistogram = histogram && histogram.length > 0;
+  const rawMax = hasHistogram ? Math.max(...histogram) : 0;
+  const maxHistCount = rawMax > 0 ? rawMax : 1;
+  const rangeSpan = max - min;
+  const histStep = rangeSpan / (hasHistogram ? histogram.length : 1);
+
   return (
     <div
       className={cn(
@@ -182,6 +195,32 @@ function SliderCard({
           {value[0]}–{value[1]} {unit}
         </span>
       </div>
+
+      {hasHistogram && (
+        <div className="flex h-10 w-full items-end gap-[1px] px-1">
+          {histogram.map((count, i) => {
+            // Determine if this bin falls within the currently selected range
+            const binStart = min + i * histStep;
+            const binEnd = min + (i + 1) * histStep;
+            // A bin is considered "in range" if it overlaps the selected value
+            const inRange = binEnd > value[0] && binStart < value[1];
+
+            const heightPct = count > 0 ? Math.max(10, (count / maxHistCount) * 100) : 0;
+
+            return (
+              <div
+                key={i}
+                className={cn(
+                  'flex-1 rounded-t-sm transition-colors',
+                  inRange ? 'bg-blue-500/80 dark:bg-blue-500/60' : 'bg-slate-200 dark:bg-slate-700',
+                )}
+                style={{ height: `${heightPct}%` }}
+              />
+            );
+          })}
+        </div>
+      )}
+
       <Slider
         min={min}
         max={max}
@@ -191,8 +230,12 @@ function SliderCard({
         onValueCommit={onCommit}
       />
       <div className="mt-1.5 flex justify-between text-[10px] text-slate-400 dark:text-slate-600">
-        <span>{min} {unit}</span>
-        <span>{max} {unit}</span>
+        <span>
+          {min} {unit}
+        </span>
+        <span>
+          {max} {unit}
+        </span>
       </div>
     </div>
   );
@@ -239,7 +282,10 @@ function RegionCombobox({
               {value && (
                 <CommandItem
                   value="__all__"
-                  onSelect={() => { onChange(''); setOpen(false); }}
+                  onSelect={() => {
+                    onChange('');
+                    setOpen(false);
+                  }}
                   className="text-slate-500"
                 >
                   {allLabel}
@@ -249,9 +295,14 @@ function RegionCombobox({
                 <CommandItem
                   key={r}
                   value={r}
-                  onSelect={(selected) => { onChange(selected === value ? '' : selected); setOpen(false); }}
+                  onSelect={(selected) => {
+                    onChange(selected === value ? '' : selected);
+                    setOpen(false);
+                  }}
                 >
-                  <Check className={cn('mr-2 h-3.5 w-3.5', value === r ? 'opacity-100' : 'opacity-0')} />
+                  <Check
+                    className={cn('mr-2 h-3.5 w-3.5', value === r ? 'opacity-100' : 'opacity-0')}
+                  />
                   {r}
                 </CommandItem>
               ))}
@@ -280,11 +331,11 @@ export function TrailFilters({
   regions: string[];
   sidebar?: boolean;
 }) {
-  const router        = useRouter();
-  const pathname      = usePathname();
-  const searchParams  = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
-  const [q, setQ]     = useState(initial.q);
+  const [q, setQ] = useState(initial.q);
 
   const [distRange, setDistRange] = useState<[number, number]>([
     initial.minDist ? parseFloat(initial.minDist) : ranges.minDistance,
@@ -300,7 +351,8 @@ export function TrailFilters({
   const updateParam = useCallback(
     (key: string, value: string) => {
       const params = new URLSearchParams(searchParams.toString());
-      if (value) params.set(key, value); else params.delete(key);
+      if (value) params.set(key, value);
+      else params.delete(key);
       params.delete('page');
       startTransition(() => router.push(`${pathname}?${params.toString()}`));
     },
@@ -310,8 +362,13 @@ export function TrailFilters({
   const updateTwoParams = useCallback(
     (k1: string, v1: string, k2: string, v2: string, isDefault: boolean) => {
       const params = new URLSearchParams(searchParams.toString());
-      if (isDefault) { params.delete(k1); params.delete(k2); }
-      else { params.set(k1, v1); params.set(k2, v2); }
+      if (isDefault) {
+        params.delete(k1);
+        params.delete(k2);
+      } else {
+        params.set(k1, v1);
+        params.set(k2, v2);
+      }
       params.delete('page');
       startTransition(() => router.push(`${pathname}?${params.toString()}`));
     },
@@ -323,15 +380,15 @@ export function TrailFilters({
     setDistRange([ranges.minDistance, ranges.maxDistance]);
     setGainRange([ranges.minElevation, ranges.maxElevation]);
     startTransition(() => router.push(pathname));
-  }, [router, pathname, ranges]);  // region is cleared by router.push(pathname) which removes all params
+  }, [router, pathname, ranges]); // region is cleared by router.push(pathname) which removes all params
 
   // ── Derived state ────────────────────────────────────────────────────────
 
   const effort = searchParams.get('effort') ?? '';
-  const type   = searchParams.get('type')   ?? '';
-  const shape  = searchParams.get('shape')  ?? '';
-  const child  = searchParams.get('child')  ?? '';
-  const pet    = searchParams.get('pet')    ?? '';
+  const type = searchParams.get('type') ?? '';
+  const shape = searchParams.get('shape') ?? '';
+  const child = searchParams.get('child') ?? '';
+  const pet = searchParams.get('pet') ?? '';
   const season = searchParams.get('season') ?? '';
   const region = searchParams.get('region') ?? '';
 
@@ -340,7 +397,7 @@ export function TrailFilters({
     initial.type,
     initial.shape,
     initial.child === 'true' ? 'x' : '',
-    initial.pet   === 'true' ? 'x' : '',
+    initial.pet === 'true' ? 'x' : '',
     initial.season,
     initial.region,
     initial.minDist,
@@ -355,11 +412,23 @@ export function TrailFilters({
 
   const commitDist = (v: number[]) => {
     const [a, b] = v;
-    updateTwoParams('minDist', String(a), 'maxDist', String(b), a === ranges.minDistance && b === ranges.maxDistance);
+    updateTwoParams(
+      'minDist',
+      String(a),
+      'maxDist',
+      String(b),
+      a === ranges.minDistance && b === ranges.maxDistance,
+    );
   };
   const commitGain = (v: number[]) => {
     const [a, b] = v;
-    updateTwoParams('minGain', String(a), 'maxGain', String(b), a === ranges.minElevation && b === ranges.maxElevation);
+    updateTwoParams(
+      'minGain',
+      String(a),
+      'maxGain',
+      String(b),
+      a === ranges.minElevation && b === ranges.maxElevation,
+    );
   };
 
   // ── Chip renderers (shared between desktop + Sheet) ──────────────────────
@@ -384,7 +453,7 @@ export function TrailFilters({
   const shapeChips = (
     [
       { value: 'circular', label: labels.circular },
-      { value: 'linear',   label: labels.linear   },
+      { value: 'linear', label: labels.linear },
     ] as const
   ).map((opt) => (
     <Chip
@@ -445,6 +514,7 @@ export function TrailFilters({
         min={ranges.minDistance}
         max={ranges.maxDistance}
         step={1}
+        histogram={ranges.distanceHistogram}
         onChange={setDistRange}
         onCommit={commitDist}
       />
@@ -455,6 +525,7 @@ export function TrailFilters({
         min={ranges.minElevation}
         max={ranges.maxElevation}
         step={50}
+        histogram={ranges.elevationHistogram}
         onChange={setGainRange}
         onCommit={commitGain}
       />
@@ -468,20 +539,25 @@ export function TrailFilters({
       <div className={cn('space-y-4 transition-opacity', isPending && 'opacity-60')}>
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') updateParam('q', q); }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') updateParam('q', q);
+            }}
             onBlur={() => updateParam('q', q)}
             placeholder={labels.searchPlaceholder}
-            className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-9 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder-slate-500"
+            className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pr-9 pl-9 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder-slate-500"
           />
           {q && (
             <button
-              onClick={() => { setQ(''); updateParam('q', ''); }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              onClick={() => {
+                setQ('');
+                updateParam('q', '');
+              }}
+              className="absolute top-1/2 right-3 -translate-y-1/2 text-slate-400 hover:text-slate-600"
             >
               <X className="h-4 w-4" />
             </button>
@@ -505,6 +581,7 @@ export function TrailFilters({
             min={ranges.minDistance}
             max={ranges.maxDistance}
             step={1}
+            histogram={ranges.distanceHistogram}
             onChange={setDistRange}
             onCommit={commitDist}
           />
@@ -515,6 +592,7 @@ export function TrailFilters({
             min={ranges.minElevation}
             max={ranges.maxElevation}
             step={50}
+            histogram={ranges.elevationHistogram}
             onChange={setGainRange}
             onCommit={commitGain}
           />
@@ -538,24 +616,28 @@ export function TrailFilters({
 
   return (
     <div className={cn('space-y-3 transition-opacity', isPending && 'opacity-60')}>
-
       {/* ── Row 1: Search + Clear (desktop) ─────────────────────────────── */}
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') updateParam('q', q); }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') updateParam('q', q);
+            }}
             onBlur={() => updateParam('q', q)}
             placeholder={labels.searchPlaceholder}
-            className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-9 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder-slate-500"
+            className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pr-9 pl-9 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder-slate-500"
           />
           {q && (
             <button
-              onClick={() => { setQ(''); updateParam('q', ''); }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              onClick={() => {
+                setQ('');
+                updateParam('q', '');
+              }}
+              className="absolute top-1/2 right-3 -translate-y-1/2 text-slate-400 hover:text-slate-600"
             >
               <X className="h-4 w-4" />
             </button>
@@ -566,7 +648,7 @@ export function TrailFilters({
         {hasFilters && (
           <button
             onClick={clearAll}
-            className="hidden shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:text-white md:flex"
+            className="hidden shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 transition hover:border-slate-300 hover:text-slate-900 md:flex dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:text-white"
           >
             <X className="h-3.5 w-3.5" />
             {labels.clearFilters}
@@ -595,10 +677,7 @@ export function TrailFilters({
             </button>
           </SheetTrigger>
 
-          <SheetContent
-            side="bottom"
-            className="max-h-[85dvh] overflow-y-auto rounded-t-2xl px-0"
-          >
+          <SheetContent side="bottom" className="max-h-[85dvh] overflow-y-auto rounded-t-2xl px-0">
             <SheetHeader className="flex flex-row items-center justify-between border-b border-slate-100 px-4 pb-3 dark:border-slate-800">
               <SheetTitle className="text-base">{labels.filterMore}</SheetTitle>
               {hasFilters && (
@@ -621,7 +700,7 @@ export function TrailFilters({
                 <FilterSection label={labels.filterRegion}>{regionCombobox}</FilterSection>
               )}
               <div className="space-y-1.5">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                <p className="text-[10px] font-semibold tracking-wider text-slate-400 uppercase dark:text-slate-500">
                   {labels.filterDistance} / {labels.filterElevation}
                 </p>
                 {sliders}
