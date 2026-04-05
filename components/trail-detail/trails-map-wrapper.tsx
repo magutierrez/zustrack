@@ -15,6 +15,7 @@ const TrailsMap = dynamic(() => import('./trails-map').then((m) => ({ default: m
 interface TrailsMapWrapperProps {
   searchParams: TrailSearchParams;
   locale: string;
+  country: string;
   labels: {
     viewTrail: string;
     loading: string;
@@ -29,6 +30,6 @@ interface TrailsMapWrapperProps {
   };
 }
 
-export function TrailsMapWrapper({ searchParams, locale, labels }: TrailsMapWrapperProps) {
-  return <TrailsMap searchParams={searchParams} locale={locale} labels={labels} />;
+export function TrailsMapWrapper({ searchParams, locale, country, labels }: TrailsMapWrapperProps) {
+  return <TrailsMap searchParams={searchParams} locale={locale} country={country} labels={labels} />;
 }

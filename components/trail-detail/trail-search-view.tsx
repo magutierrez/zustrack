@@ -9,15 +9,15 @@ import { TrailFilters } from './trail-filters';
 import { ViewToggle } from './view-toggle';
 import { TrailsMapWrapper } from './trails-map-wrapper';
 
-export async function TrailSearchView({ locale, sp }: { locale: string; sp: TrailSearchParams }) {
+export async function TrailSearchView({ locale, country, sp }: { locale: string; country: string; sp: TrailSearchParams }) {
   const t = await getTranslations({ locale, namespace: 'TrailSearchPage' });
   const tTrail = await getTranslations({ locale, namespace: 'TrailPage' });
 
   const isMapView = sp.view === 'map';
   const [{ trails, count, page, totalPages }, ranges, regions] = await Promise.all([
-    fetchTrails(sp),
-    getTrailRanges(),
-    getRegions('es'),
+    fetchTrails(country, sp),
+    getTrailRanges(country),
+    getRegions(country),
   ]);
 
   const filterLabels = {
@@ -111,7 +111,7 @@ export async function TrailSearchView({ locale, sp }: { locale: string; sp: Trai
     if (sp.view) params.set('view', sp.view);
     if (p > 1) params.set('page', String(p));
     const qs = params.toString();
-    return `/${locale}/trail${qs ? `?${qs}` : ''}`;
+    return `/${locale}/trail/${country}${qs ? `?${qs}` : ''}`;
   };
 
   // ── Map view: sidebar + full map ─────────────────────────────────────────
@@ -168,6 +168,7 @@ export async function TrailSearchView({ locale, sp }: { locale: string; sp: Trai
                 searchParams={sp}
                 locale={locale}
                 labels={mapLabels}
+                country={country}
               />
             </div>
           </div>

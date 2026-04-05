@@ -115,6 +115,7 @@ interface SelectedTrailInfo {
 interface TrailsMapProps {
   searchParams: TrailSearchParams;
   locale: string;
+  country: string;
   labels: {
     viewTrail: string;
     loading: string;
@@ -134,9 +135,10 @@ interface TrailsMapProps {
   };
 }
 
-function buildGeoUrl(sp: TrailSearchParams): string {
+function buildGeoUrl(sp: TrailSearchParams, country: string): string {
   const params = new URLSearchParams();
-  if (sp.q) params.set('q', sp.q);
+  params.set('country', country);
+  if (sp.q)       params.set('q',       sp.q);
   if (sp.effort) params.set('effort', sp.effort);
   if (sp.type) params.set('type', sp.type);
   if (sp.shape) params.set('shape', sp.shape);
@@ -166,7 +168,7 @@ interface TrackPreview {
   gradientStops: (string | number)[];
 }
 
-export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
+export function TrailsMap({ searchParams, locale, country, labels }: TrailsMapProps) {
   const mapRef = useRef<MapRef>(null);
   const [mapType, setMapType] = useState<TrailMapLayerType>('osm');
   const mapStyle = useTrailMapStyle(mapType);
@@ -184,7 +186,7 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
     setSelectedTrail(null);
     setTrackPreview(null);
 
-    fetch(buildGeoUrl(searchParams))
+    fetch(buildGeoUrl(searchParams, country))
       .then((r) => r.json())
       .then((data: FeatureCollection<Point>) => {
         if (cancelled) return;
