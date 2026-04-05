@@ -110,27 +110,53 @@ Scans GPX files for missing or zero elevation data (>80 % of points at 0 m). Cor
 
 ---
 
+### fix-corrupted-tracks.mjs
+
+```bash
+node scripts/fix-corrupted-tracks.mjs [--dry-run] [--country it] [--threshold 0.5] [--id 12345]
+```
+
+Detects and repairs trails with unnatural "straight lines" (large distance gaps between consecutive points, usually caused by lost GPS signal or paused recording).
+- Splits the track into continuous segments based on the `--threshold` (default 0.5 km).
+- Keeps only the **longest continuous segment**.
+- Recalculates all trail metrics (distance, gain, difficulty, etc.) based on the new cleaned track.
+- Updates the Supabase record.
+
+---
+
+### fix-elevation-it.mjs
+
+```bash
+node scripts/fix-elevation-it.mjs [--dir ./gpx_trails/it] [--limit N] [--dry-run]
+```
+
+Specific elevation correction for **Italy** (or global). Unlike the Spanish version that uses IGN LiDAR, this script uses the **Open-Meteo Elevation API**. 
+- It includes automatic retry logic with exponential backoff to handle API rate limits (429 errors).
+- Recalculates all elevation-derived metrics and updates Supabase.
+
+---
+
 ### fix-bad-elevation.mjs
 
 ```bash
-node scripts/fix-bad-elevation.mjs [--dry-run] [--limit N]
+node scripts/fix-bad-elevation.mjs [--dry-run] [--limit N] [--country es]
 ```
 
 Detects trails with corrupted GPS elevation data — sentinel values like `-9000` or `-1450 m` — using two criteria:
 - `elevation_min_m < -100`
 - `elevation_gain_m > 10 000` (physically impossible)
 
-Sets bad points to `null` in `track_profile`, recalculates all elevation-derived metrics, and patches Supabase.
+Sets bad points to `null` in `track_profile`, recalculates all elevation-derived metrics, and patches Supabase. Supports filtering by `--country`.
 
 ---
 
 ### fix-slopes.mjs
 
 ```bash
-node scripts/fix-slopes.mjs [--dry-run] [--limit N] [--min-slope 40]
+node scripts/fix-slopes.mjs [--dry-run] [--limit N] [--min-slope 40] [--country it]
 ```
 
-Re-reads `track_profile` from Supabase and recalculates `max_slope_pct` using the **95th percentile** over segments ≥ 20 m (more robust than the original absolute maximum). Also updates `difficulty_score`, `effort_level`, and `child_friendly`. Use `--min-slope` to only re-process trails whose current `max_slope_pct` exceeds a threshold.
+Re-reads `track_profile` from Supabase and recalculates `max_slope_pct` using the **95th percentile** over segments ≥ 20 m (more robust than the original absolute maximum). Also updates `difficulty_score`, `effort_level`, and `child_friendly`. Use `--min-slope` to only re-process trails whose current `max_slope_pct` exceeds a threshold. Supports filtering by `--country`.
 
 ---
 
