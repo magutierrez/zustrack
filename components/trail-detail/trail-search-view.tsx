@@ -2,7 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { Header } from '@/app/_components/header';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { fetchTrails, getTrailRanges, getRegions } from '@/lib/trails';
+import { fetchTrails, getTrailRanges, getRegions, getRouteTypes } from '@/lib/trails';
 import type { TrailSearchParams } from '@/lib/trails';
 import { TrailCard } from './trail-card';
 import { TrailFilters } from './trail-filters';
@@ -22,10 +22,11 @@ export async function TrailSearchView({
   const tTrail = await getTranslations({ locale, namespace: 'TrailPage' });
 
   const isMapView = sp.view === 'map';
-  const [{ trails, count, page, totalPages }, ranges, regions] = await Promise.all([
+  const [{ trails, count, page, totalPages }, ranges, regions, routeTypes] = await Promise.all([
     fetchTrails(country, sp),
     getTrailRanges(country),
     getRegions(country),
+    getRouteTypes(country),
   ]);
 
   const filterLabels = {
@@ -147,6 +148,7 @@ export async function TrailSearchView({
               labels={filterLabels}
               ranges={ranges}
               regions={regions}
+              routeTypes={routeTypes}
             />
           </aside>
 
@@ -164,6 +166,7 @@ export async function TrailSearchView({
                 labels={filterLabels}
                 ranges={ranges}
                 regions={regions}
+                routeTypes={routeTypes}
               />
               <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
                 {t('results', { count })}
@@ -198,6 +201,7 @@ export async function TrailSearchView({
             labels={filterLabels}
             ranges={ranges}
             regions={regions}
+            routeTypes={routeTypes}
           />
         </div>
       </div>

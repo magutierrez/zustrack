@@ -323,12 +323,14 @@ export function TrailFilters({
   labels,
   ranges,
   regions,
+  routeTypes,
   sidebar = false,
 }: {
   initial: Filters;
   labels: FilterLabels;
   ranges: TrailRanges;
   regions: string[];
+  routeTypes: string[];
   sidebar?: boolean;
 }) {
   const router = useRouter();
@@ -444,7 +446,7 @@ export function TrailFilters({
     </Chip>
   ));
 
-  const typeChips = (['GR', 'PR', 'SL'] as const).map((t) => (
+  const typeChips = routeTypes.map((t) => (
     <Chip key={t} active={type === t} onClick={() => updateParam('type', type === t ? '' : t)}>
       <span className="font-bold">{t}</span>
     </Chip>

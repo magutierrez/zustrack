@@ -253,6 +253,19 @@ export async function getRegions(country: string): Promise<string[]> {
   return Array.from(seen).sort();
 }
 
+export async function getRouteTypes(country: string): Promise<string[]> {
+  const { data } = await getSupabase()
+    .from('trails')
+    .select('route_type')
+    .eq('country', country)
+    .not('route_type', 'is', null);
+  const seen = new Set<string>();
+  for (const row of (data ?? []) as { route_type: string | null }[]) {
+    if (row.route_type && row.route_type !== 'unknown') seen.add(row.route_type);
+  }
+  return Array.from(seen).sort();
+}
+
 export async function getSimilarTrails(
   country: string,
   id: number,
