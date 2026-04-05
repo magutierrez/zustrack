@@ -17,6 +17,7 @@ import Link from 'next/link';
 import { X } from 'lucide-react';
 import type { TrailSearchParams } from '@/lib/trails';
 import { transformRequest } from '@/lib/map-transform';
+import { getSlopeColorHex } from '@/lib/slope-colors';
 import type { TrailMapLayerType } from '@/lib/types';
 import { useTrailMapStyle } from './use-trail-map-style';
 import { TrailLayerControl } from './trail-layer-control';
@@ -27,6 +28,75 @@ const EFFORT_COLORS: Record<string, string> = {
   hard: '#f59e0b',
   very_hard: '#f43f5e',
 };
+
+interface TrackPoint {
+  lat: number;
+  lng: number;
+  d: number;
+  e: number | null;
+}
+
+/** Build color-stop stops for MapLibre line-gradient from slope values */
+function buildGradientStops(points: TrackPoint[]): (string | number)[] {
+  const n = points.length;
+  if (n < 2) return [0, '#10b981', 1, '#10b981'];
+
+  const startDist = points[0].d;
+  const endDist = points[n - 1].d;
+  const totalDist = endDist - startDist;
+
+  if (totalDist <= 0) return [0, '#10b981', 1, '#10b981'];
+
+  // 1. Raw point-to-point slopes
+  const rawSlopes = new Array<number>(n).fill(0);
+  for (let i = 1; i < n; i++) {
+    const distDiffM = (points[i].d - points[i - 1].d) * 1000;
+    const eleDiffM = (points[i].e ?? 0) - (points[i - 1].e ?? 0);
+    if (distDiffM > 0.1) rawSlopes[i] = (eleDiffM / distDiffM) * 100;
+  }
+
+  // 2. 400 m sliding-window smoothing (same as hazard chart)
+  const halfWindowKm = 0.2;
+  const smoothSlopes = new Array<number>(n).fill(0);
+  let left = 0,
+    right = -1,
+    wSum = 0,
+    wCount = 0;
+  for (let i = 0; i < n; i++) {
+    const center = points[i].d;
+    while (right + 1 < n && points[right + 1].d <= center + halfWindowKm) {
+      right++;
+      wSum += rawSlopes[right];
+      wCount++;
+    }
+    while (left <= right && points[left].d < center - halfWindowKm) {
+      wSum -= rawSlopes[left];
+      left++;
+      wCount--;
+    }
+    smoothSlopes[i] = wCount > 0 ? wSum / wCount : 0;
+  }
+
+  const stops: (string | number)[] = [];
+  let lastProgress = -1;
+
+  for (let i = 0; i < n; i++) {
+    const p = points[i];
+    const progress = Math.min(1, Math.max(0, (p.d - startDist) / totalDist));
+    // MapLibre requires strictly ascending stop values — skip duplicates
+    if (progress <= lastProgress && i > 0) continue;
+
+    stops.push(progress, getSlopeColorHex(smoothSlopes[i]));
+    lastProgress = progress;
+  }
+
+  if (stops.length === 0) return [0, '#10b981', 1, '#10b981'];
+  // Ensure the gradient always starts at 0 and ends at 1
+  if ((stops[0] as number) > 0) stops.unshift(0, stops[1]);
+  if ((stops[stops.length - 2] as number) < 1) stops.push(1, stops[stops.length - 1]);
+
+  return stops;
+}
 
 interface SelectedTrailInfo {
   lng: number;
@@ -94,6 +164,7 @@ function getEffortLabel(effort: string, labels: TrailsMapProps['labels']): strin
 interface TrackPreview {
   geojson: FeatureCollection<LineString>;
   color: string;
+  gradientStops: (string | number)[];
 }
 
 export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
@@ -224,6 +295,7 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
           .then((r) => r.json())
           .then(
             (data: {
+              profile: TrackPoint[];
               coordinates: [number, number][];
               bbox: [number, number, number, number] | null;
             }) => {
@@ -231,6 +303,7 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
               if (data.coordinates.length >= 2) {
                 setTrackPreview({
                   color: EFFORT_COLORS[effortLevel] ?? '#94a3b8',
+                  gradientStops: buildGradientStops(data.profile),
                   geojson: {
                     type: 'FeatureCollection',
                     features: [
@@ -326,6 +399,8 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
                 'circle-radius': ['step', ['get', 'point_count'], 16, 20, 24, 100, 32],
                 'circle-stroke-width': 2,
                 'circle-stroke-color': '#ffffff',
+                'circle-opacity': selectedTrail ? 0.3 : 1,
+                'circle-stroke-opacity': selectedTrail ? 0.3 : 1,
               }}
             />
 
@@ -339,7 +414,10 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
                 'text-font': ['Noto Sans Bold'],
                 'text-size': 12,
               }}
-              paint={{ 'text-color': '#ffffff' }}
+              paint={{
+                'text-color': '#ffffff',
+                'text-opacity': selectedTrail ? 0.3 : 1,
+              }}
             />
 
             {/* Individual trail points colored by effort */}
@@ -364,6 +442,8 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
                 'circle-radius': 7,
                 'circle-stroke-width': 1.5,
                 'circle-stroke-color': '#ffffff',
+                'circle-opacity': selectedTrail ? 0.3 : 1,
+                'circle-stroke-opacity': selectedTrail ? 0.3 : 1,
               }}
             />
           </Source>
@@ -371,24 +451,45 @@ export function TrailsMap({ searchParams, locale, labels }: TrailsMapProps) {
 
         {/* Trail track preview — shown on click */}
         {trackPreview && (
-          <Source id="track-preview" type="geojson" data={trackPreview.geojson}>
+          <Source id="track-preview" type="geojson" data={trackPreview.geojson} lineMetrics>
+            {/* Outer Glow / Shadow */}
             <Layer
               id="track-preview-shadow"
               type="line"
               layout={{ 'line-cap': 'round', 'line-join': 'round' }}
-              paint={{ 'line-color': '#000000', 'line-width': 5, 'line-opacity': 0.12 }}
+              paint={{
+                'line-color': '#000000',
+                'line-width': 10,
+                'line-opacity': 0.25,
+                'line-blur': 3,
+              }}
             />
+            {/* High-contrast casing */}
             <Layer
               id="track-preview-casing"
               type="line"
               layout={{ 'line-cap': 'round', 'line-join': 'round' }}
-              paint={{ 'line-color': '#ffffff', 'line-width': 5, 'line-opacity': 0.9 }}
+              paint={{
+                'line-color': '#ffffff',
+                'line-width': 7,
+                'line-opacity': 1,
+              }}
             />
+            {/* Main colored line with slope gradient */}
             <Layer
               id="track-preview-line"
               type="line"
               layout={{ 'line-cap': 'round', 'line-join': 'round' }}
-              paint={{ 'line-color': trackPreview.color, 'line-width': 3, 'line-opacity': 0.85 }}
+              paint={{
+                'line-width': 4.5,
+                'line-opacity': 1,
+                'line-gradient': [
+                  'interpolate',
+                  ['linear'],
+                  ['line-progress'],
+                  ...trackPreview.gradientStops,
+                ],
+              }}
             />
           </Source>
         )}
