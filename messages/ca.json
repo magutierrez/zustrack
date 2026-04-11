@@ -875,6 +875,8 @@
   },
   "TrailSearchPage": {
     "title": "Senders oficials",
+    "titleWithCountry": "Senders oficials de {countryName}",
+    "countryName": { "es": "Espanya", "it": "Itàlia" },
     "subtitle": "Tria un país per explorar la nostra selecció de rutes de senderisme i ciclisme.",
     "metaDescription": "Descobreix senders oficials amb tracks GPS detallats, perfils d'elevació i anàlisi meteorològica punt a punt. Filtra per dificultat, distància i regió.",
     "searchPlaceholder": "Cercar per nom...",

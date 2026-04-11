@@ -807,6 +807,8 @@
   },
   "TrailSearchPage": {
     "title": "Sentiers officiels",
+    "titleWithCountry": "Sentiers officiels de {countryName}",
+    "countryName": { "es": "Espagne", "it": "Italie" },
     "subtitle": "Choisissez un pays pour explorer notre sélection de randonnées et de circuits cyclistes.",
     "metaDescription": "Découvrez des sentiers officiels avec des traces GPS détaillées, des profils d'élévation et une analyse météo point par point. Filtrez par difficulté, distance et région.",
     "searchPlaceholder": "Rechercher par nom...",

@@ -875,6 +875,8 @@
   },
   "TrailSearchPage": {
     "title": "Senderos oficiales",
+    "titleWithCountry": "Senderos oficiales de {countryName}",
+    "countryName": { "es": "España", "it": "Italia" },
     "subtitle": "Elige un país para explorar nuestra selección de rutas de senderismo y ciclismo.",
     "metaDescription": "Descubre senderos oficiales con tracks GPS detallados, perfiles de elevación y análisis meteorológico punto a punto. Filtra por dificultad, distancia y región.",
     "searchPlaceholder": "Buscar por nombre...",

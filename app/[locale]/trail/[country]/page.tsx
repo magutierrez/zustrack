@@ -15,6 +15,13 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale, country } = await params;
   const t = await getTranslations({ locale, namespace: 'TrailSearchPage' });
+  const countryNameKeys: Record<string, 'countryName.es' | 'countryName.it'> = {
+    es: 'countryName.es',
+    it: 'countryName.it',
+  };
+  const pageTitle = countryNameKeys[country]
+    ? t('titleWithCountry', { countryName: t(countryNameKeys[country]) })
+    : t('title');
 
   const canonicalUrl = `${BASE_URL}/${locale}/trail/${country}`;
   const alternateLanguages = Object.fromEntries(
@@ -22,7 +29,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   );
 
   return {
-    title: t('title'), // Consider creating a specific title for Spain/Italy
+    title: pageTitle,
     description: t('metaDescription'),
     alternates: {
       canonical: canonicalUrl,
@@ -32,7 +39,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       },
     },
     openGraph: {
-      title: t('title'),
+      title: pageTitle,
       description: t('metaDescription'),
       url: canonicalUrl,
       type: 'website',
@@ -40,7 +47,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     },
     twitter: {
       card: 'summary_large_image',
-      title: t('title'),
+      title: pageTitle,
       description: t('metaDescription'),
     },
   };
@@ -52,12 +59,19 @@ export default async function TrailSearchCountryPage({ params, searchParams }: P
   setRequestLocale(locale);
 
   const t = await getTranslations({ locale, namespace: 'TrailSearchPage' });
+  const countryNameKeys: Record<string, 'countryName.es' | 'countryName.it'> = {
+    es: 'countryName.es',
+    it: 'countryName.it',
+  };
+  const pageTitle = countryNameKeys[country]
+    ? t('titleWithCountry', { countryName: t(countryNameKeys[country]) })
+    : t('title');
   const canonicalUrl = `${BASE_URL}/${locale}/trail/${country}`;
 
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
-    name: t('title'),
+    name: pageTitle,
     description: t('metaDescription'),
     url: canonicalUrl,
     breadcrumb: {

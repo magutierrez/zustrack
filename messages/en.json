@@ -875,6 +875,8 @@
   },
   "TrailSearchPage": {
     "title": "Official trails",
+    "titleWithCountry": "Official trails of {countryName}",
+    "countryName": { "es": "Spain", "it": "Italy" },
     "subtitle": "Choose a country to explore our curated selection of hiking and cycling trails.",
     "metaDescription": "Discover official hiking trails with detailed GPS tracks, elevation profiles and point-by-point weather analysis. Filter by difficulty, distance and region.",
     "searchPlaceholder": "Search by name...",

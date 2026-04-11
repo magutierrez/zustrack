@@ -19,6 +19,13 @@ export async function TrailSearchView({
   sp: TrailSearchParams;
 }) {
   const t = await getTranslations({ locale, namespace: 'TrailSearchPage' });
+  const countryNameKeys: Record<string, 'countryName.es' | 'countryName.it'> = {
+    es: 'countryName.es',
+    it: 'countryName.it',
+  };
+  const pageTitle = countryNameKeys[country]
+    ? t('titleWithCountry', { countryName: t(countryNameKeys[country]) })
+    : t('title');
   const tTrail = await getTranslations({ locale, namespace: 'TrailPage' });
 
   const isMapView = sp.view === 'map';
@@ -134,7 +141,7 @@ export async function TrailSearchView({
           {/* Sidebar – desktop only (lg+) */}
           <aside className="hidden shrink-0 flex-col gap-4 overflow-y-auto border-r border-slate-200 bg-white p-4 lg:flex lg:w-90 dark:border-slate-800 dark:bg-slate-950">
             <div>
-              <h1 className="text-xl font-bold text-slate-900 dark:text-white">{t('title')}</h1>
+              <h1 className="text-xl font-bold text-slate-900 dark:text-white">{pageTitle}</h1>
               <div className="mt-2 flex items-center justify-between">
                 <p className="text-sm text-slate-500 dark:text-slate-400">
                   {t('results', { count })}
@@ -157,7 +164,7 @@ export async function TrailSearchView({
             {/* Mobile filter bar (< lg) */}
             <div className="border-b border-slate-200 bg-white px-4 py-3 lg:hidden dark:border-slate-800 dark:bg-slate-950">
               <div className="mb-2 flex items-center justify-between">
-                <h1 className="text-lg font-bold text-slate-900 dark:text-white">{t('title')}</h1>
+                <h1 className="text-lg font-bold text-slate-900 dark:text-white">{pageTitle}</h1>
                 <ViewToggle labels={{ listView: t('listView'), mapView: t('mapView') }} />
               </div>
               <TrailFilters
@@ -195,7 +202,7 @@ export async function TrailSearchView({
       <Header session={null} />
       <div className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
         <div className="mx-auto max-w-6xl px-4 py-4">
-          <h1 className="mb-4 text-2xl font-bold text-slate-900 dark:text-white">{t('title')}</h1>
+          <h1 className="mb-4 text-2xl font-bold text-slate-900 dark:text-white">{pageTitle}</h1>
           <TrailFilters
             initial={initialFilters}
             labels={filterLabels}
