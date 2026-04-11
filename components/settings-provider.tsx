@@ -6,16 +6,12 @@ import { SettingsContext, UnitSystem, WindUnit } from '@/hooks/use-settings';
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [unitSystem, setUnitSystemState] = useState<UnitSystem>('metric');
   const [windUnit, setWindUnitState] = useState<WindUnit>('kmh');
-  const [mounted, setMounted] = useState(false);
-
   useEffect(() => {
     const savedSystem = localStorage.getItem('unitSystem') as UnitSystem;
     const savedWind = localStorage.getItem('windUnit') as WindUnit;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (savedSystem) setUnitSystemState(savedSystem);
-     
     if (savedWind) setWindUnitState(savedWind);
-    setMounted(true);
   }, []);
 
   const setUnitSystem = (system: UnitSystem) => {

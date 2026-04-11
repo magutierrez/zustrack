@@ -34,7 +34,7 @@ export function Header({ session, mobileMenuContent, extraActions }: HeaderProps
   const isMobile = useIsMobile();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
 
   const userInitial = session?.user?.name
     ? session.user.name.charAt(0).toUpperCase()
@@ -55,9 +55,10 @@ export function Header({ session, mobileMenuContent, extraActions }: HeaderProps
           variant="ghost"
           size="icon"
           className="h-9 w-9"
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
         >
-          {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          <Sun className="h-5 w-5 hidden dark:block" aria-hidden="true" />
+          <Moon className="h-5 w-5 block dark:hidden" aria-hidden="true" />
           <span className="sr-only">Toggle theme</span>
         </Button>
 
