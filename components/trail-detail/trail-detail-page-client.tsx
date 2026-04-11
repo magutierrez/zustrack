@@ -163,7 +163,7 @@ export function TrailDetailPageClient({
               'flex flex-1 items-center justify-center gap-1.5 py-3 text-sm font-medium transition',
               mobileView === 'info'
                 ? 'border-b-2 border-slate-900 text-slate-900 dark:border-white dark:text-white'
-                : 'text-slate-400 dark:text-slate-500',
+                : 'text-slate-600 dark:text-slate-400',
             )}
           >
             <Info className="h-4 w-4" />
@@ -175,7 +175,7 @@ export function TrailDetailPageClient({
               'flex flex-1 items-center justify-center gap-1.5 py-3 text-sm font-medium transition',
               mobileView === 'map'
                 ? 'border-b-2 border-slate-900 text-slate-900 dark:border-white dark:text-white'
-                : 'text-slate-400 dark:text-slate-500',
+                : 'text-slate-600 dark:text-slate-400',
             )}
           >
             <Map className="h-4 w-4" />
@@ -184,7 +184,7 @@ export function TrailDetailPageClient({
         </div>
 
         {/* Body */}
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
+        <main className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
           {/* LEFT: scrollable content */}
           <div
             className={cn(
@@ -307,6 +307,7 @@ export function TrailDetailPageClient({
                 duration: t('duration'),
                 km: t('km'),
                 meters: t('meters'),
+                showOnMap: t('showOnMap'),
               }}
             />
 
@@ -544,7 +545,7 @@ export function TrailDetailPageClient({
               </div>
             )}
           </div>
-        </div>
+        </main>
 
         {/* Sticky CTA — mobile only, shown on info tab */}
         {mobileView === 'info' && (

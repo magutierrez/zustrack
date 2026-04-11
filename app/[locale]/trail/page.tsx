@@ -39,26 +39,21 @@ export default async function TrailIndexPage({ params }: PageProps) {
 
   const t = await getTranslations({ locale, namespace: 'TrailSearchPage' });
 
-  // A simple fallback for translations if they don't exist yet in TrailSearchPage
-  const selectCountryTitle = "Select a country"; // Ideally translated
-  const spain = "España";
-  const italy = "Italia";
-
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#08090f]">
       <Header session={null} />
-      
+
       <main className="mx-auto max-w-4xl px-4 py-20">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white sm:text-5xl">
+        <div className="mb-12 text-center">
+          <h1 className="text-4xl font-black tracking-tight text-slate-900 sm:text-5xl dark:text-white">
             {t('title')}
           </h1>
-          <p className="mt-4 text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-            Choose a country to explore our curated selection of hiking and cycling trails.
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-600 dark:text-slate-400">
+            {t('subtitle')}
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+        <div className="mx-auto grid max-w-3xl grid-cols-1 gap-6 md:grid-cols-2">
           <Link
             href={`/${locale}/trail/es`}
             className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-8 transition-all hover:border-blue-500 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900 dark:hover:border-blue-500"
@@ -67,9 +62,10 @@ export default async function TrailIndexPage({ params }: PageProps) {
               <div className="mb-4 rounded-full bg-blue-100 p-4 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
                 <Map className="h-8 w-8" />
               </div>
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">España</h2>
+              <h2 className="mb-2 text-2xl font-bold text-slate-900 dark:text-white">España</h2>
               <p className="text-sm text-slate-500 dark:text-slate-400">
-                Explora senderos de Gran Recorrido, Vías Verdes y rutas locales por toda la península y las islas.
+                Explora senderos de Gran Recorrido, Vías Verdes y rutas locales por toda la
+                península y las islas.
               </p>
             </div>
           </Link>
@@ -82,9 +78,10 @@ export default async function TrailIndexPage({ params }: PageProps) {
               <div className="mb-4 rounded-full bg-emerald-100 p-4 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
                 <MountainSnow className="h-8 w-8" />
               </div>
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Italia</h2>
+              <h2 className="mb-2 text-2xl font-bold text-slate-900 dark:text-white">Italia</h2>
               <p className="text-sm text-slate-500 dark:text-slate-400">
-                Scopri i sentieri CAI, le Alte Vie e i percorsi storici attraverso le Alpi, gli Appennini e oltre.
+                Scopri i sentieri CAI, le Alte Vie e i percorsi storici attraverso le Alpi, gli
+                Appennini e oltre.
               </p>
             </div>
           </Link>
