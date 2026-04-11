@@ -339,9 +339,9 @@ export function TrailElevationChart({
         <div className="rounded-lg bg-slate-100 p-1.5 dark:bg-slate-800">
           <TrendingUp className="h-4 w-4 text-slate-600 dark:text-slate-300" />
         </div>
-        <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
+        <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
           {labels.elevationProfile}
-        </h3>
+        </h2>
         {zoomRange && (
           <button
             onClick={resetZoom}
