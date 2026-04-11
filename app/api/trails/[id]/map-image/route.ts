@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 const StaticMaps = require('staticmaps') as new (opts: { width: number; height: number }) => any;
 
 const MAX_IMAGE_POINTS = 100;
@@ -39,10 +39,7 @@ function parseSize(size: string): [number, number] | null {
   return [w, h];
 }
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const numericId = parseInt(id, 10);
   if (isNaN(numericId)) {
@@ -90,10 +87,9 @@ export async function GET(
   map.addLine({ coords, color: '#e85d04', width: 3 });
   await map.render();
 
-  const buffer: Buffer = await map.image.buffer(
-    format === 'png' ? 'image/png' : 'image/jpeg',
-    { quality: 85 },
-  );
+  const buffer: Buffer = await map.image.buffer(format === 'png' ? 'image/png' : 'image/jpeg', {
+    quality: 85,
+  });
 
   return new NextResponse(buffer as unknown as BodyInit, {
     status: 200,
