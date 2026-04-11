@@ -93,7 +93,7 @@
     "@types/node": "^22",
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
-    "@xmldom/xmldom": "^0.8.11",
+    "@xmldom/xmldom": "^0.9.9",
     "eslint": "^10.0.2",
     "eslint-config-next": "^16.1.6",
     "eslint-config-prettier": "^10.1.8",
