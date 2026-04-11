@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import { ArrowUp, Clock, Ruler, RotateCcw, ArrowRight, Baby, PawPrint } from 'lucide-react';
 import { EffortBadge } from './effort-badge';
@@ -53,69 +55,81 @@ export function TrailCard({
   return (
     <Link
       href={`/${locale}/trail/${trail.country}/${trail.slug}`}
-      className="group flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 transition hover:border-slate-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
+      className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
     >
-      {/* Header */}
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0 flex-1">
-          <div className="mb-1 flex flex-wrap items-center gap-1.5">
-            {trail.trail_code && (
-              <span className="rounded-full bg-slate-900 px-2 py-0.5 text-[10px] font-bold text-white dark:bg-white dark:text-slate-900">
-                {trail.trail_code}
+      {/* Map image hero */}
+      <div className="relative aspect-[2/1] overflow-hidden bg-slate-200 dark:bg-slate-800">
+        <img
+          src={`/api/trails/${trail.id}/map-image?size=wide`}
+          alt={trail.name}
+          loading="lazy"
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          onError={(e) => {
+            (e.currentTarget.parentElement as HTMLElement).style.display = 'none';
+          }}
+        />
+        {/* Bottom gradient so badges are always readable */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+        {/* Badges overlaid on image */}
+        <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-end justify-between gap-2">
+          {trail.trail_code ? (
+            <span className="rounded-full bg-white/90 px-2.5 py-0.5 text-[10px] font-bold text-slate-900 shadow backdrop-blur-sm">
+              {trail.trail_code}
+            </span>
+          ) : (
+            <span />
+          )}
+          <EffortBadge level={trail.effort_level} label={effortLabel} className="shrink-0 shadow" />
+        </div>
+      </div>
+
+      {/* Text content */}
+      <div className="flex flex-col gap-3 p-4">
+        {/* Name */}
+        <h3 className="line-clamp-2 text-sm font-semibold text-slate-900 group-hover:text-slate-700 dark:text-white dark:group-hover:text-slate-200">
+          {trail.name}
+        </h3>
+
+        {/* Stats row */}
+        <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+          <span className="flex items-center gap-1">
+            <Ruler className="h-3.5 w-3.5" />
+            {trail.distance_km.toFixed(1)} {labels.km}
+          </span>
+          <span className="flex items-center gap-1">
+            <ArrowUp className="h-3.5 w-3.5 text-emerald-500" />
+            +{trail.elevation_gain_m.toLocaleString()} {labels.meters}
+          </span>
+          <span className="flex items-center gap-1">
+            <Clock className="h-3.5 w-3.5" />
+            {formatDuration(trail.estimated_duration_min)}
+          </span>
+          <span className="flex items-center gap-1">
+            {trail.is_circular ? (
+              <RotateCcw className="h-3.5 w-3.5" />
+            ) : (
+              <ArrowRight className="h-3.5 w-3.5" />
+            )}
+            {trail.is_circular ? labels.circular : labels.linear}
+          </span>
+        </div>
+
+        {/* Suitability icons */}
+        {(trail.child_friendly || trail.pet_friendly) && (
+          <div className="flex gap-2">
+            {trail.child_friendly && (
+              <span className="flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+                <Baby className="h-3 w-3" />
               </span>
             )}
-            {trail.route_type && trail.route_type !== 'unknown' && (
-              <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500">
-                {trail.route_type}
+            {trail.pet_friendly && (
+              <span className="flex items-center gap-1 rounded-full bg-sky-50 px-2 py-0.5 text-[10px] font-medium text-sky-700 dark:bg-sky-900/30 dark:text-sky-300">
+                <PawPrint className="h-3 w-3" />
               </span>
             )}
           </div>
-          <h3 className="line-clamp-2 text-sm font-semibold text-slate-900 group-hover:text-slate-700 dark:text-white dark:group-hover:text-slate-200">
-            {trail.name}
-          </h3>
-        </div>
-        <EffortBadge level={trail.effort_level} label={effortLabel} className="shrink-0" />
+        )}
       </div>
-
-      {/* Stats row */}
-      <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
-        <span className="flex items-center gap-1">
-          <Ruler className="h-3.5 w-3.5" />
-          {trail.distance_km.toFixed(1)} {labels.km}
-        </span>
-        <span className="flex items-center gap-1">
-          <ArrowUp className="h-3.5 w-3.5 text-emerald-500" />
-          +{trail.elevation_gain_m.toLocaleString()} {labels.meters}
-        </span>
-        <span className="flex items-center gap-1">
-          <Clock className="h-3.5 w-3.5" />
-          {formatDuration(trail.estimated_duration_min)}
-        </span>
-        <span className="flex items-center gap-1">
-          {trail.is_circular ? (
-            <RotateCcw className="h-3.5 w-3.5" />
-          ) : (
-            <ArrowRight className="h-3.5 w-3.5" />
-          )}
-          {trail.is_circular ? labels.circular : labels.linear}
-        </span>
-      </div>
-
-      {/* Suitability icons */}
-      {(trail.child_friendly || trail.pet_friendly) && (
-        <div className="flex gap-2">
-          {trail.child_friendly && (
-            <span className="flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
-              <Baby className="h-3 w-3" />
-            </span>
-          )}
-          {trail.pet_friendly && (
-            <span className="flex items-center gap-1 rounded-full bg-sky-50 px-2 py-0.5 text-[10px] font-medium text-sky-700 dark:bg-sky-900/30 dark:text-sky-300">
-              <PawPrint className="h-3 w-3" />
-            </span>
-          )}
-        </div>
-      )}
     </Link>
   );
 }
