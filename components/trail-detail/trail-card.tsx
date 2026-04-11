@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
 import { ArrowUp, Clock, Ruler, RotateCcw, ArrowRight, Baby, PawPrint } from 'lucide-react';
 import { EffortBadge } from './effort-badge';
 
@@ -47,6 +48,8 @@ export function TrailCard({
   locale: string;
   labels: TrailCardLabels;
 }) {
+  const [imgLoaded, setImgLoaded] = useState(false);
+
   const effortLabel =
     trail.effort_level === 'very_hard'
       ? labels.veryHard
@@ -59,11 +62,21 @@ export function TrailCard({
     >
       {/* Map image hero */}
       <div className="relative aspect-[2/1] overflow-hidden bg-slate-200 dark:bg-slate-800">
+        {/* Skeleton */}
+        {!imgLoaded && (
+          <div className="absolute inset-0 animate-pulse">
+            <div className="h-full w-full bg-gradient-to-br from-slate-200 via-slate-100 to-slate-200 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="h-8 w-8 rounded-full border-2 border-slate-300 border-t-slate-400 animate-spin dark:border-slate-600 dark:border-t-slate-500" />
+            </div>
+          </div>
+        )}
         <img
           src={`/api/trails/${trail.id}/map-image?size=wide`}
           alt={trail.name}
           loading="lazy"
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          className={`h-full w-full object-cover transition-all duration-500 group-hover:scale-105 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
+          onLoad={() => setImgLoaded(true)}
           onError={(e) => {
             (e.currentTarget.parentElement as HTMLElement).style.display = 'none';
           }}
