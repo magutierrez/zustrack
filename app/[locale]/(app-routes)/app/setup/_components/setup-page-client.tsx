@@ -41,7 +41,7 @@ export function SetupPageClient({ session: serverSession }: SetupPageClientProps
   const [error, setError] = useState<string | null>(null);
 
   const [activityType, setActivityType] = useState<'cycling' | 'walking'>('cycling');
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
 
   const { saveRoute, refresh } = useSavedRoutes(); // to show saved routes
 
@@ -147,9 +147,10 @@ export function SetupPageClient({ session: serverSession }: SetupPageClientProps
           variant="ghost"
           size="icon"
           className="h-9 w-9"
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
         >
-          {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          <Sun className="h-5 w-5 hidden dark:block" aria-hidden="true" />
+          <Moon className="h-5 w-5 block dark:hidden" aria-hidden="true" />
           <span className="sr-only">Toggle theme</span>
         </Button>
         <LocaleSwitcher />
