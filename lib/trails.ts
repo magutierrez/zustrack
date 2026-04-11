@@ -106,6 +106,8 @@ export interface TrailRanges {
   maxDistance: number;
   minElevation: number;
   maxElevation: number;
+  distanceHistogram: number[];
+  elevationHistogram: number[];
 }
 
 export interface TrailSearchResult {
@@ -184,17 +186,57 @@ export async function fetchTrails(country: string, sp: TrailSearchParams): Promi
 
 export async function getTrailRanges(country: string): Promise<TrailRanges> {
   const sb = getSupabase();
-  const [maxDist, minDist, maxGain, minGain] = await Promise.all([
+
+  // 1. Get absolute min/max efficiently for the whole dataset
+  const [maxDistRes, minDistRes, maxGainRes, minGainRes] = await Promise.all([
     sb.from('trails').select('distance_km').eq('country', country).order('distance_km', { ascending: false }).limit(1).single(),
     sb.from('trails').select('distance_km').eq('country', country).order('distance_km', { ascending: true }).limit(1).single(),
     sb.from('trails').select('elevation_gain_m').eq('country', country).order('elevation_gain_m', { ascending: false }).limit(1).single(),
     sb.from('trails').select('elevation_gain_m').eq('country', country).order('elevation_gain_m', { ascending: true }).limit(1).single(),
   ]);
+
+  const minDistance = Math.floor((minDistRes.data as any)?.distance_km ?? 0);
+  const maxDistance = Math.ceil((maxDistRes.data as any)?.distance_km ?? 100);
+  const minElevation = Math.floor((minGainRes.data as any)?.elevation_gain_m ?? 0);
+  const maxElevation = Math.ceil((maxGainRes.data as any)?.elevation_gain_m ?? 3000);
+
+  // 2. Fetch all values for the histogram (limit to 10k to be safe)
+  const { data: allPoints } = await sb
+    .from('trails')
+    .select('distance_km, elevation_gain_m')
+    .eq('country', country)
+    .limit(10000);
+
+  const trails = allPoints ?? [];
+  const BINS = 40;
+  const distanceHistogram = new Array(BINS).fill(0);
+  const elevationHistogram = new Array(BINS).fill(0);
+
+  const distStep = (maxDistance - minDistance) / BINS;
+  const elevStep = (maxElevation - minElevation) / BINS;
+
+  trails.forEach((t) => {
+    if (t.distance_km != null && distStep > 0) {
+      let bin = Math.floor((t.distance_km - minDistance) / distStep);
+      if (bin >= BINS) bin = BINS - 1;
+      if (bin < 0) bin = 0;
+      distanceHistogram[bin]++;
+    }
+    if (t.elevation_gain_m != null && elevStep > 0) {
+      let bin = Math.floor((t.elevation_gain_m - minElevation) / elevStep);
+      if (bin >= BINS) bin = BINS - 1;
+      if (bin < 0) bin = 0;
+      elevationHistogram[bin]++;
+    }
+  });
+
   return {
-    minDistance: Math.floor((minDist.data as { distance_km: number } | null)?.distance_km ?? 0),
-    maxDistance: Math.ceil((maxDist.data as { distance_km: number } | null)?.distance_km ?? 100),
-    minElevation: Math.floor((minGain.data as { elevation_gain_m: number } | null)?.elevation_gain_m ?? 0),
-    maxElevation: Math.ceil((maxGain.data as { elevation_gain_m: number } | null)?.elevation_gain_m ?? 3000),
+    minDistance,
+    maxDistance,
+    minElevation,
+    maxElevation,
+    distanceHistogram,
+    elevationHistogram,
   };
 }
 
@@ -207,6 +249,19 @@ export async function getRegions(country: string): Promise<string[]> {
   const seen = new Set<string>();
   for (const row of (data ?? []) as { region: string | null }[]) {
     if (row.region) seen.add(row.region);
+  }
+  return Array.from(seen).sort();
+}
+
+export async function getRouteTypes(country: string): Promise<string[]> {
+  const { data } = await getSupabase()
+    .from('trails')
+    .select('route_type')
+    .eq('country', country)
+    .not('route_type', 'is', null);
+  const seen = new Set<string>();
+  for (const row of (data ?? []) as { route_type: string | null }[]) {
+    if (row.route_type && row.route_type !== 'unknown') seen.add(row.route_type);
   }
   return Array.from(seen).sort();
 }
