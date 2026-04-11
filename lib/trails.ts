@@ -241,29 +241,13 @@ export async function getTrailRanges(country: string): Promise<TrailRanges> {
 }
 
 export async function getRegions(country: string): Promise<string[]> {
-  const { data } = await getSupabase()
-    .from('trails')
-    .select('region')
-    .eq('country', country)
-    .not('region', 'is', null);
-  const seen = new Set<string>();
-  for (const row of (data ?? []) as { region: string | null }[]) {
-    if (row.region) seen.add(row.region);
-  }
-  return Array.from(seen).sort();
+  const { data } = await getSupabase().rpc('get_regions', { p_country: country });
+  return (data ?? []).map((row: { region: string }) => row.region);
 }
 
 export async function getRouteTypes(country: string): Promise<string[]> {
-  const { data } = await getSupabase()
-    .from('trails')
-    .select('route_type')
-    .eq('country', country)
-    .not('route_type', 'is', null);
-  const seen = new Set<string>();
-  for (const row of (data ?? []) as { route_type: string | null }[]) {
-    if (row.route_type && row.route_type !== 'unknown') seen.add(row.route_type);
-  }
-  return Array.from(seen).sort();
+  const { data } = await getSupabase().rpc('get_route_types', { p_country: country });
+  return (data ?? []).map((row: { route_type: string }) => row.route_type);
 }
 
 export async function getSimilarTrails(
