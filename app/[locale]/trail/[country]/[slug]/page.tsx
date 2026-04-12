@@ -105,7 +105,9 @@ export default async function TrailPage({
             address: {
               '@type': 'PostalAddress',
               addressCountry: country.toUpperCase(),
-              ...(trail.region ? { addressRegion: trail.region } : {}),
+              ...(trail.region
+                ? { addressRegion: trail.region_i18n?.[locale] ?? trail.region }
+                : {}),
               ...(trail.place ? { addressLocality: trail.place } : {}),
             },
           }

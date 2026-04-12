@@ -19,9 +19,10 @@ export async function TrailSearchView({
   sp: TrailSearchParams;
 }) {
   const t = await getTranslations({ locale, namespace: 'TrailSearchPage' });
-  const countryNameKeys: Record<string, 'countryName.es' | 'countryName.it'> = {
+  const countryNameKeys: Record<string, 'countryName.es' | 'countryName.it' | 'countryName.de'> = {
     es: 'countryName.es',
     it: 'countryName.it',
+    de: 'countryName.de',
   };
   const pageTitle = countryNameKeys[country]
     ? t('titleWithCountry', { countryName: t(countryNameKeys[country]) })
@@ -32,7 +33,7 @@ export async function TrailSearchView({
   const [{ trails, count, page, totalPages }, ranges, regions, routeTypes] = await Promise.all([
     fetchTrails(country, sp),
     getTrailRanges(country),
-    getRegions(country),
+    getRegions(country, locale),
     getRouteTypes(country),
   ]);
 

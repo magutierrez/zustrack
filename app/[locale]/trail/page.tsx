@@ -1,7 +1,7 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 import { Header } from '@/app/_components/header';
-import { Map, MountainSnow } from 'lucide-react';
+import { Map, MountainSnow, Trees } from 'lucide-react';
 import type { Metadata } from 'next';
 import { routing } from '@/i18n/routing';
 
@@ -53,7 +53,7 @@ export default async function TrailIndexPage({ params }: PageProps) {
           </p>
         </div>
 
-        <div className="mx-auto grid max-w-3xl grid-cols-1 gap-6 md:grid-cols-2">
+        <div className="mx-auto grid max-w-3xl grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           <Link
             href={`/${locale}/trail/es`}
             className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-8 transition-all hover:border-blue-500 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900 dark:hover:border-blue-500"
@@ -62,10 +62,11 @@ export default async function TrailIndexPage({ params }: PageProps) {
               <div className="mb-4 rounded-full bg-blue-100 p-4 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
                 <Map className="h-8 w-8" />
               </div>
-              <h2 className="mb-2 text-2xl font-bold text-slate-900 dark:text-white">España</h2>
+              <h2 className="mb-2 text-2xl font-bold text-slate-900 dark:text-white">
+                {t('countryName.es')}
+              </h2>
               <p className="text-sm text-slate-500 dark:text-slate-400">
-                Explora senderos de Gran Recorrido, Vías Verdes y rutas locales por toda la
-                península y las islas.
+                {t('countryDesc.es')}
               </p>
             </div>
           </Link>
@@ -78,10 +79,28 @@ export default async function TrailIndexPage({ params }: PageProps) {
               <div className="mb-4 rounded-full bg-emerald-100 p-4 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
                 <MountainSnow className="h-8 w-8" />
               </div>
-              <h2 className="mb-2 text-2xl font-bold text-slate-900 dark:text-white">Italia</h2>
+              <h2 className="mb-2 text-2xl font-bold text-slate-900 dark:text-white">
+                {t('countryName.it')}
+              </h2>
               <p className="text-sm text-slate-500 dark:text-slate-400">
-                Scopri i sentieri CAI, le Alte Vie e i percorsi storici attraverso le Alpi, gli
-                Appennini e oltre.
+                {t('countryDesc.it')}
+              </p>
+            </div>
+          </Link>
+
+          <Link
+            href={`/${locale}/trail/de`}
+            className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-8 transition-all hover:border-amber-500 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900 dark:hover:border-amber-500"
+          >
+            <div className="flex flex-col items-center text-center">
+              <div className="mb-4 rounded-full bg-amber-100 p-4 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400">
+                <Trees className="h-8 w-8" />
+              </div>
+              <h2 className="mb-2 text-2xl font-bold text-slate-900 dark:text-white">
+                {t('countryName.de')}
+              </h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                {t('countryDesc.de')}
               </p>
             </div>
           </Link>

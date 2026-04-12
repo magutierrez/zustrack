@@ -27,11 +27,8 @@ import { SurfaceSection } from './surface-section';
 import { TrailHazards } from './trail-hazards';
 import { TrailElevationChart } from './trail-elevation-chart';
 import { TrailMapWrapper } from './trail-map-wrapper';
-import { EscapePointsSection } from './escape-points-section';
-import { WaterSourcesSection } from './water-sources-section';
 import { TrailGpxDownload } from './trail-gpx-download';
 import { TrailWeatherForecast } from './trail-weather-forecast';
-import { TrailPaceCard } from './trail-pace-card';
 import { TrailCard } from './trail-card';
 import { TrailInfoTabs } from './trail-info-tabs';
 
@@ -76,6 +73,7 @@ export function TrailDetailPageClient({
   similarTrails?: TrailSummary[];
 }) {
   const t = useTranslations('TrailPage');
+  const regionName = trail.region_i18n?.[locale] ?? trail.region;
   const router = useRouter();
 
   const [mobileView, setMobileView] = useState<'info' | 'map'>('info');
@@ -125,7 +123,8 @@ export function TrailDetailPageClient({
     if (!trail.elevation_max_m || !trackProfile.length) return null;
     const best = trackProfile.reduce((prev, curr) =>
       curr.e !== null &&
-      Math.abs(curr.e - trail.elevation_max_m!) < Math.abs((prev.e ?? Infinity) - trail.elevation_max_m!)
+      Math.abs(curr.e - trail.elevation_max_m!) <
+        Math.abs((prev.e ?? Infinity) - trail.elevation_max_m!)
         ? curr
         : prev,
     );
@@ -136,7 +135,8 @@ export function TrailDetailPageClient({
     if (!trail.elevation_min_m || !trackProfile.length) return null;
     const best = trackProfile.reduce((prev, curr) =>
       curr.e !== null &&
-      Math.abs(curr.e - trail.elevation_min_m!) < Math.abs((prev.e ?? Infinity) - trail.elevation_min_m!)
+      Math.abs(curr.e - trail.elevation_min_m!) <
+        Math.abs((prev.e ?? Infinity) - trail.elevation_min_m!)
         ? curr
         : prev,
     );
@@ -156,7 +156,7 @@ export function TrailDetailPageClient({
         <Header session={null} />
 
         {/* Mobile tab bar — Info / Map toggle */}
-        <div className="flex shrink-0 border-b border-slate-200 dark:border-slate-800 lg:hidden">
+        <div className="flex shrink-0 border-b border-slate-200 lg:hidden dark:border-slate-800">
           <button
             onClick={() => setMobileView('info')}
             className={cn(
@@ -225,10 +225,10 @@ export function TrailDetailPageClient({
                 </span>
               </div>
               <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{trail.name}</h1>
-              {(trail.place || trail.region) && (
+              {(trail.place || regionName) && (
                 <p className="inline-flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400">
                   <MapPin className="h-3.5 w-3.5 shrink-0" />
-                  {[trail.place, trail.region].filter(Boolean).join(', ')}
+                  {[trail.place, regionName].filter(Boolean).join(', ')}
                 </p>
               )}
               <div className="flex flex-wrap items-center gap-3">
@@ -472,7 +472,7 @@ export function TrailDetailPageClient({
               <table className="w-full text-sm">
                 <tbody>
                   {trail.place && <InfoRow label={t('place')} value={trail.place} />}
-                  {trail.region && <InfoRow label={t('region')} value={trail.region} />}
+                  {regionName && <InfoRow label={t('region')} value={regionName} />}
                   {trail.source && <InfoRow label={t('source')} value={trail.source} />}
                   <InfoRow
                     label={t('startPoint')}
@@ -520,7 +520,7 @@ export function TrailDetailPageClient({
           {/* RIGHT: map — fills full height */}
           <div
             className={cn(
-              'border-slate-200 dark:border-slate-800 lg:flex-1 lg:border-l',
+              'border-slate-200 lg:flex-1 lg:border-l dark:border-slate-800',
               mobileView === 'map' ? 'flex flex-1' : 'hidden lg:block',
             )}
           >
@@ -549,7 +549,7 @@ export function TrailDetailPageClient({
 
         {/* Sticky CTA — mobile only, shown on info tab */}
         {mobileView === 'info' && (
-          <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur-sm dark:border-slate-800 dark:bg-[#08090f]/95 lg:hidden">
+          <div className="fixed right-0 bottom-0 left-0 z-20 border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur-sm lg:hidden dark:border-slate-800 dark:bg-[#08090f]/95">
             <button
               onClick={handleAnalyze}
               className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-slate-900 py-3 text-sm font-semibold text-white dark:bg-white dark:text-slate-900"

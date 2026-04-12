@@ -876,7 +876,11 @@
   "TrailSearchPage": {
     "title": "Official trails",
     "titleWithCountry": "Official trails of {countryName}",
-    "countryName": { "es": "Spain", "it": "Italy" },
+    "countryName": {
+      "es": "Spain",
+      "it": "Italy",
+      "de": "Germany"
+    },
     "subtitle": "Choose a country to explore our curated selection of hiking and cycling trails.",
     "metaDescription": "Discover official hiking trails with detailed GPS tracks, elevation profiles and point-by-point weather analysis. Filter by difficulty, distance and region.",
     "searchPlaceholder": "Search by name...",
@@ -905,7 +909,12 @@
     "filterRegion": "Region",
     "regionPlaceholder": "Search region…",
     "noRegions": "No regions found",
-    "viewResults": "View results"
+    "viewResults": "View results",
+    "countryDesc": {
+      "es": "Explore GR and PR trails across the Iberian Peninsula and islands.",
+      "it": "Discover CAI trails, Alte Vie and historic routes through the Alps, Apennines and beyond.",
+      "de": "Hike the GR and PR long-distance trails through the Black Forest, Bavaria and the German Alps."
+    }
   },
   "TrailMap": {
     "layers": {

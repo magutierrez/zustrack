@@ -4,6 +4,7 @@ import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useCallback, useState, useTransition } from 'react';
 import { Search, X, SlidersHorizontal, ChevronsUpDown, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import type { RegionOption } from '@/lib/trails';
 import { Slider } from '@/components/ui/slider';
 import {
   Sheet,
@@ -249,7 +250,7 @@ function RegionCombobox({
   noRegions,
   allLabel,
 }: {
-  regions: string[];
+  regions: RegionOption[];
   value: string;
   onChange: (v: string) => void;
   placeholder: string;
@@ -257,6 +258,7 @@ function RegionCombobox({
   allLabel: string;
 }) {
   const [open, setOpen] = useState(false);
+  const selectedLabel = regions.find((r) => r.value === value)?.label ?? value;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -269,7 +271,7 @@ function RegionCombobox({
               : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400',
           )}
         >
-          <span className="max-w-[140px] truncate">{value || allLabel}</span>
+          <span className="max-w-[140px] truncate">{value ? selectedLabel : allLabel}</span>
           <ChevronsUpDown className="h-3 w-3 shrink-0 opacity-50" />
         </button>
       </PopoverTrigger>
@@ -293,17 +295,17 @@ function RegionCombobox({
               )}
               {regions.map((r) => (
                 <CommandItem
-                  key={r}
-                  value={r}
-                  onSelect={(selected) => {
-                    onChange(selected === value ? '' : selected);
+                  key={r.value}
+                  value={r.label}
+                  onSelect={() => {
+                    onChange(r.value === value ? '' : r.value);
                     setOpen(false);
                   }}
                 >
                   <Check
-                    className={cn('mr-2 h-3.5 w-3.5', value === r ? 'opacity-100' : 'opacity-0')}
+                    className={cn('mr-2 h-3.5 w-3.5', value === r.value ? 'opacity-100' : 'opacity-0')}
                   />
-                  {r}
+                  {r.label}
                 </CommandItem>
               ))}
             </CommandGroup>
@@ -329,7 +331,7 @@ export function TrailFilters({
   initial: Filters;
   labels: FilterLabels;
   ranges: TrailRanges;
-  regions: string[];
+  regions: RegionOption[];
   routeTypes: string[];
   sidebar?: boolean;
 }) {

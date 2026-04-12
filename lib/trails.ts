@@ -12,6 +12,7 @@ export interface Trail {
   trail_code: string | null;
   route_type: string | null;
   region: string | null;
+  region_i18n: Record<string, string> | null;
   place: string | null;
   description: string | null;
   source: string | null;
@@ -240,9 +241,34 @@ export async function getTrailRanges(country: string): Promise<TrailRanges> {
   };
 }
 
-export async function getRegions(country: string): Promise<string[]> {
+export interface RegionOption {
+  value: string;
+  label: string;
+}
+
+export async function getRegions(country: string, locale?: string): Promise<RegionOption[]> {
   const { data } = await getSupabase().rpc('get_regions', { p_country: country });
-  return (data ?? []).map((row: { region: string }) => row.region);
+  const regionValues: string[] = (data ?? []).map((row: { region: string }) => row.region);
+
+  if (!locale || regionValues.length === 0) {
+    return regionValues.map((r) => ({ value: r, label: r }));
+  }
+
+  const { data: i18nRows } = await getSupabase()
+    .from('trails')
+    .select('region, region_i18n')
+    .eq('country', country)
+    .in('region', regionValues);
+
+  const labelMap = new Map<string, string>();
+  for (const row of i18nRows ?? []) {
+    if (!labelMap.has(row.region)) {
+      const label = (row.region_i18n as Record<string, string> | null)?.[locale];
+      if (label) labelMap.set(row.region, label);
+    }
+  }
+
+  return regionValues.map((r) => ({ value: r, label: labelMap.get(r) ?? r }));
 }
 
 export async function getRouteTypes(country: string): Promise<string[]> {
