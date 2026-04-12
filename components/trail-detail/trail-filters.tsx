@@ -275,7 +275,13 @@ function RegionCombobox({
           <ChevronsUpDown className="h-3 w-3 shrink-0 opacity-50" />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-[220px] p-0" align="start">
+      <PopoverContent
+        className="w-[220px] p-0"
+        align="start"
+        onWheel={(e) => e.stopPropagation()}
+        onTouchStart={(e) => e.stopPropagation()}
+        onTouchMove={(e) => e.stopPropagation()}
+      >
         <Command>
           <CommandInput placeholder={placeholder} className="h-9" />
           <CommandList>
