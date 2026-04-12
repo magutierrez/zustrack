@@ -784,31 +784,59 @@
     "surfaceTypes": "Types de surface",
     "pathTypes": "Types de voie",
     "surface": {
-      "asphalt": "Asphalte", "concrete": "Béton", "paved": "Pavé",
-      "gravel": "Gravier", "fine_gravel": "Gravier fin", "pebblestone": "Pavés",
-      "compacted": "Compacté", "dirt": "Terre", "earth": "Terre",
-      "ground": "Sol", "grass": "Herbe", "unpaved": "Non pavé",
-      "rock": "Roche", "sand": "Sable", "mud": "Boue", "unknown": "Inconnu"
+      "asphalt": "Asphalte",
+      "concrete": "Béton",
+      "paved": "Pavé",
+      "gravel": "Gravier",
+      "fine_gravel": "Gravier fin",
+      "pebblestone": "Pavés",
+      "compacted": "Compacté",
+      "dirt": "Terre",
+      "earth": "Terre",
+      "ground": "Sol",
+      "grass": "Herbe",
+      "unpaved": "Non pavé",
+      "rock": "Roche",
+      "sand": "Sable",
+      "mud": "Boue",
+      "unknown": "Inconnu"
     },
     "pathType": {
-      "footway": "Chemin piéton", "path": "Sentier", "track": "Piste",
-      "cycleway": "Piste cyclable", "bridleway": "Allée cavalière", "steps": "Escaliers",
-      "primary": "Route principale", "secondary": "Route secondaire", "tertiary": "Route tertiaire",
-      "unclassified": "Voie non classée", "residential": "Rue résidentielle",
-      "service": "Voie de service", "unknown": "Inconnu"
+      "footway": "Chemin piéton",
+      "path": "Sentier",
+      "track": "Piste",
+      "cycleway": "Piste cyclable",
+      "bridleway": "Allée cavalière",
+      "steps": "Escaliers",
+      "primary": "Route principale",
+      "secondary": "Route secondaire",
+      "tertiary": "Route tertiaire",
+      "unclassified": "Voie non classée",
+      "residential": "Rue résidentielle",
+      "service": "Voie de service",
+      "unknown": "Inconnu"
     },
     "escapePoints": "Points d'évacuation",
     "waterSources": "Sources d'eau",
-    "town": "Ville", "road": "Route principale", "shelter": "Refuge de montagne",
-    "natural": "Source naturelle", "urban": "Robinet / fontaine",
-    "reliable": "Fiable", "seasonal": "Saisonnier", "unreliable": "Non fiable",
+    "town": "Ville",
+    "road": "Route principale",
+    "shelter": "Refuge de montagne",
+    "natural": "Source naturelle",
+    "urban": "Robinet / fontaine",
+    "reliable": "Fiable",
+    "seasonal": "Saisonnier",
+    "unreliable": "Non fiable",
     "kmAway": "km",
     "showOnMap": "Voir sur la carte"
   },
   "TrailSearchPage": {
     "title": "Sentiers officiels",
     "titleWithCountry": "Sentiers officiels de {countryName}",
-    "countryName": { "es": "Espagne", "it": "Italie" },
+    "countryName": {
+      "es": "Espagne",
+      "it": "Italie",
+      "de": "Allemagne"
+    },
     "subtitle": "Choisissez un pays pour explorer notre sélection de randonnées et de circuits cyclistes.",
     "metaDescription": "Découvrez des sentiers officiels avec des traces GPS détaillées, des profils d'élévation et une analyse météo point par point. Filtrez par difficulté, distance et région.",
     "searchPlaceholder": "Rechercher par nom...",
@@ -837,6 +865,11 @@
     "filterRegion": "Région",
     "regionPlaceholder": "Rechercher une région…",
     "noRegions": "Aucune région trouvée",
-    "viewResults": "Voir les résultats"
+    "viewResults": "Voir les résultats",
+    "countryDesc": {
+      "es": "Explorez les sentiers GR et PR à travers la péninsule ibérique et les îles.",
+      "it": "Découvrez les sentiers CAI, les Alte Vie et les routes historiques à travers les Alpes, les Apennins et au-delà.",
+      "de": "Randonnez sur les sentiers GR et PR à travers la Forêt-Noire, la Bavière et les Alpes allemandes."
+    }
   }
 }

@@ -876,7 +876,11 @@
   "TrailSearchPage": {
     "title": "Senders oficials",
     "titleWithCountry": "Senders oficials de {countryName}",
-    "countryName": { "es": "Espanya", "it": "Itàlia" },
+    "countryName": {
+      "es": "Espanya",
+      "it": "Itàlia",
+      "de": "Alemanya"
+    },
     "subtitle": "Tria un país per explorar la nostra selecció de rutes de senderisme i ciclisme.",
     "metaDescription": "Descobreix senders oficials amb tracks GPS detallats, perfils d'elevació i anàlisi meteorològica punt a punt. Filtra per dificultat, distància i regió.",
     "searchPlaceholder": "Cercar per nom...",
@@ -905,7 +909,12 @@
     "filterRegion": "Regió",
     "regionPlaceholder": "Cerca regió…",
     "noRegions": "Sense resultats",
-    "viewResults": "Veure resultats"
+    "viewResults": "Veure resultats",
+    "countryDesc": {
+      "es": "Explora senders GR i PR per tota la Península Ibèrica i les illes.",
+      "it": "Descobreix els senders CAI, Alte Vie i rutes històriques pels Alps, Apenins i més.",
+      "de": "Recorre els senders de llarg recorregut GR i PR per la Selva Negra, Baviera i els Alps alemanys."
+    }
   },
   "TrailMap": {
     "layers": {

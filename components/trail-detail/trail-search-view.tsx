@@ -19,9 +19,10 @@ export async function TrailSearchView({
   sp: TrailSearchParams;
 }) {
   const t = await getTranslations({ locale, namespace: 'TrailSearchPage' });
-  const countryNameKeys: Record<string, 'countryName.es' | 'countryName.it'> = {
+  const countryNameKeys: Record<string, 'countryName.es' | 'countryName.it' | 'countryName.de'> = {
     es: 'countryName.es',
     it: 'countryName.it',
+    de: 'countryName.de',
   };
   const pageTitle = countryNameKeys[country]
     ? t('titleWithCountry', { countryName: t(countryNameKeys[country]) })

@@ -876,7 +876,11 @@
   "TrailSearchPage": {
     "title": "Offizielle Trails",
     "titleWithCountry": "Offizielle Trails von {countryName}",
-    "countryName": { "es": "Spanien", "it": "Italien" },
+    "countryName": {
+      "es": "Spanien",
+      "it": "Italien",
+      "de": "Deutschland"
+    },
     "subtitle": "Land auswählen, um unsere kuratierte Auswahl an Wander- und Radwegen zu erkunden.",
     "metaDescription": "Offizielle Wanderwege mit detaillierten GPS-Tracks, Höhenprofilen und Punkt-für-Punkt-Wetteranalyse entdecken. Nach Schwierigkeit, Distanz und Region filtern.",
     "searchPlaceholder": "Nach Name suchen...",
@@ -905,7 +909,12 @@
     "filterRegion": "Region",
     "regionPlaceholder": "Region suchen…",
     "noRegions": "Keine Regionen gefunden",
-    "viewResults": "Ergebnisse anzeigen"
+    "viewResults": "Ergebnisse anzeigen",
+    "countryDesc": {
+      "es": "Erkunde GR- und PR-Wanderwege auf der iberischen Halbinsel und den Inseln.",
+      "it": "Entdecke CAI-Wege, Alte Vie und historische Routen durch die Alpen, den Apennin und darüber hinaus.",
+      "de": "Wandere auf GR- und PR-Fernwanderwegen durch den Schwarzwald, Bayern und die deutschen Alpen."
+    }
   },
   "TrailMap": {
     "layers": {

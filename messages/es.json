@@ -876,7 +876,11 @@
   "TrailSearchPage": {
     "title": "Senderos oficiales",
     "titleWithCountry": "Senderos oficiales de {countryName}",
-    "countryName": { "es": "España", "it": "Italia" },
+    "countryName": {
+      "es": "España",
+      "it": "Italia",
+      "de": "Alemania"
+    },
     "subtitle": "Elige un país para explorar nuestra selección de rutas de senderismo y ciclismo.",
     "metaDescription": "Descubre senderos oficiales con tracks GPS detallados, perfiles de elevación y análisis meteorológico punto a punto. Filtra por dificultad, distancia y región.",
     "searchPlaceholder": "Buscar por nombre...",
@@ -905,7 +909,12 @@
     "filterRegion": "Región",
     "regionPlaceholder": "Buscar región…",
     "noRegions": "Sin resultados",
-    "viewResults": "Ver resultados"
+    "viewResults": "Ver resultados",
+    "countryDesc": {
+      "es": "Explora senderos GR y PR por toda la Península Ibérica y las islas.",
+      "it": "Descubre los senderos CAI, Alte Vie y rutas históricas por los Alpes, los Apeninos y más allá.",
+      "de": "Recorre los senderos de largo recorrido GR y PR por la Selva Negra, Baviera y los Alpes alemanes."
+    }
   },
   "TrailMap": {
     "layers": {
