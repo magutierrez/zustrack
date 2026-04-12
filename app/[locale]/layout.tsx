@@ -53,6 +53,14 @@ const META = {
       'previsioni meteo gpx, meteo percorso ciclismo, meteo escursionismo, pianificatore percorso, analizzatore gpx, import strava meteo, previsioni outdoor, condizioni trail, vento ciclismo',
     ogLocale: 'it_IT',
   },
+  de: {
+    title: 'zustrack — Analysiere deine nächste Route. Beherrsche den Weg',
+    description:
+      'Lade deine GPX-Route hoch oder importiere sie von Strava. Erhalte punktgenaue Wettervorhersagen, Höhenanalysen, Risikoerkennung und Mobilfunkabdeckung für deine Rad- und Wanderrouten.',
+    keywords:
+      'gpx wettervorhersage, radroute wetter, wanderwetter, routenplaner, gpx analysator, strava wetter import, outdoor vorhersage, trailbedingungen, windvorhersage radfahren',
+    ogLocale: 'de_DE',
+  },
 } satisfies Record<
   string,
   { title: string; description: string; keywords: string; ogLocale: string }
