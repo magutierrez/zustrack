@@ -170,6 +170,42 @@ Local-only preprocessing script. Reads GPX files from disk, detects and repairs 
 
 ---
 
+### fix-geocode-i18n.mjs
+
+```bash
+node scripts/fix-geocode-i18n.mjs [--dry-run] [--country es] [--limit N]
+```
+
+Populates the `region_i18n` JSONB column with region names in all 6 supported locales (`en`, `es`, `ca`, `fr`, `it`, `de`). Groups trails by their existing `region` value and makes **6 sequential Nominatim requests** (one per locale) per unique region — typically ~100 unique regions across all countries, so the total is ~600 requests (~11 minutes at 1 req/s).
+
+Prerequisite: `ALTER TABLE trails ADD COLUMN IF NOT EXISTS region_i18n JSONB DEFAULT NULL;`
+
+| Flag | Description |
+|------|-------------|
+| `--country es` | Only process trails from this country (omit to process all) |
+| `--dry-run` | Print i18n maps without writing to Supabase |
+| `--limit N` | Process at most N unique regions |
+
+---
+
+### fix-geocode-i18n-mapbox.mjs
+
+```bash
+node scripts/fix-geocode-i18n-mapbox.mjs [--dry-run] [--country es] [--limit N]
+```
+
+Same goal as `fix-geocode-i18n.mjs` but uses the **Mapbox Geocoding API** instead of Nominatim. The 6 locale requests per region are fired **in parallel** (`Promise.all`) with no rate-limit delay, reducing total runtime from ~11 minutes to under 1 minute for all regions.
+
+Requires `MAPBOX_ACCESS_TOKEN` in `.env.local`.
+
+| Flag | Description |
+|------|-------------|
+| `--country es` | Only process trails from this country (omit to process all) |
+| `--dry-run` | Print i18n maps without writing to Supabase |
+| `--limit N` | Process at most N unique regions |
+
+---
+
 ### backup-db.mjs
 
 ```bash

@@ -32,7 +32,7 @@ export async function TrailSearchView({
   const [{ trails, count, page, totalPages }, ranges, regions, routeTypes] = await Promise.all([
     fetchTrails(country, sp),
     getTrailRanges(country),
-    getRegions(country),
+    getRegions(country, locale),
     getRouteTypes(country),
   ]);
 

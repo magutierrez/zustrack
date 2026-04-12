@@ -823,6 +823,20 @@
     "clearFilters": "Effacer",
     "previous": "Précédent",
     "next": "Suivant",
-    "page": "Page {page} sur {total}"
+    "page": "Page {page} sur {total}",
+    "listView": "Liste",
+    "mapView": "Carte",
+    "mapLoading": "Chargement des sentiers…",
+    "mapNoTrails": "Aucun sentier à afficher",
+    "viewTrail": "Voir le sentier",
+    "filterDistance": "Distance",
+    "filterElevation": "Dénivelé",
+    "filterSeason": "Saison",
+    "filterMore": "Filtres",
+    "filterProfile": "Accessibilité",
+    "filterRegion": "Région",
+    "regionPlaceholder": "Rechercher une région…",
+    "noRegions": "Aucune région trouvée",
+    "viewResults": "Voir les résultats"
   }
 }

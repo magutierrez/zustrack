@@ -30,9 +30,12 @@ const PAGE_SIZE = 500;
 // Nominatim
 // ---------------------------------------------------------------------------
 
-async function fetchNominatimGeocode(lat, lng) {
+const COUNTRY_LOCALE = { es: 'es', it: 'it', de: 'de', fr: 'fr', ca: 'ca', en: 'en' };
+
+async function fetchNominatimGeocode(lat, lng, countryCode) {
+  const lang = COUNTRY_LOCALE[countryCode] ?? 'en';
   try {
-    const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=es`;
+    const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=${lang}`;
     const res = await fetch(url, {
       headers: { 'User-Agent': 'zustrackapp/1.0 (trail-import)' },
       signal: AbortSignal.timeout(10000),
@@ -99,7 +102,7 @@ async function main() {
   for (let i = 0; i < toProcess.length; i++) {
     const trail = toProcess[i];
     try {
-      const { region, place } = await fetchNominatimGeocode(trail.start_lat, trail.start_lng);
+      const { region, place } = await fetchNominatimGeocode(trail.start_lat, trail.start_lng, country);
 
       if (dryRun) {
         console.log(`  [dry-run] id=${trail.id} → region="${region}" place="${place}"`);
