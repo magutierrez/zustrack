@@ -315,6 +315,7 @@ export function TrailDetailPageClient({
             <TrailWeatherForecast
               lat={trail.start_lat}
               lng={trail.start_lng}
+              locale={locale}
               labels={{
                 weatherForecast: t('weatherForecast'),
                 bestDay: t('bestDay'),
@@ -430,6 +431,23 @@ export function TrailDetailPageClient({
                 equipmentNavigation: t('equipmentNavigation'),
                 essential: t('essential'),
                 recommended: t('recommended'),
+                equipmentFootwearVibram: t('equipmentFootwearVibram'),
+                equipmentFootwearTrail: t('equipmentFootwearTrail'),
+                equipmentFootwearLight: t('equipmentFootwearLight'),
+                equipmentPolesHighly: t('equipmentPolesHighly'),
+                equipmentPolesRecommended: t('equipmentPolesRecommended'),
+                equipmentWaterAmount: t.raw('equipmentWaterAmount'),
+                equipmentWaterWithSources: t('equipmentWaterWithSources'),
+                equipmentWaterNoSources: t('equipmentWaterNoSources'),
+                equipmentLayersWaterproof: t('equipmentLayersWaterproof'),
+                equipmentLayersFleece: t('equipmentLayersFleece'),
+                equipmentSunHigh: t('equipmentSunHigh'),
+                equipmentSunBasic: t('equipmentSunBasic'),
+                equipmentCramponsNote: t('equipmentCramponsNote'),
+                equipmentFirstAidFull: t('equipmentFirstAidFull'),
+                equipmentFirstAidBasic: t('equipmentFirstAidBasic'),
+                equipmentNavigationGps: t('equipmentNavigationGps'),
+                equipmentNavigationOffline: t('equipmentNavigationOffline'),
               }}
             />
 
