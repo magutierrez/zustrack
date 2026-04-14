@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { unstable_cache } from 'next/cache';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -185,7 +186,8 @@ export async function fetchTrails(country: string, sp: TrailSearchParams): Promi
   };
 }
 
-export async function getTrailRanges(country: string): Promise<TrailRanges> {
+export const getTrailRanges = unstable_cache(
+  async (country: string): Promise<TrailRanges> => {
   const sb = getSupabase();
 
   // 1. Get absolute min/max efficiently for the whole dataset
@@ -239,42 +241,53 @@ export async function getTrailRanges(country: string): Promise<TrailRanges> {
     distanceHistogram,
     elevationHistogram,
   };
-}
+  },
+  ['trail-ranges'],
+  { revalidate: 3600, tags: ['trail-ranges'] },
+);
 
 export interface RegionOption {
   value: string;
   label: string;
 }
 
-export async function getRegions(country: string, locale?: string): Promise<RegionOption[]> {
-  const { data } = await getSupabase().rpc('get_regions', { p_country: country });
-  const regionValues: string[] = (data ?? []).map((row: { region: string }) => row.region);
+export const getRegions = unstable_cache(
+  async (country: string, locale?: string): Promise<RegionOption[]> => {
+    const { data } = await getSupabase().rpc('get_regions', { p_country: country });
+    const regionValues: string[] = (data ?? []).map((row: { region: string }) => row.region);
 
-  if (!locale || regionValues.length === 0) {
-    return regionValues.map((r) => ({ value: r, label: r }));
-  }
-
-  const { data: i18nRows } = await getSupabase()
-    .from('trails')
-    .select('region, region_i18n')
-    .eq('country', country)
-    .in('region', regionValues);
-
-  const labelMap = new Map<string, string>();
-  for (const row of i18nRows ?? []) {
-    if (!labelMap.has(row.region)) {
-      const label = (row.region_i18n as Record<string, string> | null)?.[locale];
-      if (label) labelMap.set(row.region, label);
+    if (!locale || regionValues.length === 0) {
+      return regionValues.map((r) => ({ value: r, label: r }));
     }
-  }
 
-  return regionValues.map((r) => ({ value: r, label: labelMap.get(r) ?? r }));
-}
+    const { data: i18nRows } = await getSupabase()
+      .from('trails')
+      .select('region, region_i18n')
+      .eq('country', country)
+      .in('region', regionValues);
 
-export async function getRouteTypes(country: string): Promise<string[]> {
-  const { data } = await getSupabase().rpc('get_route_types', { p_country: country });
-  return (data ?? []).map((row: { route_type: string }) => row.route_type);
-}
+    const labelMap = new Map<string, string>();
+    for (const row of i18nRows ?? []) {
+      if (!labelMap.has(row.region)) {
+        const label = (row.region_i18n as Record<string, string> | null)?.[locale];
+        if (label) labelMap.set(row.region, label);
+      }
+    }
+
+    return regionValues.map((r) => ({ value: r, label: labelMap.get(r) ?? r }));
+  },
+  ['trail-regions'],
+  { revalidate: 3600, tags: ['trail-regions'] },
+);
+
+export const getRouteTypes = unstable_cache(
+  async (country: string): Promise<string[]> => {
+    const { data } = await getSupabase().rpc('get_route_types', { p_country: country });
+    return (data ?? []).map((row: { route_type: string }) => row.route_type);
+  },
+  ['trail-route-types'],
+  { revalidate: 3600, tags: ['trail-route-types'] },
+);
 
 export async function getSimilarTrails(
   country: string,

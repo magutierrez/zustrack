@@ -1,10 +1,19 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { getTrail } from '@/lib/trails';
+import { getTrail, getTrailStaticParams } from '@/lib/trails';
 import { TrailDetailView } from '@/components/trail-detail/trail-detail-view';
 import { auth } from '@/auth';
 import { routing } from '@/i18n/routing';
+
+export const revalidate = 3600; // ISR: regenera como máximo 1 vez/hora por URL
+
+export async function generateStaticParams() {
+  const trails = await getTrailStaticParams();
+  return routing.locales.flatMap((locale) =>
+    trails.map(({ country, slug }) => ({ locale, country, slug })),
+  );
+}
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://www.zustrack.com';
 
