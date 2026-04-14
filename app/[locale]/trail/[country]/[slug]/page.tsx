@@ -3,7 +3,6 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { getTrail, getTrailStaticParams } from '@/lib/trails';
 import { TrailDetailView } from '@/components/trail-detail/trail-detail-view';
-import { auth } from '@/auth';
 import { routing } from '@/i18n/routing';
 
 export const revalidate = 3600; // ISR: regenera como máximo 1 vez/hora por URL
@@ -81,7 +80,7 @@ export default async function TrailPage({
 
   setRequestLocale(locale);
 
-  const [trail, session] = await Promise.all([getTrail(country, slug), auth()]);
+  const trail = await getTrail(country, slug);
   if (!trail) notFound();
 
   const t = await getTranslations({ locale, namespace: 'TrailPage' });
@@ -144,7 +143,7 @@ export default async function TrailPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <TrailDetailView trail={trail} locale={locale} isAuthenticated={!!session?.user} />
+      <TrailDetailView trail={trail} locale={locale} />
     </>
   );
 }

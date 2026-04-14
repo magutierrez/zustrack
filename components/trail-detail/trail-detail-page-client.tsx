@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useCallback } from 'react';
+import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -64,14 +65,14 @@ function InfoRow({
 export function TrailDetailPageClient({
   trail,
   locale,
-  isAuthenticated,
   similarTrails = [],
 }: {
   trail: Trail;
   locale: string;
-  isAuthenticated: boolean;
   similarTrails?: TrailSummary[];
 }) {
+  const { data: session } = useSession();
+  const isAuthenticated = !!session?.user;
   const t = useTranslations('TrailPage');
   const regionName = trail.region_i18n?.[locale] ?? trail.region;
   const router = useRouter();

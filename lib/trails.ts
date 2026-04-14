@@ -305,10 +305,29 @@ export async function getSimilarTrails(
   return (data ?? []) as TrailSummary[];
 }
 
+export async function getTrailCountries(): Promise<string[]> {
+  const { data } = await getSupabase().from('trails').select('country');
+  const unique = [...new Set((data ?? []).map((r: { country: string }) => r.country))];
+  return unique;
+}
+
 export async function getTrailStaticParams() {
-  const { data } = await getSupabase().from('trails').select('country, slug');
-  return (data ?? []).map((row: { country: string; slug: string }) => ({
-    country: row.country,
-    slug: row.slug,
-  }));
+  // Fetch only the first page of trails per country (sorted by difficulty_score,
+  // same order as the listing page) so we pre-render only the most-visited detail
+  // pages at build time. The rest are served via ISR on the first request.
+  const countries = await getTrailCountries();
+  const pages = await Promise.all(
+    countries.map((country) =>
+      getSupabase()
+        .from('trails')
+        .select('country, slug')
+        .eq('country', country)
+        .order('difficulty_score')
+        .limit(TRAILS_PAGE_SIZE)
+        .then(({ data }) => data ?? []),
+    ),
+  );
+  return pages
+    .flat()
+    .map((row: { country: string; slug: string }) => ({ country: row.country, slug: row.slug }));
 }
