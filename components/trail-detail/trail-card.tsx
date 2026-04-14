@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { ArrowUp, Clock, Ruler, RotateCcw, ArrowRight, Baby, PawPrint } from 'lucide-react';
 import { EffortBadge } from './effort-badge';
+import { TrailSearchParams } from '@/lib/trails';
 
 interface TrailCardData {
   id: number;
@@ -43,10 +44,12 @@ export function TrailCard({
   trail,
   locale,
   labels,
+  sp,
 }: {
   trail: TrailCardData;
   locale: string;
   labels: TrailCardLabels;
+  sp?: TrailSearchParams;
 }) {
   const [imgLoaded, setImgLoaded] = useState(false);
 
@@ -55,9 +58,12 @@ export function TrailCard({
       ? labels.veryHard
       : labels[trail.effort_level as 'easy' | 'moderate' | 'hard'];
 
+  const searchParamsStr = sp ? new URLSearchParams(sp as any).toString() : '';
+  const href = `/${locale}/trail/${trail.country}/${trail.slug}${searchParamsStr ? `?${searchParamsStr}` : ''}`;
+
   return (
     <Link
-      href={`/${locale}/trail/${trail.country}/${trail.slug}`}
+      href={href}
       className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
     >
       {/* Map image hero */}

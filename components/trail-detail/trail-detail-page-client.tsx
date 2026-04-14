@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Header } from '@/app/_components/header';
 import { cn } from '@/lib/utils';
 import {
@@ -75,6 +75,7 @@ export function TrailDetailPageClient({
   const t = useTranslations('TrailPage');
   const regionName = trail.region_i18n?.[locale] ?? trail.region;
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [mobileView, setMobileView] = useState<'info' | 'map'>('info');
   const [selectedRange, setSelectedRange] = useState<Range | null>(null);
@@ -194,7 +195,7 @@ export function TrailDetailPageClient({
           >
             {/* Back link */}
             <Link
-              href={`/${locale}/trail`}
+              href={`/${locale}/trail/${trail.country}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`}
               className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -315,6 +316,7 @@ export function TrailDetailPageClient({
             <TrailWeatherForecast
               lat={trail.start_lat}
               lng={trail.start_lng}
+              locale={locale}
               labels={{
                 weatherForecast: t('weatherForecast'),
                 bestDay: t('bestDay'),
@@ -430,6 +432,23 @@ export function TrailDetailPageClient({
                 equipmentNavigation: t('equipmentNavigation'),
                 essential: t('essential'),
                 recommended: t('recommended'),
+                equipmentFootwearVibram: t('equipmentFootwearVibram'),
+                equipmentFootwearTrail: t('equipmentFootwearTrail'),
+                equipmentFootwearLight: t('equipmentFootwearLight'),
+                equipmentPolesHighly: t('equipmentPolesHighly'),
+                equipmentPolesRecommended: t('equipmentPolesRecommended'),
+                equipmentWaterAmount: t.raw('equipmentWaterAmount'),
+                equipmentWaterWithSources: t('equipmentWaterWithSources'),
+                equipmentWaterNoSources: t('equipmentWaterNoSources'),
+                equipmentLayersWaterproof: t('equipmentLayersWaterproof'),
+                equipmentLayersFleece: t('equipmentLayersFleece'),
+                equipmentSunHigh: t('equipmentSunHigh'),
+                equipmentSunBasic: t('equipmentSunBasic'),
+                equipmentCramponsNote: t('equipmentCramponsNote'),
+                equipmentFirstAidFull: t('equipmentFirstAidFull'),
+                equipmentFirstAidBasic: t('equipmentFirstAidBasic'),
+                equipmentNavigationGps: t('equipmentNavigationGps'),
+                equipmentNavigationOffline: t('equipmentNavigationOffline'),
               }}
             />
 

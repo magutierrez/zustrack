@@ -160,6 +160,31 @@ Re-reads `track_profile` from Supabase and recalculates `max_slope_pct` using th
 
 ---
 
+### fix-zero-elevation.mjs
+
+```bash
+node scripts/fix-zero-elevation.mjs [--dry-run] [--limit N] [--country es]
+```
+
+Detects trails where both `elevation_gain_m` and `elevation_loss_m` are exactly 0 despite having valid elevation data in `track_profile`. This happens when the source GPX lacked `<ele>` tags and a subsequent elevation fix script (`fix-elevation-es.mjs` / `fix-elevation-it.mjs`) updated `track_profile` with real elevation values but did not recalculate the derived metrics.
+
+Recalculates gain/loss/min/max/avg directly from the sampled `track_profile` (no 2 m threshold, since points are already coarsely sampled). Skips trails whose profile has no valid elevation points or whose recalculated gain is still 0 (genuinely flat terrain). Updates all derived fields and patches Supabase.
+
+**Detection criteria:**
+- `elevation_gain_m = 0` AND `elevation_loss_m = 0`
+- `track_profile` is not null and contains at least one point with a valid `e` value
+
+**Fields updated:**
+`elevation_gain_m`, `elevation_loss_m`, `elevation_min_m`, `elevation_max_m`, `avg_elevation_m`, `max_slope_pct`, `estimated_duration_min`, `difficulty_score`, `effort_level`, `child_friendly`, `pet_friendly`
+
+| Flag | Description |
+|------|-------------|
+| `--dry-run` | Print results without writing to Supabase |
+| `--limit N` | Process at most N trails |
+| `--country es` | Only process trails with this country code |
+
+---
+
 ### fix-gpx.mjs
 
 ```bash

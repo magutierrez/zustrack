@@ -232,6 +232,7 @@ export async function TrailSearchView({
                 trail={trail as Parameters<typeof TrailCard>[0]['trail']}
                 locale={locale}
                 labels={cardLabels}
+                sp={sp}
               />
             ))}
           </div>

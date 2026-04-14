@@ -23,6 +23,24 @@ interface Labels {
   equipmentNavigation: string;
   essential: string;
   recommended: string;
+  // Item texts
+  equipmentFootwearVibram: string;
+  equipmentFootwearTrail: string;
+  equipmentFootwearLight: string;
+  equipmentPolesHighly: string;
+  equipmentPolesRecommended: string;
+  equipmentWaterAmount: string;
+  equipmentWaterWithSources: string;
+  equipmentWaterNoSources: string;
+  equipmentLayersWaterproof: string;
+  equipmentLayersFleece: string;
+  equipmentSunHigh: string;
+  equipmentSunBasic: string;
+  equipmentCramponsNote: string;
+  equipmentFirstAidFull: string;
+  equipmentFirstAidBasic: string;
+  equipmentNavigationGps: string;
+  equipmentNavigationOffline: string;
 }
 
 interface TrailData {
@@ -49,18 +67,18 @@ function buildEquipmentList(trail: TrailData, labels: Labels): EquipmentItem[] {
 
   // Footwear
   if (slope > 30 || (hardSurfaces.includes(surface) && slope > 20)) {
-    items.push({ icon: '🥾', text: 'Botas de montaña con suela Vibram', level: 'essential', category: labels.equipmentFootwear });
+    items.push({ icon: '🥾', text: labels.equipmentFootwearVibram, level: 'essential', category: labels.equipmentFootwear });
   } else if (hardSurfaces.includes(surface) || slope > 15) {
-    items.push({ icon: '👟', text: 'Zapatillas trail running', level: 'recommended', category: labels.equipmentFootwear });
+    items.push({ icon: '👟', text: labels.equipmentFootwearTrail, level: 'recommended', category: labels.equipmentFootwear });
   } else {
-    items.push({ icon: '👟', text: 'Calzado de senderismo ligero', level: 'recommended', category: labels.equipmentFootwear });
+    items.push({ icon: '👟', text: labels.equipmentFootwearLight, level: 'recommended', category: labels.equipmentFootwear });
   }
 
   // Poles
   if (gain > 1000 || slope > 30) {
-    items.push({ icon: '🪄', text: 'Bastones de trekking muy recomendados', level: 'essential', category: labels.equipmentPoles });
+    items.push({ icon: '🪄', text: labels.equipmentPolesHighly, level: 'essential', category: labels.equipmentPoles });
   } else if (gain > 500 || slope > 20) {
-    items.push({ icon: '🪄', text: 'Bastones de trekking recomendados', level: 'recommended', category: labels.equipmentPoles });
+    items.push({ icon: '🪄', text: labels.equipmentPolesRecommended, level: 'recommended', category: labels.equipmentPoles });
   }
 
   // Water
@@ -68,44 +86,47 @@ function buildEquipmentList(trail: TrailData, labels: Labels): EquipmentItem[] {
   const litersBase = Math.ceil(durationH * 0.5);
   const hasWater = (trail.water_sources?.length ?? 0) > 0;
   const liters = hasWater ? litersBase : litersBase + 1;
+  const waterAmount = labels.equipmentWaterAmount
+    .replace('{min}', String(liters))
+    .replace('{max}', String(liters + 1));
   items.push({
     icon: '💧',
-    text: `Llevar ${liters}–${liters + 1} L${hasWater ? ' (hay fuentes en ruta)' : ' (sin fuentes en ruta)'}`,
+    text: `${waterAmount} ${hasWater ? labels.equipmentWaterWithSources : labels.equipmentWaterNoSources}`,
     level: hasWater ? 'recommended' : 'essential',
     category: labels.equipmentWater,
   });
 
   // Layers
   if (maxEl > 2500 || trail.season_best === 'avoid_winter') {
-    items.push({ icon: '🧥', text: 'Capa impermeable + forro polar', level: 'essential', category: labels.equipmentLayers });
+    items.push({ icon: '🧥', text: labels.equipmentLayersWaterproof, level: 'essential', category: labels.equipmentLayers });
   } else if (maxEl > 1500) {
-    items.push({ icon: '🧣', text: 'Forro polar o cortavientos', level: 'recommended', category: labels.equipmentLayers });
+    items.push({ icon: '🧣', text: labels.equipmentLayersFleece, level: 'recommended', category: labels.equipmentLayers });
   }
 
   // Sun protection
   if (avgEl > 1500 || maxEl > 2000) {
-    items.push({ icon: '🧴', text: 'Protector solar factor 50+, gorra', level: 'essential', category: labels.equipmentSun });
+    items.push({ icon: '🧴', text: labels.equipmentSunHigh, level: 'essential', category: labels.equipmentSun });
   } else {
-    items.push({ icon: '🧴', text: 'Protector solar recomendado', level: 'recommended', category: labels.equipmentSun });
+    items.push({ icon: '🧴', text: labels.equipmentSunBasic, level: 'recommended', category: labels.equipmentSun });
   }
 
   // Crampons
   if (maxEl > 2000 && trail.season_best === 'avoid_winter') {
-    items.push({ icon: '⛰️', text: 'Posibles crampones o microspikes', level: 'recommended', category: labels.equipmentCrampons });
+    items.push({ icon: '⛰️', text: labels.equipmentCramponsNote, level: 'recommended', category: labels.equipmentCrampons });
   }
 
   // First aid
   if (trail.effort_level === 'very_hard' || dist > 20) {
-    items.push({ icon: '🩹', text: 'Botiquín básico + silbato + manta térmica', level: 'essential', category: labels.equipmentFirstAid });
+    items.push({ icon: '🩹', text: labels.equipmentFirstAidFull, level: 'essential', category: labels.equipmentFirstAid });
   } else if (trail.effort_level === 'hard') {
-    items.push({ icon: '🩹', text: 'Botiquín básico', level: 'recommended', category: labels.equipmentFirstAid });
+    items.push({ icon: '🩹', text: labels.equipmentFirstAidBasic, level: 'recommended', category: labels.equipmentFirstAid });
   }
 
   // Navigation
   if (dist > 15) {
-    items.push({ icon: '🗺️', text: 'GPS o descarga offline de la ruta', level: 'essential', category: labels.equipmentNavigation });
+    items.push({ icon: '🗺️', text: labels.equipmentNavigationGps, level: 'essential', category: labels.equipmentNavigation });
   } else if (dist > 8) {
-    items.push({ icon: '🗺️', text: 'Descarga offline recomendada', level: 'recommended', category: labels.equipmentNavigation });
+    items.push({ icon: '🗺️', text: labels.equipmentNavigationOffline, level: 'recommended', category: labels.equipmentNavigation });
   }
 
   return items;

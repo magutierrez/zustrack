@@ -35,9 +35,9 @@ function weatherEmoji(code: number): string {
   return '🌡️';
 }
 
-function formatShortDate(dateStr: string): string {
+function formatShortDate(dateStr: string, locale?: string): string {
   const d = new Date(dateStr + 'T12:00:00Z');
-  return d.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' });
+  return d.toLocaleDateString(locale, { weekday: 'short', day: 'numeric' });
 }
 
 function bestDayScore(day: DayForecast): number {
@@ -51,10 +51,12 @@ export function TrailWeatherForecast({
   lat,
   lng,
   labels,
+  locale,
 }: {
   lat: number;
   lng: number;
   labels: Labels;
+  locale?: string;
 }) {
   const [forecast, setForecast] = useState<DayForecast[] | null>(null);
   const [error, setError] = useState(false);
@@ -121,7 +123,7 @@ export function TrailWeatherForecast({
                   </span>
                 )}
                 <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
-                  {formatShortDate(day.date)}
+                  {formatShortDate(day.date, locale)}
                 </span>
                 <span className="text-2xl leading-none">{weatherEmoji(day.weathercode)}</span>
                 <div className="flex flex-col items-center">

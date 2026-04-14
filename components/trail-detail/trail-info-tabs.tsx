@@ -35,6 +35,23 @@ interface Labels {
   equipmentNavigation: string;
   essential: string;
   recommended: string;
+  equipmentFootwearVibram: string;
+  equipmentFootwearTrail: string;
+  equipmentFootwearLight: string;
+  equipmentPolesHighly: string;
+  equipmentPolesRecommended: string;
+  equipmentWaterAmount: string;
+  equipmentWaterWithSources: string;
+  equipmentWaterNoSources: string;
+  equipmentLayersWaterproof: string;
+  equipmentLayersFleece: string;
+  equipmentSunHigh: string;
+  equipmentSunBasic: string;
+  equipmentCramponsNote: string;
+  equipmentFirstAidFull: string;
+  equipmentFirstAidBasic: string;
+  equipmentNavigationGps: string;
+  equipmentNavigationOffline: string;
 }
 
 export function TrailInfoTabs({
@@ -148,6 +165,23 @@ export function TrailInfoTabs({
             equipmentNavigation: labels.equipmentNavigation,
             essential: labels.essential,
             recommended: labels.recommended,
+            equipmentFootwearVibram: labels.equipmentFootwearVibram,
+            equipmentFootwearTrail: labels.equipmentFootwearTrail,
+            equipmentFootwearLight: labels.equipmentFootwearLight,
+            equipmentPolesHighly: labels.equipmentPolesHighly,
+            equipmentPolesRecommended: labels.equipmentPolesRecommended,
+            equipmentWaterAmount: labels.equipmentWaterAmount,
+            equipmentWaterWithSources: labels.equipmentWaterWithSources,
+            equipmentWaterNoSources: labels.equipmentWaterNoSources,
+            equipmentLayersWaterproof: labels.equipmentLayersWaterproof,
+            equipmentLayersFleece: labels.equipmentLayersFleece,
+            equipmentSunHigh: labels.equipmentSunHigh,
+            equipmentSunBasic: labels.equipmentSunBasic,
+            equipmentCramponsNote: labels.equipmentCramponsNote,
+            equipmentFirstAidFull: labels.equipmentFirstAidFull,
+            equipmentFirstAidBasic: labels.equipmentFirstAidBasic,
+            equipmentNavigationGps: labels.equipmentNavigationGps,
+            equipmentNavigationOffline: labels.equipmentNavigationOffline,
           }}
         />
       </TabsContent>
