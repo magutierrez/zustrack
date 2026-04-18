@@ -2,18 +2,8 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import type { TrailSearchParams } from '@/lib/trails';
-import { getTrailCountries } from '@/lib/trails';
 import { TrailSearchView } from '@/components/trail-detail/trail-search-view';
 import { routing } from '@/i18n/routing';
-
-// Define valid country routes so Vercel knows these paths exist.
-// The page remains dynamic (reads searchParams) but the routes are recognized.
-export async function generateStaticParams() {
-  const countries = await getTrailCountries();
-  return routing.locales.flatMap((locale) =>
-    countries.map((country) => ({ locale, country })),
-  );
-}
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://www.zustrack.com';
 
