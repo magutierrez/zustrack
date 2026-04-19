@@ -5,11 +5,9 @@ import { TrailDetailPageClient } from './trail-detail-page-client';
 export async function TrailDetailView({
   trail,
   locale,
-  isAuthenticated,
 }: {
   trail: Trail;
   locale: string;
-  isAuthenticated: boolean;
 }) {
   const similarTrails: TrailSummary[] = await getSimilarTrails(
     trail.country,
@@ -21,7 +19,6 @@ export async function TrailDetailView({
     <TrailDetailPageClient
       trail={trail}
       locale={locale}
-      isAuthenticated={isAuthenticated}
       similarTrails={similarTrails}
     />
   );

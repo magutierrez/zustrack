@@ -175,6 +175,7 @@
     "mudLow": "Posible barro ligero en tramos sin asfaltar tras las últimas lluvias.",
     "mudKmRange": "Tramo afectado: km {start}–{end}",
     "viewOnMap": "Ver en mapa",
+    "viewFullRoute": "Ver ruta completa",
     "mudLevel": {
       "none": "Seco",
       "low": "Bajo",

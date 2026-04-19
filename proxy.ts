@@ -8,12 +8,10 @@ const intlMiddleware = createMiddleware(routing);
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Always let Next.js auth callbacks and public API routes pass through
   if (pathname.startsWith('/api/auth') || pathname.startsWith('/api/trails')) {
     return NextResponse.next();
   }
 
-  // Protect all other API routes — require an active session
   if (pathname.startsWith('/api/')) {
     const session = await auth();
     if (!session?.user) {
@@ -22,20 +20,16 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Detect locale segment at the start of the path
-  const locale = routing.locales.find((l) => pathname.startsWith(`/${l}/`) || pathname === `/${l}`);
+  const response = intlMiddleware(request);
 
-  // No locale prefix yet → let intl middleware redirect to add it (e.g. / → /en/)
-  // Auth will be checked on the next request once the locale is in the URL
-  if (!locale) {
-    return intlMiddleware(request);
-  }
+  const segments = pathname.split('/').filter(Boolean);
+  const locale = routing.locales.find((l) => l === segments[0]);
 
-  // Strip locale prefix to get the clean path for auth checks
-  const cleanPath = pathname.slice(locale.length + 1) || '/';
+  if (!locale) return response;
+
+  const cleanPath = `/${segments.slice(1).join('/')}`;
 
   const isLoginPath = cleanPath.startsWith('/app/login');
-
   const isPublicPath =
     cleanPath === '/' ||
     cleanPath.startsWith('/terms') ||
@@ -47,27 +41,29 @@ export async function proxy(request: NextRequest) {
     const session = await auth();
     if (!session?.user) {
       const loginUrl = new URL(`/${locale}/app/login`, request.url);
-      loginUrl.searchParams.set('callbackUrl', pathname + request.nextUrl.search);
+
+      loginUrl.searchParams.set('callbackUrl', cleanPath + request.nextUrl.search);
+
       return NextResponse.redirect(loginUrl);
     }
   }
 
-  // Already logged in → skip the login page, honour callbackUrl if present
   if (isLoginPath) {
     const session = await auth();
     if (session?.user) {
       const callbackUrl = request.nextUrl.searchParams.get('callbackUrl');
-      const destination =
-        callbackUrl?.startsWith('/') ? callbackUrl : `/${locale}/app/setup`;
+
+      const destination = callbackUrl?.startsWith('/')
+        ? `/${locale}${callbackUrl}`
+        : `/${locale}/app/setup`;
+
       return NextResponse.redirect(new URL(destination, request.url));
     }
   }
 
-  return intlMiddleware(request);
+  return response;
 }
 
 export const config = {
-  // Exclude: Next.js internals and any path with a file extension
-  // (e.g. /og.png, /favicon.ico, /robots.txt, /sitemap.xml, ...)
   matcher: ['/((?!_next|.*\\.[^/]+$).*)'],
 };

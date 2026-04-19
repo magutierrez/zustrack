@@ -158,26 +158,44 @@ export async function POST(request: NextRequest) {
     const getDistSq = (p1: Point, p2: { lat: number; lon: number }) =>
       Math.sqrt(Math.pow(p1.lat - p2.lat, 2) + Math.pow(p1.lon - p2.lon, 2)) * 111.32;
 
-    const highwayElements = elements.filter((el: any) => el.tags?.highway);
-    const escapeElements = elements.filter(
-      (el: any) =>
-        el.tags?.place ||
-        (el.tags?.highway && ['primary', 'secondary'].includes(el.tags.highway)) ||
-        (el.tags?.tourism && ['alpine_hut', 'wilderness_hut'].includes(el.tags.tourism)),
-    );
-    const waterElements = elements.filter(
-      (el: any) =>
-        el.tags?.amenity === 'drinking_water' ||
-        el.tags?.natural === 'spring' ||
-        el.tags?.man_made === 'water_tap',
-    );
+    // Pre-sort elements by proximity to the route centroid and cap to limit
+    // per-point loop iterations. Overpass can return thousands of highway ways
+    // for large bboxes — without a cap the loops are O(N×M).
+    const centerLat = (Math.min(...lats) + Math.max(...lats)) / 2;
+    const centerLon = (Math.min(...lons) + Math.max(...lons)) / 2;
+    const distSqToCenter = (el: any) => {
+      const pt = el.center || { lat: el.lat, lon: el.lon };
+      return Math.pow(pt.lat - centerLat, 2) + Math.pow(pt.lon - centerLon, 2);
+    };
+
+    const highwayElements = elements
+      .filter((el: any) => el.tags?.highway)
+      .sort((a: any, b: any) => distSqToCenter(a) - distSqToCenter(b))
+      .slice(0, 300);
+    const escapeElements = elements
+      .filter(
+        (el: any) =>
+          el.tags?.place ||
+          (el.tags?.highway && ['primary', 'secondary'].includes(el.tags.highway)) ||
+          (el.tags?.tourism && ['alpine_hut', 'wilderness_hut'].includes(el.tags.tourism)),
+      )
+      .sort((a: any, b: any) => distSqToCenter(a) - distSqToCenter(b))
+      .slice(0, 100);
+    const waterElements = elements
+      .filter(
+        (el: any) =>
+          el.tags?.amenity === 'drinking_water' ||
+          el.tags?.natural === 'spring' ||
+          el.tags?.man_made === 'water_tap',
+      )
+      .sort((a: any, b: any) => distSqToCenter(a) - distSqToCenter(b))
+      .slice(0, 100);
 
     const pathData = points.map((p, idx) => {
       let closestWay = null;
       let minWayDist = Infinity;
       let closestEscape: any = null;
       let minEscapeDist = Infinity;
-      let nearbyInfraCount = 0;
       let minCellDist = Infinity;
 
       for (const element of highwayElements) {
@@ -186,9 +204,8 @@ export async function POST(request: NextRequest) {
         if (dist < 0.1 && dist < minWayDist) {
           minWayDist = dist;
           closestWay = element;
+          if (minWayDist < 0.05) break; // ≤50 m is good enough, stop searching
         }
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        if (dist < 3) nearbyInfraCount++;
       }
 
       if (cellTowers.length > 0) {
@@ -205,6 +222,7 @@ export async function POST(request: NextRequest) {
         if (dist < 2.5 && dist < minEscapeDist) {
           minEscapeDist = dist;
           closestEscape = element;
+          if (minEscapeDist < 0.3) break; // ≤300 m is a good escape point, stop searching
         }
       }
 

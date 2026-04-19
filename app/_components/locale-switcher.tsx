@@ -1,6 +1,6 @@
 'use client';
 
-import { useLocale, useTranslations } from 'next-intl';
+import { useLocale } from 'next-intl';
 import { usePathname, useRouter } from '@/i18n/navigation';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -13,57 +13,63 @@ import {
 import { Globe } from 'lucide-react';
 import { routing } from '@/i18n/routing';
 import { useTransition, Suspense } from 'react';
+import { cn } from '@/lib/utils';
 
 type Locale = (typeof routing.locales)[number];
 
 function LocaleSwitcherContent() {
-  const t = useTranslations('LocaleSwitcher');
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [, startTransition] = useTransition();
+  const [isPending, startTransition] = useTransition();
+
+  const labels: Record<string, string> = {
+    en: 'English',
+    es: 'Español',
+    ca: 'Català',
+    fr: 'Français',
+    it: 'Italiano',
+    de: 'Deutsch',
+  };
 
   const onSelectChange = (nextLocale: Locale) => {
+    if (nextLocale === locale) return;
+
     const params = new URLSearchParams(searchParams.toString());
+
     startTransition(() => {
       router.replace(
-        {
-          pathname,
-          query: Object.fromEntries(params.entries()),
-        },
+        { pathname, query: Object.fromEntries(params.entries()) },
         { locale: nextLocale },
       );
+
+      router.refresh();
     });
   };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative h-9 w-9">
-          <Globe className="h-5 w-5" />
-          <span className="sr-only">{t('switchLocale')}</span>
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn('relative h-9 w-9', isPending && 'opacity-50')}
+          disabled={isPending}
+        >
+          <Globe className={cn('h-5 w-5', isPending && 'animate-spin')} />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-40" align="end" forceMount>
-        <DropdownMenuItem onClick={() => onSelectChange('en')} disabled={locale === 'en'}>
-          English
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onSelectChange('es')} disabled={locale === 'es'}>
-          Español
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onSelectChange('ca')} disabled={locale === 'ca'}>
-          Català
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onSelectChange('fr')} disabled={locale === 'fr'}>
-          Français
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onSelectChange('it')} disabled={locale === 'it'}>
-          Italiano
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onSelectChange('de')} disabled={locale === 'de'}>
-          Deutsch
-        </DropdownMenuItem>
+      <DropdownMenuContent className="w-40" align="end">
+        {routing.locales.map((loc) => (
+          <DropdownMenuItem
+            key={loc}
+            onClick={() => onSelectChange(loc)}
+            className={cn(locale === loc && 'bg-muted font-bold')}
+          >
+            {labels[loc]}
+          </DropdownMenuItem>
+        ))}
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -71,13 +77,7 @@ function LocaleSwitcherContent() {
 
 export function LocaleSwitcher() {
   return (
-    <Suspense
-      fallback={
-        <Button variant="ghost" size="icon" className="relative h-9 w-9" disabled>
-          <Globe className="h-5 w-5 opacity-50" />
-        </Button>
-      }
-    >
+    <Suspense fallback={<div className="h-9 w-9" />}>
       <LocaleSwitcherContent />
     </Suspense>
   );
