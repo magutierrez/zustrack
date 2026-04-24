@@ -285,9 +285,12 @@ export function TrailElevationChart({
 
   // Live-ref and touchZoomRangeRef — declarations here (hooks must be before early returns)
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const liveRef = useRef<any>({});
   const touchZoomRangeRef = useRef(zoomRange);
-  touchZoomRangeRef.current = zoomRange;
+  useEffect(() => {
+    touchZoomRangeRef.current = zoomRange;
+  }, [zoomRange]);
 
   // Non-passive touch handlers on the SVG (prevents map panning while scrubbing)
   useEffect(() => {
@@ -408,16 +411,18 @@ export function TrailElevationChart({
   }, [externalHoverDist, chartData, xScale, yScale, innerW, innerH, zoomRange]);
 
   // Keep liveRef up-to-date with values needed by the touch effect (always after tooltipFromDist)
-  liveRef.current = {
-    xScale,
-    margin,
-    innerW,
-    chartData,
-    selectable,
-    tooltipFromDist,
-    onHoverDist,
-    confirmSelection,
-  };
+  useEffect(() => {
+    liveRef.current = {
+      xScale,
+      margin,
+      innerW,
+      chartData,
+      selectable,
+      tooltipFromDist,
+      onHoverDist,
+      confirmSelection,
+    };
+  });
 
   // Active tooltip: local (chart hover) takes priority over external (map hover)
   const activeTooltip = tooltip ?? externalTooltip;

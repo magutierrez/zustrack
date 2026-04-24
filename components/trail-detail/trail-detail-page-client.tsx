@@ -91,7 +91,9 @@ export function TrailDetailPageClient({
   const [mapHeightPx, setMapHeightPx] = useState<number | null>(null);
   const [nearFullscreen, setNearFullscreen] = useState(false);
   const mapHeightPxRef = useRef<number | null>(null);
-  mapHeightPxRef.current = mapHeightPx;
+  useEffect(() => {
+    mapHeightPxRef.current = mapHeightPx;
+  }, [mapHeightPx]);
 
   useEffect(() => {
     const el = dragHandleRef.current;
