@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
@@ -84,6 +84,58 @@ export function TrailDetailPageClient({
   const [hoverDist, setHoverDist] = useState<number | null>(null);
   const [focusPoint, setFocusPoint] = useState<POIPoint | null>(null);
   const [activePOI, setActivePOI] = useState<POIPoint | null>(null);
+
+  // Drag handle — resize map height on mobile
+  const dragHandleRef = useRef<HTMLDivElement>(null);
+  const dragStateRef = useRef<{ startY: number; startH: number } | null>(null);
+  const [mapHeightPx, setMapHeightPx] = useState<number | null>(null);
+  const [nearFullscreen, setNearFullscreen] = useState(false);
+  const mapHeightPxRef = useRef<number | null>(null);
+  mapHeightPxRef.current = mapHeightPx;
+
+  useEffect(() => {
+    const el = dragHandleRef.current;
+    if (!el) return;
+
+    const onTouchStart = (e: TouchEvent) => {
+      const t = e.touches[0];
+      dragStateRef.current = {
+        startY: t.clientY,
+        startH: mapHeightPxRef.current ?? window.innerHeight * 0.38,
+      };
+    };
+
+    const FULLSCREEN_THRESHOLD = 0.62; // fraction of screen height
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (!dragStateRef.current) return;
+      e.preventDefault();
+      const delta = e.touches[0].clientY - dragStateRef.current.startY;
+      const newH = dragStateRef.current.startH + delta;
+      const clamped = Math.max(window.innerHeight * 0.12, Math.min(window.innerHeight * 0.85, newH));
+      setMapHeightPx(clamped);
+      setNearFullscreen(clamped > window.innerHeight * FULLSCREEN_THRESHOLD);
+    };
+
+    const onTouchEnd = () => {
+      dragStateRef.current = null;
+      setNearFullscreen(false);
+      const current = mapHeightPxRef.current;
+      if (current !== null && current > window.innerHeight * FULLSCREEN_THRESHOLD) {
+        setMapExpanded(true);
+        setMapHeightPx(null);
+      }
+    };
+
+    el.addEventListener('touchstart', onTouchStart, { passive: true });
+    el.addEventListener('touchmove', onTouchMove, { passive: false });
+    el.addEventListener('touchend', onTouchEnd);
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchmove', onTouchMove);
+      el.removeEventListener('touchend', onTouchEnd);
+    };
+  }, []);
 
   const handleShowOnMap = (lat: number, lng: number) => {
     setFocusPoint({ lat, lng });
@@ -203,9 +255,19 @@ export function TrailDetailPageClient({
         <main className="flex flex-1 flex-col lg:min-h-0 lg:flex-row lg:overflow-hidden">
           {/* LEFT: scrollable content — bottom sheet on mobile */}
           <div className="trail-scrollbar z-3 order-2 -mt-8 flex flex-col overflow-y-auto rounded-t-3xl bg-white shadow-[0_-8px_24px_rgba(0,0,0,0.08)] lg:order-1 lg:mt-0 lg:w-[55%] lg:rounded-none lg:bg-transparent lg:shadow-none dark:bg-[#0e0f18] dark:shadow-[0_-8px_24px_rgba(0,0,0,0.35)] dark:lg:bg-transparent">
-            {/* Drag handle — mobile only */}
-            <div className="flex shrink-0 justify-center pt-3 pb-3 lg:hidden">
-              <div className="h-1 w-10 rounded-full bg-slate-200 dark:bg-slate-600" />
+            {/* Drag handle — mobile only, touch-active */}
+            <div
+              ref={dragHandleRef}
+              className="flex shrink-0 touch-none justify-center py-4 lg:hidden"
+            >
+              <div
+                className={cn(
+                  'h-1 w-10 rounded-full transition-all duration-150',
+                  nearFullscreen
+                    ? 'w-16 bg-slate-500 dark:bg-slate-300'
+                    : 'bg-slate-200 dark:bg-slate-600',
+                )}
+              />
             </div>
 
             {/* Inner content wrapper */}
@@ -565,6 +627,7 @@ export function TrailDetailPageClient({
               'relative order-1 h-[38vh] shrink-0 border-slate-200 lg:order-2 lg:h-auto lg:flex-1 lg:border-l dark:border-slate-800',
               mapExpanded && 'fixed inset-0 z-50 h-screen',
             )}
+            style={mapHeightPx !== null && !mapExpanded ? { height: mapHeightPx } : undefined}
           >
             {trackProfile.length > 0 ? (
               <TrailMapWrapper
@@ -580,6 +643,7 @@ export function TrailDetailPageClient({
                 focusPoint={focusPoint}
                 onFocusPointConsumed={() => setFocusPoint(null)}
                 activePOI={activePOI}
+                mapExpanded={mapExpanded}
               />
             ) : (
               <div className="flex h-full items-center justify-center bg-slate-100 dark:bg-slate-900">

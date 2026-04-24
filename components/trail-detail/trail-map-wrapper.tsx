@@ -26,12 +26,14 @@ interface Props {
   focusPoint?: { lat: number; lng: number } | null;
   onFocusPointConsumed?: () => void;
   activePOI?: { lat: number; lng: number } | null;
+  mapExpanded?: boolean;
 }
 
 export function TrailMapWrapper({
   trackProfile, name, isCircular, selectedRange, onReset,
   hoverDist, onHoverDist,
   escapePoints, waterSources, focusPoint, onFocusPointConsumed, activePOI,
+  mapExpanded,
 }: Props) {
   return (
     <TrailMapInner
@@ -47,6 +49,7 @@ export function TrailMapWrapper({
       focusPoint={focusPoint}
       onFocusPointConsumed={onFocusPointConsumed}
       activePOI={activePOI}
+      mapExpanded={mapExpanded}
     />
   );
 }

@@ -46,6 +46,7 @@ interface TrailMapProps {
   focusPoint?: { lat: number; lng: number } | null;
   onFocusPointConsumed?: () => void;
   activePOI?: { lat: number; lng: number } | null;
+  mapExpanded?: boolean;
 }
 
 /** Build color-stop stops for MapLibre line-gradient from slope values */
@@ -132,6 +133,7 @@ export default function TrailMap({
   focusPoint,
   onFocusPointConsumed,
   activePOI,
+  mapExpanded,
 }: TrailMapProps) {
   const mapRef = useRef<MapRef | null>(null);
   const [mapType, setMapType] = useState<TrailMapLayerType>('osm');
@@ -384,8 +386,10 @@ export default function TrailMap({
         attributionControl={false}
         transformRequest={transformRequest}
       >
-        <NavigationControl position="bottom-right" />
-        <TrailLayerControl mapType={mapType} setMapType={setMapType} />
+        {!isMobile && <NavigationControl position="bottom-right" />}
+        {(!isMobile || mapExpanded) && (
+          <TrailLayerControl mapType={mapType} setMapType={setMapType} />
+        )}
         <div className="absolute top-14 right-3 z-10">
           <Button
             variant={enable3D ? 'default' : 'secondary'}
