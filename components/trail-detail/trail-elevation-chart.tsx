@@ -61,6 +61,8 @@ export function TrailElevationChart({
   compact = false,
   singleColor,
   selectable = true,
+  noGradient = false,
+  showTooltip = false,
 }: {
   trackProfile: TrackPoint[];
   labels: Labels;
@@ -73,6 +75,10 @@ export function TrailElevationChart({
   singleColor?: string;
   /** Whether the user can drag to select a range. Default true. */
   selectable?: boolean;
+  /** Suppress the compact gradient overlay. */
+  noGradient?: boolean;
+  /** Show tooltip popup even in compact mode. */
+  showTooltip?: boolean;
 }) {
   const rawId = useId();
   const uid = rawId.replace(/:/g, '');
@@ -277,6 +283,79 @@ export function TrailElevationChart({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [onRangeSelect]);
 
+  // Live-ref and touchZoomRangeRef — declarations here (hooks must be before early returns)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const liveRef = useRef<any>({});
+  const touchZoomRangeRef = useRef(zoomRange);
+  touchZoomRangeRef.current = zoomRange;
+
+  // Non-passive touch handlers on the SVG (prevents map panning while scrubbing)
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+
+    const getDistFromTouch = (clientX: number): number | null => {
+      const { xScale: xs, margin: m, innerW: iw } = liveRef.current;
+      if (!xs) return null;
+      const rect = svg.getBoundingClientRect();
+      const x = clientX - rect.left - m.left;
+      return xs.invert(Math.max(0, Math.min(iw, x)));
+    };
+
+    const onTouchStart = (e: TouchEvent) => {
+      e.preventDefault();
+      const dist = getDistFromTouch(e.touches[0].clientX);
+      if (dist == null) return;
+      if (liveRef.current.selectable && !touchZoomRangeRef.current) {
+        isDragging.current = true;
+        dragStartRef.current = dist;
+        dragEndRef.current = dist;
+        setTooltip(null);
+      }
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      e.preventDefault();
+      const dist = getDistFromTouch(e.touches[0].clientX);
+      if (dist == null) return;
+      if (isDragging.current && dragStartRef.current !== null) {
+        dragEndRef.current = dist;
+        setDragPreview({ start: dragStartRef.current, end: dist });
+        return;
+      }
+      const t = liveRef.current.tooltipFromDist(dist);
+      if (t) { setTooltip(t); liveRef.current.onHoverDist?.(t.dist); }
+    };
+
+    const onTouchEnd = () => {
+      if (isDragging.current) {
+        isDragging.current = false;
+        const start = dragStartRef.current;
+        const end = dragEndRef.current;
+        if (start !== null && end !== null && Math.abs(end - start) > 0.01) {
+          liveRef.current.confirmSelection(start, end);
+        } else {
+          setDragPreview(null);
+        }
+        dragStartRef.current = null;
+        dragEndRef.current = null;
+      } else {
+        setTooltip(null);
+        liveRef.current.onHoverDist?.(null);
+      }
+    };
+
+    svg.addEventListener('touchstart', onTouchStart, { passive: false });
+    svg.addEventListener('touchmove', onTouchMove, { passive: false });
+    svg.addEventListener('touchend', onTouchEnd);
+    return () => {
+      svg.removeEventListener('touchstart', onTouchStart);
+      svg.removeEventListener('touchmove', onTouchMove);
+      svg.removeEventListener('touchend', onTouchEnd);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Compute tooltip state for a given distance value
   const tooltipFromDist = (dist: number): TooltipState | null => {
     if (!xScale || !yScale || !chartData.length) return null;
@@ -325,6 +404,9 @@ export function TrailElevationChart({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [externalHoverDist, chartData, xScale, yScale, innerW, innerH, zoomRange]);
+
+  // Keep liveRef up-to-date with values needed by the touch effect (always after tooltipFromDist)
+  liveRef.current = { xScale, margin, innerW, chartData, selectable, tooltipFromDist, onHoverDist, confirmSelection };
 
   // Active tooltip: local (chart hover) takes priority over external (map hover)
   const activeTooltip = tooltip ?? externalTooltip;
@@ -391,8 +473,8 @@ export function TrailElevationChart({
           : 'rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900'
       }
     >
-      {/* Gradient overlay — only in compact mode, direction depends on context */}
-      {compact && (
+      {/* Gradient overlay — only in compact mode when not suppressed */}
+      {compact && !noGradient && (
         <div
           className={cn(
             'pointer-events-none absolute inset-0 z-10',
@@ -421,9 +503,44 @@ export function TrailElevationChart({
         </div>
       )}
 
+      {/* Info bar — compact+showTooltip mode: touch point data + reset zoom button */}
+      {compact && showTooltip && (
+        <div className="flex min-h-[20px] items-center justify-between px-1 pb-1">
+          <div className="flex items-center gap-2">
+            {activeTooltip && !dragPreview ? (
+              <>
+                <span className="font-mono text-[11px] font-bold text-slate-800 dark:text-slate-100">
+                  {Math.round(activeTooltip.ele)} {labels.meters}
+                </span>
+                <span className="text-slate-300 dark:text-slate-600">·</span>
+                <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                  {activeTooltip.dist.toFixed(1)} {labels.km}
+                </span>
+                <span className="text-slate-300 dark:text-slate-600">·</span>
+                <div className="flex items-center gap-1">
+                  <div className="h-2 w-2 rounded-full" style={{ backgroundColor: activeTooltip.color }} />
+                  <span className="font-mono text-[11px] font-bold text-slate-800 dark:text-slate-100">
+                    {activeTooltip.slope > 0 ? '+' : ''}{activeTooltip.slope}%
+                  </span>
+                </div>
+              </>
+            ) : null}
+          </div>
+          {zoomRange && (
+            <button
+              onClick={resetZoom}
+              className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-bold tracking-tight text-slate-400 uppercase hover:bg-slate-100 dark:text-slate-500 dark:hover:bg-slate-800"
+            >
+              <RefreshCcw className="h-2.5 w-2.5" />
+              {labels.resetZoom}
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Chart area */}
       <div ref={outerRef} className={`relative w-full select-none ${compact ? 'h-20' : 'h-44'}`}>
-        {/* Tooltip — hidden in compact mode */}
+        {/* Tooltip — only in non-compact mode (compact uses the info bar above) */}
         {!compact && activeTooltip && !dragPreview && (
           <div
             className="pointer-events-none absolute top-1 z-10"
@@ -515,6 +632,25 @@ export function TrailElevationChart({
                       strokeWidth={1}
                     />
                   )))}
+
+            {/* Min/max elevation markers — compact showTooltip mode */}
+            {compact && showTooltip && yScale && (() => {
+              const visiblePts = zoomRange
+                ? chartData.filter((d) => d.distance >= zoomRange.start && d.distance <= zoomRange.end)
+                : chartData;
+              const maxElev = Math.max(...visiblePts.map((d) => d.elevation));
+              const minElev = Math.min(...visiblePts.map((d) => d.elevation));
+              const yMax = yScale(maxElev);
+              const yMin = yScale(minElev);
+              return (
+                <>
+                  <line x1={0} x2={innerW} y1={yMax} y2={yMax} stroke="currentColor" strokeWidth={0.75} strokeOpacity={0.2} strokeDasharray="3,4" />
+                  <text x={3} y={yMax - 2} fill="currentColor" fontSize={8} opacity={0.5} dominantBaseline="text-after-edge">{Math.round(maxElev)}m</text>
+                  <line x1={0} x2={innerW} y1={yMin} y2={yMin} stroke="currentColor" strokeWidth={0.75} strokeOpacity={0.2} strokeDasharray="3,4" />
+                  <text x={3} y={yMin + 2} fill="currentColor" fontSize={8} opacity={0.5} dominantBaseline="text-before-edge">{Math.round(minElev)}m</text>
+                </>
+              );
+            })()}
 
             {/* Area fills + stroke — single colour or slope-coloured */}
             {singleColor ? (

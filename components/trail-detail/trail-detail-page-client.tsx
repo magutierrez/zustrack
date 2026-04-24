@@ -696,28 +696,32 @@ export function TrailDetailPageClient({
               </div>
             )}
 
-            {/* Elevation chart in fullscreen — slope colours, selectable, at bottom of map */}
+            {/* Elevation chart in fullscreen — card, no gradient, touch-navigable */}
             {trackProfile.length > 1 && mapExpanded && (
-              <div className="absolute inset-x-0 bottom-16 z-10 lg:hidden">
-                <TrailElevationChart
-                  compact
-                  trackProfile={trackProfile}
-                  labels={{
-                    elevationProfile: t('elevationProfile'),
-                    slope: t('slope'),
-                    flat: t('flat'),
-                    gentle: t('gentle'),
-                    steep: t('steep'),
-                    extreme: t('extreme'),
-                    km: t('km'),
-                    meters: t('meters'),
-                    resetZoom: t('resetZoom'),
-                  }}
-                  externalHoverDist={hoverDist}
-                  onHoverDist={setHoverDist}
-                  onRangeSelect={(s, e) => setSelectedRange({ start: s, end: e })}
-                  onRangeReset={() => setSelectedRange(null)}
-                />
+              <div className="absolute inset-x-3 bottom-4 z-10 overflow-hidden rounded-xl bg-white/95 shadow-lg backdrop-blur-sm lg:hidden dark:bg-slate-900/95">
+                <div className="px-2 pt-2 pb-1">
+                  <TrailElevationChart
+                    compact
+                    noGradient
+                    showTooltip
+                    trackProfile={trackProfile}
+                    labels={{
+                      elevationProfile: t('elevationProfile'),
+                      slope: t('slope'),
+                      flat: t('flat'),
+                      gentle: t('gentle'),
+                      steep: t('steep'),
+                      extreme: t('extreme'),
+                      km: t('km'),
+                      meters: t('meters'),
+                      resetZoom: t('resetZoom'),
+                    }}
+                    externalHoverDist={hoverDist}
+                    onHoverDist={setHoverDist}
+                    onRangeSelect={(s, e) => setSelectedRange({ start: s, end: e })}
+                    onRangeReset={() => setSelectedRange(null)}
+                  />
+                </div>
               </div>
             )}
 
