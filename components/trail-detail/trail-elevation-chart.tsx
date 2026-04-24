@@ -1,7 +1,8 @@
 'use client';
 
-import { useRef, useState, useEffect, useMemo } from 'react';
+import { useRef, useState, useEffect, useMemo, useId } from 'react';
 import * as d3 from 'd3';
+import { cn } from '@/lib/utils';
 import { TrendingUp, RefreshCcw } from 'lucide-react';
 import {
   getSlopeColorHex,
@@ -48,6 +49,7 @@ interface TooltipState {
 
 const MARGIN_DESKTOP = { top: 8, right: 16, bottom: 28, left: 50 };
 const MARGIN_MOBILE  = { top: 8, right: 8,  bottom: 24, left: 6 };
+const MARGIN_COMPACT = { top: 0, right: 0,  bottom: 0,  left: 0 };
 
 export function TrailElevationChart({
   trackProfile,
@@ -56,6 +58,9 @@ export function TrailElevationChart({
   onHoverDist,
   onRangeSelect,
   onRangeReset,
+  compact = false,
+  singleColor,
+  selectable = true,
 }: {
   trackProfile: TrackPoint[];
   labels: Labels;
@@ -63,7 +68,14 @@ export function TrailElevationChart({
   onHoverDist?: (dist: number | null) => void;
   onRangeSelect?: (start: number, end: number) => void;
   onRangeReset?: () => void;
+  compact?: boolean;
+  /** When set, renders the chart in a single flat color instead of slope colours */
+  singleColor?: string;
+  /** Whether the user can drag to select a range. Default true. */
+  selectable?: boolean;
 }) {
+  const rawId = useId();
+  const uid = rawId.replace(/:/g, '');
   const outerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
@@ -88,7 +100,7 @@ export function TrailElevationChart({
     return () => obs.disconnect();
   }, []);
 
-  const isMobile = size.w > 0 && size.w < 520;
+  const isMobile = compact || (size.w > 0 && size.w < 520);
 
   // Build chart data from track profile — downsampled on mobile for clarity
   const chartData = useMemo<ChartPoint[]>(() => {
@@ -116,7 +128,7 @@ export function TrailElevationChart({
       };
     });
   }, [trackProfile, isMobile]);
-  const margin = isMobile ? MARGIN_MOBILE : MARGIN_DESKTOP;
+  const margin = compact ? MARGIN_COMPACT : isMobile ? MARGIN_MOBILE : MARGIN_DESKTOP;
 
   const innerW = Math.max(0, size.w - margin.left - margin.right);
   const innerH = Math.max(0, size.h - margin.top - margin.bottom);
@@ -173,6 +185,22 @@ export function TrailElevationChart({
     }
     return result;
   }, [chartData, xScale, yScale, innerH, zoomRange]);
+
+  // Single-color area path (used when singleColor is set)
+  const singleAreaPath = useMemo(() => {
+    if (!singleColor || !xScale || !yScale || !chartData.length) return '';
+    const pts = zoomRange
+      ? chartData.filter((d) => d.distance >= zoomRange.start && d.distance <= zoomRange.end)
+      : chartData;
+    return (
+      d3
+        .area<ChartPoint>()
+        .x((d) => xScale(d.distance))
+        .y0(innerH)
+        .y1((d) => yScale(d.elevation))
+        .curve(d3.curveMonotoneX)(pts) ?? ''
+    );
+  }, [singleColor, chartData, xScale, yScale, innerH, zoomRange]);
 
   // Gradient stroke line
   const linePath = useMemo(() => {
@@ -315,6 +343,7 @@ export function TrailElevationChart({
   };
 
   const handleMouseDown = (e: React.MouseEvent<SVGSVGElement>) => {
+    if (!selectable) return;
     if (zoomRange) return; // already zoomed — reset via button/dblclick
     if (!svgRef.current || !xScale) return;
     const rect = svgRef.current.getBoundingClientRect();
@@ -342,32 +371,49 @@ export function TrailElevationChart({
     return { left: Math.min(x0, x1), width: Math.abs(x1 - x0) };
   }, [dragPreview, xScale]);
 
+  const strokeGradientId = `elev-stroke-${uid}`;
+  const clipPathId = `elev-clip-${uid}`;
+
   if (chartData.length < 2) return null;
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-      <div className="mb-3 flex items-center gap-2">
-        <div className="rounded-lg bg-slate-100 p-1.5 dark:bg-slate-800">
-          <TrendingUp className="h-4 w-4 text-slate-600 dark:text-slate-300" />
+    <div className={compact ? 'relative w-full' : 'rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900'}>
+      {/* Gradient overlay — only in compact mode, direction depends on context */}
+      {compact && (
+        <div
+          className={cn(
+            'pointer-events-none absolute inset-0 z-10',
+            singleColor
+              ? 'bg-gradient-to-t from-white/95 via-white/60 to-transparent dark:from-[#0e0f18]/95 dark:via-[#0e0f18]/60'
+              : 'bg-gradient-to-t from-black/75 via-black/40 to-transparent',
+          )}
+        />
+      )}
+      {/* Title + reset — hidden in compact mode */}
+      {!compact && (
+        <div className="mb-3 flex items-center gap-2">
+          <div className="rounded-lg bg-slate-100 p-1.5 dark:bg-slate-800">
+            <TrendingUp className="h-4 w-4 text-slate-600 dark:text-slate-300" />
+          </div>
+          <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
+            {labels.elevationProfile}
+          </h2>
+          {zoomRange && (
+            <button
+              onClick={resetZoom}
+              className="ml-auto flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-tight text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+            >
+              <RefreshCcw className="h-3 w-3" />
+              {labels.resetZoom}
+            </button>
+          )}
         </div>
-        <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
-          {labels.elevationProfile}
-        </h2>
-        {zoomRange && (
-          <button
-            onClick={resetZoom}
-            className="ml-auto flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-tight text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
-          >
-            <RefreshCcw className="h-3 w-3" />
-            {labels.resetZoom}
-          </button>
-        )}
-      </div>
+      )}
 
       {/* Chart area */}
-      <div ref={outerRef} className="relative h-44 w-full select-none">
-        {/* Tooltip */}
-        {activeTooltip && !dragPreview && (
+      <div ref={outerRef} className={`relative w-full select-none ${compact ? 'h-20' : 'h-44'}`}>
+        {/* Tooltip — hidden in compact mode */}
+        {!compact && activeTooltip && !dragPreview && (
           <div
             className="pointer-events-none absolute top-1 z-10"
             style={
@@ -404,19 +450,19 @@ export function TrailElevationChart({
           className={zoomRange ? 'cursor-zoom-out' : 'cursor-crosshair'}
         >
           <defs>
-            <linearGradient id="trail-elev-stroke" x1="0" y1="0" x2="1" y2="0">
+            <linearGradient id={strokeGradientId} x1="0" y1="0" x2="1" y2="0">
               {gradientStops.map((s, i) => (
                 <stop key={i} offset={`${s.offset}%`} stopColor={s.color} />
               ))}
             </linearGradient>
-            <clipPath id="trail-elev-clip">
+            <clipPath id={clipPathId}>
               <rect x={0} y={0} width={innerW} height={innerH} />
             </clipPath>
           </defs>
 
           <g transform={`translate(${margin.left},${margin.top})`}>
-            {/* Y gridlines — on mobile use fixed count since yTicks is empty */}
-            {isMobile
+            {/* Y gridlines — hidden in compact mode */}
+            {!compact && (isMobile
               ? yScale && [0.25, 0.5, 0.75].map((frac) => {
                   const y = innerH * frac;
                   return (
@@ -434,23 +480,37 @@ export function TrailElevationChart({
                     stroke="currentColor" strokeOpacity={0.07} strokeWidth={1}
                   />
                 ))
-            }
+            )}
 
-            {/* Colored area fills — more vivid on mobile */}
-            {colorSegmentPaths.map((seg, i) => (
-              <path
-                key={i} d={seg.path}
-                fill={seg.color} fillOpacity={isMobile ? 0.55 : 0.25}
-                clipPath="url(#trail-elev-clip)"
-              />
-            ))}
-
-            {/* Gradient stroke */}
-            <path
-              d={linePath} fill="none"
-              stroke="url(#trail-elev-stroke)" strokeWidth={2.5}
-              clipPath="url(#trail-elev-clip)"
-            />
+            {/* Area fills + stroke — single colour or slope-coloured */}
+            {singleColor ? (
+              <>
+                <path
+                  d={singleAreaPath} fill={singleColor} fillOpacity={0.8}
+                  clipPath={`url(#${clipPathId})`}
+                />
+                <path
+                  d={linePath} fill="none"
+                  stroke={singleColor} strokeWidth={3} strokeOpacity={1}
+                  clipPath={`url(#${clipPathId})`}
+                />
+              </>
+            ) : (
+              <>
+                {colorSegmentPaths.map((seg, i) => (
+                  <path
+                    key={i} d={seg.path}
+                    fill={seg.color} fillOpacity={compact ? 0.85 : isMobile ? 0.55 : 0.25}
+                    clipPath={`url(#${clipPathId})`}
+                  />
+                ))}
+                <path
+                  d={linePath} fill="none"
+                  stroke={`url(#${strokeGradientId})`} strokeWidth={compact ? 3 : 2.5}
+                  clipPath={`url(#${clipPathId})`}
+                />
+              </>
+            )}
 
             {/* Drag preview rect */}
             {dragPreviewPx && dragPreviewPx.width > 0 && (
@@ -459,7 +519,7 @@ export function TrailElevationChart({
                 width={dragPreviewPx.width} height={innerH}
                 fill="hsl(var(--primary))" fillOpacity={0.2}
                 stroke="hsl(var(--primary))" strokeOpacity={0.5} strokeWidth={1}
-                clipPath="url(#trail-elev-clip)"
+                clipPath={`url(#${clipPathId})`}
               />
             )}
 
@@ -471,27 +531,29 @@ export function TrailElevationChart({
                   stroke="currentColor" strokeOpacity={0.2} strokeWidth={1} strokeDasharray="3 3"
                 />
                 <circle
-                  cx={activeTooltip.x} cy={activeTooltip.y} r={4}
+                  cx={activeTooltip.x} cy={activeTooltip.y} r={compact ? 3 : 4}
                   fill={activeTooltip.color} stroke="white" strokeWidth={1.5}
                 />
               </>
             )}
 
-            {/* X axis */}
-            <g transform={`translate(0,${innerH})`}>
-              <line x1={0} x2={innerW} stroke="currentColor" strokeOpacity={0.1} />
-              {xTicks.map((t) => (
-                <text
-                  key={t.v} x={t.x} dy="1.4em" textAnchor="middle"
-                  fontSize={10} fill="currentColor" fillOpacity={0.55} fontWeight={500}
-                >
-                  {t.v.toFixed(1)} {labels.km}
-                </text>
-              ))}
-            </g>
+            {/* X axis + ticks — hidden in compact mode */}
+            {!compact && (
+              <g transform={`translate(0,${innerH})`}>
+                <line x1={0} x2={innerW} stroke="currentColor" strokeOpacity={0.1} />
+                {xTicks.map((t) => (
+                  <text
+                    key={t.v} x={t.x} dy="1.4em" textAnchor="middle"
+                    fontSize={10} fill="currentColor" fillOpacity={0.55} fontWeight={500}
+                  >
+                    {t.v.toFixed(1)} {labels.km}
+                  </text>
+                ))}
+              </g>
+            )}
 
-            {/* Y axis */}
-            {yTicks.map((t) => (
+            {/* Y axis labels — hidden in compact mode */}
+            {!compact && yTicks.map((t) => (
               <text
                 key={t.v} x={-6} y={t.y} dy="0.32em" textAnchor="end"
                 fontSize={10} fill="currentColor" fillOpacity={0.55} fontWeight={500}
@@ -503,50 +565,52 @@ export function TrailElevationChart({
         </svg>
       </div>
 
-      {/* Color legend — horizontal bar on mobile, dots on desktop */}
-      <div className="mt-3 border-t border-slate-100 pt-3 dark:border-slate-800">
-        {/* Mobile: gradient bar with labels */}
-        <div className="lg:hidden">
-          <div className="flex h-3 overflow-hidden rounded-full">
-            {[SLOPE_COLOR_FLAT, SLOPE_COLOR_GENTLE, SLOPE_COLOR_STEEP, SLOPE_COLOR_EXTREME].map(
-              (color) => (
-                <div key={color} className="flex-1" style={{ backgroundColor: color }} />
-              ),
-            )}
+      {/* Color legend — hidden in compact mode */}
+      {!compact && (
+        <div className="mt-3 border-t border-slate-100 pt-3 dark:border-slate-800">
+          {/* Mobile: gradient bar with labels */}
+          <div className="lg:hidden">
+            <div className="flex h-3 overflow-hidden rounded-full">
+              {[SLOPE_COLOR_FLAT, SLOPE_COLOR_GENTLE, SLOPE_COLOR_STEEP, SLOPE_COLOR_EXTREME].map(
+                (color) => (
+                  <div key={color} className="flex-1" style={{ backgroundColor: color }} />
+                ),
+              )}
+            </div>
+            <div className="mt-1.5 flex text-[11px] font-medium">
+              {[
+                { color: SLOPE_COLOR_FLAT, label: labels.flat },
+                { color: SLOPE_COLOR_GENTLE, label: labels.gentle },
+                { color: SLOPE_COLOR_STEEP, label: labels.steep },
+                { color: SLOPE_COLOR_EXTREME, label: labels.extreme },
+              ].map(({ color, label }, i) => (
+                <span
+                  key={color}
+                  className={i === 0 ? 'flex-1' : i === 3 ? 'flex-1 text-right' : 'flex-1 text-center'}
+                  style={{ color }}
+                >
+                  {label}
+                </span>
+              ))}
+            </div>
           </div>
-          <div className="mt-1.5 flex text-[11px] font-medium">
+
+          {/* Desktop: dots */}
+          <div className="hidden flex-wrap gap-3 lg:flex">
             {[
               { color: SLOPE_COLOR_FLAT, label: labels.flat },
               { color: SLOPE_COLOR_GENTLE, label: labels.gentle },
               { color: SLOPE_COLOR_STEEP, label: labels.steep },
               { color: SLOPE_COLOR_EXTREME, label: labels.extreme },
-            ].map(({ color, label }, i) => (
-              <span
-                key={color}
-                className={i === 0 ? 'flex-1' : i === 3 ? 'flex-1 text-right' : 'flex-1 text-center'}
-                style={{ color }}
-              >
-                {label}
-              </span>
+            ].map(({ color, label }) => (
+              <div key={color} className="flex items-center gap-1.5">
+                <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color }} />
+                <span className="text-xs text-slate-500 dark:text-slate-400">{label}</span>
+              </div>
             ))}
           </div>
         </div>
-
-        {/* Desktop: dots */}
-        <div className="hidden flex-wrap gap-3 lg:flex">
-          {[
-            { color: SLOPE_COLOR_FLAT, label: labels.flat },
-            { color: SLOPE_COLOR_GENTLE, label: labels.gentle },
-            { color: SLOPE_COLOR_STEEP, label: labels.steep },
-            { color: SLOPE_COLOR_EXTREME, label: labels.extreme },
-          ].map(({ color, label }) => (
-            <div key={color} className="flex items-center gap-1.5">
-              <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color }} />
-              <span className="text-xs text-slate-500 dark:text-slate-400">{label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
+      )}
     </div>
   );
 }

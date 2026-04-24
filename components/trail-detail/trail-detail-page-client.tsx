@@ -337,26 +337,28 @@ export function TrailDetailPageClient({
                 )}
               </div>
 
-              {/* Elevation chart */}
+              {/* Elevation chart — desktop only (mobile uses compact strip above drag handle) */}
               {trackProfile.length > 1 && (
-                <TrailElevationChart
-                  trackProfile={trackProfile}
-                  labels={{
-                    elevationProfile: t('elevationProfile'),
-                    slope: t('slope'),
-                    flat: t('flat'),
-                    gentle: t('gentle'),
-                    steep: t('steep'),
-                    extreme: t('extreme'),
-                    km: t('km'),
-                    meters: t('meters'),
-                    resetZoom: t('resetZoom'),
-                  }}
-                  externalHoverDist={hoverDist}
-                  onHoverDist={setHoverDist}
-                  onRangeSelect={(s, e) => setSelectedRange({ start: s, end: e })}
-                  onRangeReset={() => setSelectedRange(null)}
-                />
+                <div className="hidden lg:block">
+                  <TrailElevationChart
+                    trackProfile={trackProfile}
+                    labels={{
+                      elevationProfile: t('elevationProfile'),
+                      slope: t('slope'),
+                      flat: t('flat'),
+                      gentle: t('gentle'),
+                      steep: t('steep'),
+                      extreme: t('extreme'),
+                      km: t('km'),
+                      meters: t('meters'),
+                      resetZoom: t('resetZoom'),
+                    }}
+                    externalHoverDist={hoverDist}
+                    onHoverDist={setHoverDist}
+                    onRangeSelect={(s, e) => setSelectedRange({ start: s, end: e })}
+                    onRangeReset={() => setSelectedRange(null)}
+                  />
+                </div>
               )}
 
               {/* Hazards */}
@@ -651,9 +653,54 @@ export function TrailDetailPageClient({
               </div>
             )}
 
-            {/* Gradient fade at bottom — softens transition into the bottom sheet */}
-            {!mapExpanded && (
-              <div className="pointer-events-none absolute right-0 bottom-0 left-0 h-16 bg-gradient-to-t from-white/60 to-transparent lg:hidden dark:from-[#0e0f18]/60" />
+            {/* Compact elevation chart — overlaid at bottom of map, mobile only, not fullscreen */}
+            {trackProfile.length > 1 && !mapExpanded && (
+              <div className="absolute inset-x-0 bottom-0 z-[2] lg:hidden text-slate-500 dark:text-slate-300">
+                <TrailElevationChart
+                  compact
+                  singleColor="currentColor"
+                  selectable={false}
+                  trackProfile={trackProfile}
+                  labels={{
+                    elevationProfile: t('elevationProfile'),
+                    slope: t('slope'),
+                    flat: t('flat'),
+                    gentle: t('gentle'),
+                    steep: t('steep'),
+                    extreme: t('extreme'),
+                    km: t('km'),
+                    meters: t('meters'),
+                    resetZoom: t('resetZoom'),
+                  }}
+                  externalHoverDist={hoverDist}
+                  onHoverDist={setHoverDist}
+                />
+              </div>
+            )}
+
+            {/* Elevation chart in fullscreen — slope colours, selectable, at bottom of map */}
+            {trackProfile.length > 1 && mapExpanded && (
+              <div className="absolute inset-x-0 bottom-16 z-10 lg:hidden">
+                <TrailElevationChart
+                  compact
+                  trackProfile={trackProfile}
+                  labels={{
+                    elevationProfile: t('elevationProfile'),
+                    slope: t('slope'),
+                    flat: t('flat'),
+                    gentle: t('gentle'),
+                    steep: t('steep'),
+                    extreme: t('extreme'),
+                    km: t('km'),
+                    meters: t('meters'),
+                    resetZoom: t('resetZoom'),
+                  }}
+                  externalHoverDist={hoverDist}
+                  onHoverDist={setHoverDist}
+                  onRangeSelect={(s, e) => setSelectedRange({ start: s, end: e })}
+                  onRangeReset={() => setSelectedRange(null)}
+                />
+              </div>
             )}
 
             {/* Back button overlay — mobile only */}
