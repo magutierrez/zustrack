@@ -706,6 +706,7 @@ export function TrailDetailPageClient({
                     compact
                     noGradient
                     showTooltip
+                    selectable={false}
                     trackProfile={trackProfile}
                     labels={{
                       elevationProfile: t('elevationProfile'),

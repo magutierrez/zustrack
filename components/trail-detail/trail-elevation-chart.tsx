@@ -314,6 +314,10 @@ export function TrailElevationChart({
         dragStartRef.current = dist;
         dragEndRef.current = dist;
         setTooltip(null);
+      } else {
+        // Scrub-only mode: show tooltip immediately on touch
+        const t = liveRef.current.tooltipFromDist(dist);
+        if (t) { setTooltip(t); liveRef.current.onHoverDist?.(t.dist); }
       }
     };
 
