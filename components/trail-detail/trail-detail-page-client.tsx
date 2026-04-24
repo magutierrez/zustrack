@@ -644,7 +644,7 @@ export function TrailDetailPageClient({
           {/* RIGHT: map — 38vh on mobile (bottom sheet overlaps ~32px), fills full height on desktop */}
           <div
             className={cn(
-              'relative order-1 h-[38vh] shrink-0 border-slate-200 lg:order-2 lg:h-auto lg:flex-1 lg:border-l dark:border-slate-800',
+              'relative order-1 h-[50vh] shrink-0 border-slate-200 lg:order-2 lg:h-auto lg:flex-1 lg:border-l dark:border-slate-800',
               mapExpanded && 'h-full flex-1',
             )}
             style={mapHeightPx !== null && !mapExpanded ? { height: mapHeightPx } : undefined}
