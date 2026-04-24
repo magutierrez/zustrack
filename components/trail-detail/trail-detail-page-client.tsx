@@ -701,7 +701,7 @@ export function TrailDetailPageClient({
 
             {/* Elevation chart in fullscreen — card, no gradient, touch-navigable */}
             {trackProfile.length > 1 && mapExpanded && (
-              <div className="absolute inset-x-3 bottom-4 z-10 overflow-hidden rounded-xl bg-white/95 shadow-lg backdrop-blur-sm lg:hidden dark:bg-slate-900/95">
+              <div className="absolute inset-x-3 bottom-4 z-10 overflow-hidden rounded-xl bg-white/70 drop-shadow-[0_4px_16px_rgba(0,0,0,0.1)] backdrop-blur-[68px] lg:hidden dark:bg-slate-900/60 dark:drop-shadow-[0_4px_16px_rgba(0,0,0,0.35)]">
                 <div className="pt-2">
                   <TrailElevationChart
                     compact
@@ -736,7 +736,7 @@ export function TrailDetailPageClient({
                 className="absolute top-3 left-3 z-10 flex items-center justify-center rounded-full bg-white/90 p-2 shadow-md backdrop-blur-sm lg:hidden dark:bg-slate-900/90"
                 aria-label={t('backToTrails')}
               >
-                <ArrowLeft className="h-4 w-4 text-slate-700 dark:text-slate-300" />
+                <ArrowLeft className="text-secondary-foreground h-6 w-6" />
               </Link>
             )}
 
