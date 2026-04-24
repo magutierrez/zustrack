@@ -88,14 +88,22 @@ export function TrailElevationChart({
     return () => obs.disconnect();
   }, []);
 
-  // Build chart data from track profile
+  const isMobile = size.w > 0 && size.w < 520;
+
+  // Build chart data from track profile — downsampled on mobile for clarity
   const chartData = useMemo<ChartPoint[]>(() => {
     const pts = trackProfile.filter((p) => p.e !== null);
     if (pts.length < 2) return [];
-    return pts.map((p, i) => {
+
+    // On mobile keep at most 60 evenly-spaced points
+    const sampled = isMobile && pts.length > 60
+      ? pts.filter((_, i) => i % Math.ceil(pts.length / 60) === 0 || i === pts.length - 1)
+      : pts;
+
+    return sampled.map((p, i) => {
       let slope = 0;
       if (i > 0) {
-        const prev = pts[i - 1];
+        const prev = sampled[i - 1];
         const distDiffKm = p.d - prev.d;
         const eleDiff = (p.e ?? 0) - (prev.e ?? 0);
         if (distDiffKm > 0.001) slope = (eleDiff / (distDiffKm * 1000)) * 100;
@@ -107,9 +115,7 @@ export function TrailElevationChart({
         color: getSlopeColorHex(slope),
       };
     });
-  }, [trackProfile]);
-
-  const isMobile = size.w > 0 && size.w < 520;
+  }, [trackProfile, isMobile]);
   const margin = isMobile ? MARGIN_MOBILE : MARGIN_DESKTOP;
 
   const innerW = Math.max(0, size.w - margin.left - margin.right);
@@ -147,12 +153,13 @@ export function TrailElevationChart({
       ? chartData.filter((d) => d.distance >= zoomRange.start && d.distance <= zoomRange.end)
       : chartData;
 
+    const curve = isMobile ? d3.curveMonotoneX : d3.curveLinear;
     const areaGen = d3
       .area<ChartPoint>()
       .x((d) => xScale(d.distance))
       .y0(innerH)
       .y1((d) => yScale(d.elevation))
-      .curve(d3.curveLinear);
+      .curve(curve);
 
     const result: { color: string; path: string }[] = [];
     let i = 0;
@@ -178,7 +185,7 @@ export function TrailElevationChart({
         .line<ChartPoint>()
         .x((d) => xScale(d.distance))
         .y((d) => yScale(d.elevation))
-        .curve(d3.curveLinear)(pts) ?? ''
+        .curve(isMobile ? d3.curveMonotoneX : d3.curveLinear)(pts) ?? ''
     );
   }, [chartData, xScale, yScale, zoomRange]);
 

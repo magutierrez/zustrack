@@ -785,7 +785,7 @@
       "unknown": "Sendero"
     },
     "backToTrails": "Todos los senderos",
-    "analyzeWithZustrack": "Analizar el tiempo para este sendero",
+    "analyzeWithZustrack": "Analizar ruta",
     "metaDescription": "Sendero de {distance} km con {elevationGain}m de desnivel. Nivel: {effort}.",
     "km": "km",
     "meters": "m",

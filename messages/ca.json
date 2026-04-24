@@ -784,7 +784,7 @@
       "unknown": "Sender"
     },
     "backToTrails": "Tots els senders",
-    "analyzeWithZustrack": "Analitzar el temps per a aquest sender",
+    "analyzeWithZustrack": "Analitzar ruta",
     "metaDescription": "Sender de {distance} km amb {elevationGain}m de desnivell. Nivell: {effort}.",
     "km": "km",
     "meters": "m",

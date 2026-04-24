@@ -32,6 +32,7 @@ import { TrailGpxDownload } from './trail-gpx-download';
 import { TrailWeatherForecast } from './trail-weather-forecast';
 import { TrailCard } from './trail-card';
 import { TrailInfoTabs } from './trail-info-tabs';
+import { Button } from '@/components/ui/button';
 
 type Range = { start: number; end: number; color?: string };
 type POIPoint = { lat: number; lng: number };
@@ -152,6 +153,47 @@ export function TrailDetailPageClient({
         .trail-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .trail-scrollbar::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 10px; }
         .trail-scrollbar::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground)); }
+
+        /* MapLibre navigation control — match secondary icon buttons */
+        .maplibregl-ctrl-group {
+          background: transparent !important;
+          box-shadow: none !important;
+          border-radius: 0 !important;
+          border: none !important;
+          display: flex !important;
+          flex-direction: column !important;
+          gap: 0 !important;
+        }
+        /* All buttons: base size, secondary bg, no individual shadow by default */
+        .maplibregl-ctrl-group button {
+          width: 40px !important;
+          height: 40px !important;
+          background-color: var(--secondary) !important;
+          border: none !important;
+          box-shadow: none !important;
+        }
+        /* Zoom-in: top of the unified card */
+        .maplibregl-ctrl-group button.maplibregl-ctrl-zoom-in {
+          border-radius: calc(var(--radius) - 2px) calc(var(--radius) - 2px) 0 0 !important;
+          border-bottom: 1px solid color-mix(in oklch, var(--border) 60%, transparent) !important;
+        }
+        /* Zoom-out: bottom of the unified card — carries the shadow for the whole pair */
+        .maplibregl-ctrl-group button.maplibregl-ctrl-zoom-out {
+          border-radius: 0 0 calc(var(--radius) - 2px) calc(var(--radius) - 2px) !important;
+          box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1) !important;
+        }
+        /* Compass: separate card with gap */
+        .maplibregl-ctrl-group button.maplibregl-ctrl-compass {
+          border-radius: calc(var(--radius) - 2px) !important;
+          box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1) !important;
+          margin-top: 6px !important;
+        }
+        .maplibregl-ctrl-group button:hover {
+          background-color: color-mix(in oklch, var(--secondary) 80%, transparent) !important;
+        }
+        .dark .maplibregl-ctrl-group button .maplibregl-ctrl-icon {
+          filter: invert(1) brightness(0.85) !important;
+        }
       `}</style>
 
       <div className="flex flex-col bg-slate-50 text-slate-900 lg:h-screen lg:overflow-hidden dark:bg-[#08090f] dark:text-white">
@@ -563,13 +605,15 @@ export function TrailDetailPageClient({
 
             {/* Expand button — mobile only, top-right */}
             {!mapExpanded && (
-              <button
+              <Button
+                variant="outline"
+                size="icon"
                 onClick={() => setMapExpanded(true)}
-                className="absolute top-3 right-3 z-10 flex items-center justify-center rounded-full bg-white/90 p-2 shadow-md backdrop-blur-sm lg:hidden dark:bg-slate-900/90"
+                className="absolute top-3 right-3 z-10 flex items-center justify-center bg-white/90 p-2 shadow-md backdrop-blur-sm lg:hidden dark:bg-slate-900/90"
                 aria-label="Expand map"
               >
-                <Maximize2 className="h-4 w-4 text-slate-700 dark:text-slate-300" />
-              </button>
+                <Maximize2 />
+              </Button>
             )}
 
             {/* Close button — shown when map is expanded */}
@@ -586,14 +630,14 @@ export function TrailDetailPageClient({
         </main>
 
         {/* Sticky CTA — mobile only */}
-        <div className="fixed right-0 bottom-0 left-0 z-20 border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur-sm lg:hidden dark:border-slate-800 dark:bg-[#08090f]/95">
-          <button
+        <div className="fixed right-0 bottom-0 left-0 z-20 border-t border-slate-200 bg-white/95 px-4 py-4 backdrop-blur-sm lg:hidden dark:border-slate-800 dark:bg-[#08090f]/95">
+          <Button
             onClick={handleAnalyze}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-slate-900 py-3 text-sm font-semibold text-white dark:bg-white dark:text-slate-900"
+            className="font-headline h-auto w-full rounded-xl bg-slate-900 px-6 py-4 text-base font-bold text-white dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
           >
-            <MapPin className="h-4 w-4" />
+            <MapPin />
             {t('analyzeWithZustrack')}
-          </button>
+          </Button>
         </div>
       </div>
     </>

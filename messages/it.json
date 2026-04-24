@@ -785,7 +785,7 @@
       "unknown": "Sentiero"
     },
     "backToTrails": "Tutti i sentieri",
-    "analyzeWithZustrack": "Analizza il meteo per questo sentiero",
+    "analyzeWithZustrack": "Analizza il percorso",
     "metaDescription": "Sentiero di {distance} km con {elevationGain}m di dislivello. Livello: {effort}.",
     "km": "km",
     "meters": "m",
