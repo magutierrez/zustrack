@@ -735,10 +735,10 @@ export function TrailDetailPageClient({
             {/* Expand button — mobile only, top-right */}
             {!mapExpanded && (
               <Button
-                variant="outline"
+                variant="secondary"
                 size="icon"
                 onClick={() => setMapExpanded(true)}
-                className="absolute top-3 right-3 z-10 flex items-center justify-center bg-white/90 p-2 shadow-md backdrop-blur-sm lg:hidden dark:bg-slate-900/90"
+                className="absolute top-3 right-3 z-10 h-10 w-10 shadow-md lg:hidden"
                 aria-label="Expand map"
               >
                 <Maximize2 />
@@ -747,13 +747,15 @@ export function TrailDetailPageClient({
 
             {/* Close button — shown when map is expanded */}
             {mapExpanded && (
-              <button
+              <Button
+                variant="secondary"
+                size="icon"
                 onClick={() => setMapExpanded(false)}
-                className="absolute top-4 right-4 z-10 flex items-center justify-center rounded-full bg-white/90 p-2 shadow-md backdrop-blur-sm dark:bg-slate-900/90"
+                className="absolute top-3 right-3 z-10 h-10 w-10 shadow-md"
                 aria-label="Close map"
               >
-                <X className="h-4 w-4 text-slate-700 dark:text-slate-300" />
-              </button>
+                <X className="h-4 w-4" />
+              </Button>
             )}
           </div>
         </main>
