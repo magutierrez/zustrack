@@ -699,7 +699,7 @@ export function TrailDetailPageClient({
             {/* Elevation chart in fullscreen — card, no gradient, touch-navigable */}
             {trackProfile.length > 1 && mapExpanded && (
               <div className="absolute inset-x-3 bottom-4 z-10 overflow-hidden rounded-xl bg-white/95 shadow-lg backdrop-blur-sm lg:hidden dark:bg-slate-900/95">
-                <div className="px-2 pt-2 pb-1">
+                <div className="pt-2">
                   <TrailElevationChart
                     compact
                     noGradient
