@@ -729,6 +729,14 @@ export function TrailDetailPageClient({
               </div>
             )}
 
+            {/* Tap-to-expand overlay — mobile only, not fullscreen */}
+            {!mapExpanded && (
+              <div
+                className="absolute inset-0 z-10 lg:hidden"
+                onClick={() => setMapExpanded(true)}
+              />
+            )}
+
             {/* Back button overlay — mobile only */}
             {!mapExpanded && (
               <Link

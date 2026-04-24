@@ -394,18 +394,20 @@ export default function TrailMap({
             className={mapExpanded && isMobile ? 'absolute top-[104px] right-3 z-10' : 'absolute top-2 right-3 z-10'}
           />
         )}
-        <div className="absolute top-14 right-3 z-10">
-          <Button
-            variant={enable3D ? 'default' : 'secondary'}
-            size="icon"
-            className="h-10 w-10 text-xs font-bold shadow-md"
-            onClick={() => setEnable3D((v) => !v)}
-            disabled={terrainLoading}
-            title={enable3D ? '2D' : '3D'}
-          >
-            {enable3D ? '2D' : '3D'}
-          </Button>
-        </div>
+        {(!isMobile || mapExpanded) && (
+          <div className="absolute top-14 right-3 z-10">
+            <Button
+              variant={enable3D ? 'default' : 'secondary'}
+              size="icon"
+              className="h-10 w-10 text-xs font-bold shadow-md"
+              onClick={() => setEnable3D((v) => !v)}
+              disabled={terrainLoading}
+              title={enable3D ? '2D' : '3D'}
+            >
+              {enable3D ? '2D' : '3D'}
+            </Button>
+          </div>
+        )}
 
         {/* Base trail */}
         <Source id="trail" type="geojson" data={geojson} lineMetrics>
