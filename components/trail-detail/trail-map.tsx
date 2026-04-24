@@ -388,7 +388,11 @@ export default function TrailMap({
       >
         {!isMobile && <NavigationControl position="bottom-right" />}
         {(!isMobile || mapExpanded) && (
-          <TrailLayerControl mapType={mapType} setMapType={setMapType} />
+          <TrailLayerControl
+            mapType={mapType}
+            setMapType={setMapType}
+            className={mapExpanded && isMobile ? 'absolute top-[104px] right-3 z-10' : 'absolute top-2 right-3 z-10'}
+          />
         )}
         <div className="absolute top-14 right-3 z-10">
           <Button
