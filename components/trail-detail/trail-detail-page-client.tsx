@@ -251,13 +251,28 @@ export function TrailDetailPageClient({
         }
       `}</style>
 
-      <div className="flex flex-col bg-slate-50 text-slate-900 lg:h-screen lg:overflow-hidden dark:bg-[#08090f] dark:text-white">
+      <div
+        className={cn(
+          'flex flex-col bg-slate-50 text-slate-900 lg:h-screen lg:overflow-hidden dark:bg-[#08090f] dark:text-white',
+          mapExpanded && 'h-dvh overflow-hidden',
+        )}
+      >
         <Header session={null} />
 
         {/* Body */}
-        <main className="flex flex-1 flex-col lg:min-h-0 lg:flex-row lg:overflow-hidden">
+        <main
+          className={cn(
+            'flex flex-1 flex-col lg:min-h-0 lg:flex-row lg:overflow-hidden',
+            mapExpanded && 'overflow-hidden',
+          )}
+        >
           {/* LEFT: scrollable content — bottom sheet on mobile */}
-          <div className="trail-scrollbar z-3 order-2 -mt-8 flex flex-col overflow-y-auto rounded-t-3xl bg-white shadow-[0_-8px_24px_rgba(0,0,0,0.08)] lg:order-1 lg:mt-0 lg:w-[55%] lg:rounded-none lg:bg-transparent lg:shadow-none dark:bg-[#0e0f18] dark:shadow-[0_-8px_24px_rgba(0,0,0,0.35)] dark:lg:bg-transparent">
+          <div
+            className={cn(
+              'trail-scrollbar z-3 order-2 -mt-8 flex flex-col overflow-y-auto rounded-t-3xl bg-white shadow-[0_-8px_24px_rgba(0,0,0,0.08)] lg:order-1 lg:mt-0 lg:w-[55%] lg:rounded-none lg:bg-transparent lg:shadow-none dark:bg-[#0e0f18] dark:shadow-[0_-8px_24px_rgba(0,0,0,0.35)] dark:lg:bg-transparent',
+              mapExpanded && 'hidden lg:flex',
+            )}
+          >
             {/* Drag handle — mobile only, touch-active */}
             <div
               ref={dragHandleRef}
@@ -291,7 +306,7 @@ export function TrailDetailPageClient({
                       {trail.trail_code}
                     </span>
                   )}
-                  <span className="text-sm text-slate-500 dark:text-slate-400">
+                  <span className="hidden text-sm text-slate-500 lg:block dark:text-slate-400">
                     {routeTypeLabel}
                   </span>
                   <span className="text-slate-300 dark:text-slate-600">·</span>
@@ -630,7 +645,7 @@ export function TrailDetailPageClient({
           <div
             className={cn(
               'relative order-1 h-[38vh] shrink-0 border-slate-200 lg:order-2 lg:h-auto lg:flex-1 lg:border-l dark:border-slate-800',
-              mapExpanded && 'fixed inset-0 z-50 h-screen',
+              mapExpanded && 'h-full flex-1',
             )}
             style={mapHeightPx !== null && !mapExpanded ? { height: mapHeightPx } : undefined}
           >
@@ -743,8 +758,13 @@ export function TrailDetailPageClient({
           </div>
         </main>
 
-        {/* Sticky CTA — mobile only */}
-        <div className="fixed right-0 bottom-0 left-0 z-20 border-t border-slate-200 bg-white/95 px-4 py-4 backdrop-blur-sm lg:hidden dark:border-slate-800 dark:bg-[#08090f]/95">
+        {/* Sticky CTA — mobile only, hidden in fullscreen map */}
+        <div
+          className={cn(
+            'fixed right-0 bottom-0 left-0 z-20 border-t border-slate-200 bg-white/95 px-4 py-4 backdrop-blur-sm lg:hidden dark:border-slate-800 dark:bg-[#08090f]/95',
+            mapExpanded && 'hidden',
+          )}
+        >
           <Button
             onClick={handleAnalyze}
             className="font-headline h-auto w-full rounded-xl bg-slate-900 px-6 py-4 text-base font-bold text-white dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"

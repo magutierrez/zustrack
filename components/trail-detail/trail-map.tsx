@@ -292,7 +292,7 @@ export default function TrailMap({
             [Math.min(...ptLngs), Math.min(...ptLats)],
             [Math.max(...ptLngs), Math.max(...ptLats)],
           ],
-          { padding: 60, duration: 800 },
+          { padding: isMobile ? { top: 30, bottom: 100, left: 40, right: 40 } : 60, duration: 800 },
         );
       }
     } else {
@@ -301,7 +301,7 @@ export default function TrailMap({
           [minLng, minLat],
           [maxLng, maxLat],
         ],
-        { padding: 40, duration: 800 },
+        { padding: isMobile ? { top: 30, bottom: 100, left: 40, right: 40 } : 40, duration: 800 },
       );
     }
   }, [selectedRange, trackProfile, minLat, maxLat, minLng, maxLng]);
@@ -378,7 +378,7 @@ export default function TrailMap({
               [minLng, minLat],
               [maxLng, maxLat],
             ],
-            { padding: 40, duration: 0 },
+            { padding: isMobile ? { top: 30, bottom: 100, left: 40, right: 40 } : 40, duration: 0 },
           );
         }}
         onMouseMove={handleMapMouseMove}
@@ -417,7 +417,11 @@ export default function TrailMap({
             type="line"
             source="trail"
             layout={{ 'line-join': 'round', 'line-cap': 'round' }}
-            paint={{ 'line-color': '#ffffff', 'line-width': 6.5, 'line-opacity': 0.9 * baseOpacity }}
+            paint={{
+              'line-color': '#ffffff',
+              'line-width': 6.5,
+              'line-opacity': 0.9 * baseOpacity,
+            }}
           />
           <Layer
             id="trail-line"
@@ -447,7 +451,7 @@ export default function TrailMap({
               'icon-opacity': 0.6 * baseOpacity,
             }}
           />
-          </Source>
+        </Source>
         {/* Segment highlight overlay */}
         {selectedRange && highlightGeoJSON && highlightGradientStops && (
           <Source id="trail-highlight" type="geojson" data={highlightGeoJSON} lineMetrics>
@@ -558,11 +562,7 @@ export default function TrailMap({
         )}
 
         {popupInfo && !isMobile && (
-          <MapPopup
-            popupInfo={popupInfo}
-            onClose={() => setPopupInfo(null)}
-            hideNotes={true}
-          />
+          <MapPopup popupInfo={popupInfo} onClose={() => setPopupInfo(null)} hideNotes={true} />
         )}
       </Map>
 
