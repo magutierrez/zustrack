@@ -48,8 +48,8 @@ interface TooltipState {
 }
 
 const MARGIN_DESKTOP = { top: 8, right: 16, bottom: 28, left: 50 };
-const MARGIN_MOBILE  = { top: 8, right: 8,  bottom: 24, left: 6 };
-const MARGIN_COMPACT = { top: 0, right: 0,  bottom: 0,  left: 0 };
+const MARGIN_MOBILE = { top: 8, right: 8, bottom: 24, left: 6 };
+const MARGIN_COMPACT = { top: 0, right: 0, bottom: 0, left: 0 };
 
 export function TrailElevationChart({
   trackProfile,
@@ -108,9 +108,10 @@ export function TrailElevationChart({
     if (pts.length < 2) return [];
 
     // On mobile keep at most 60 evenly-spaced points
-    const sampled = isMobile && pts.length > 60
-      ? pts.filter((_, i) => i % Math.ceil(pts.length / 60) === 0 || i === pts.length - 1)
-      : pts;
+    const sampled =
+      isMobile && pts.length > 60
+        ? pts.filter((_, i) => i % Math.ceil(pts.length / 60) === 0 || i === pts.length - 1)
+        : pts;
 
     return sampled.map((p, i) => {
       let slope = 0;
@@ -272,8 +273,8 @@ export function TrailElevationChart({
     };
     window.addEventListener('mouseup', onMouseUp);
     return () => window.removeEventListener('mouseup', onMouseUp);
-  // confirmSelection is stable (no deps change it); we accept the lint rule here
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // confirmSelection is stable (no deps change it); we accept the lint rule here
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [onRangeSelect]);
 
   // Compute tooltip state for a given distance value
@@ -283,7 +284,10 @@ export function TrailElevationChart({
     let bestDiff = Math.abs(best.distance - dist);
     for (const d of chartData) {
       const diff = Math.abs(d.distance - dist);
-      if (diff < bestDiff) { best = d; bestDiff = diff; }
+      if (diff < bestDiff) {
+        best = d;
+        bestDiff = diff;
+      }
     }
     return {
       x: xScale(best.distance),
@@ -306,7 +310,10 @@ export function TrailElevationChart({
     let bestDiff = Math.abs(best.distance - externalHoverDist);
     for (const d of chartData) {
       const diff = Math.abs(d.distance - externalHoverDist);
-      if (diff < bestDiff) { best = d; bestDiff = diff; }
+      if (diff < bestDiff) {
+        best = d;
+        bestDiff = diff;
+      }
     }
     return {
       x: xScale(best.distance),
@@ -316,7 +323,7 @@ export function TrailElevationChart({
       slope: best.slope,
       color: best.color,
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [externalHoverDist, chartData, xScale, yScale, innerW, innerH, zoomRange]);
 
   // Active tooltip: local (chart hover) takes priority over external (map hover)
@@ -377,15 +384,19 @@ export function TrailElevationChart({
   if (chartData.length < 2) return null;
 
   return (
-    <div className={compact ? 'relative w-full' : 'rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900'}>
+    <div
+      className={
+        compact
+          ? 'relative w-full'
+          : 'rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900'
+      }
+    >
       {/* Gradient overlay — only in compact mode, direction depends on context */}
       {compact && (
         <div
           className={cn(
             'pointer-events-none absolute inset-0 z-10',
-            singleColor
-              ? 'bg-gradient-to-t from-white/95 via-white/60 to-transparent dark:from-[#0e0f18]/95 dark:via-[#0e0f18]/60'
-              : 'bg-gradient-to-t from-black/75 via-black/40 to-transparent',
+            !singleColor && 'bg-gradient-to-b from-black/75 via-black/40 to-transparent',
           )}
         />
       )}
@@ -401,7 +412,7 @@ export function TrailElevationChart({
           {zoomRange && (
             <button
               onClick={resetZoom}
-              className="ml-auto flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-tight text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+              className="ml-auto flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-bold tracking-tight text-slate-500 uppercase hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
             >
               <RefreshCcw className="h-3 w-3" />
               {labels.resetZoom}
@@ -427,10 +438,15 @@ export function TrailElevationChart({
                 {Math.round(activeTooltip.ele)} {labels.meters}
               </span>
               <span className="text-slate-300 dark:text-slate-600">·</span>
-              <span className="text-xs text-slate-500">{activeTooltip.dist.toFixed(1)} {labels.km}</span>
+              <span className="text-xs text-slate-500">
+                {activeTooltip.dist.toFixed(1)} {labels.km}
+              </span>
               <span className="text-slate-300 dark:text-slate-600">·</span>
               <div className="flex items-center gap-1">
-                <div className="h-2 w-2 rounded-full" style={{ backgroundColor: activeTooltip.color }} />
+                <div
+                  className="h-2 w-2 rounded-full"
+                  style={{ backgroundColor: activeTooltip.color }}
+                />
                 <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">
                   {activeTooltip.slope}%
                 </span>
@@ -455,6 +471,13 @@ export function TrailElevationChart({
                 <stop key={i} offset={`${s.offset}%`} stopColor={s.color} />
               ))}
             </linearGradient>
+            {/* Vertical gradient for single-colour compact mode (zustrack primary, top→bottom) */}
+            {singleColor && (
+              <linearGradient id={`${strokeGradientId}-area`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="var(--color-primary)" stopOpacity="0.75" />
+                <stop offset="100%" stopColor="var(--color-primary)" stopOpacity="0" />
+              </linearGradient>
+            )}
             <clipPath id={clipPathId}>
               <rect x={0} y={0} width={innerW} height={innerH} />
             </clipPath>
@@ -462,36 +485,52 @@ export function TrailElevationChart({
 
           <g transform={`translate(${margin.left},${margin.top})`}>
             {/* Y gridlines — hidden in compact mode */}
-            {!compact && (isMobile
-              ? yScale && [0.25, 0.5, 0.75].map((frac) => {
-                  const y = innerH * frac;
-                  return (
+            {!compact &&
+              (isMobile
+                ? yScale &&
+                  [0.25, 0.5, 0.75].map((frac) => {
+                    const y = innerH * frac;
+                    return (
+                      <line
+                        key={frac}
+                        x1={0}
+                        x2={innerW}
+                        y1={y}
+                        y2={y}
+                        stroke="currentColor"
+                        strokeOpacity={0.06}
+                        strokeWidth={1}
+                      />
+                    );
+                  })
+                : yTicks.map((t) => (
                     <line
-                      key={frac}
-                      x1={0} x2={innerW} y1={y} y2={y}
-                      stroke="currentColor" strokeOpacity={0.06} strokeWidth={1}
+                      key={t.v}
+                      x1={0}
+                      x2={innerW}
+                      y1={t.y}
+                      y2={t.y}
+                      stroke="currentColor"
+                      strokeOpacity={0.07}
+                      strokeWidth={1}
                     />
-                  );
-                })
-              : yTicks.map((t) => (
-                  <line
-                    key={t.v}
-                    x1={0} x2={innerW} y1={t.y} y2={t.y}
-                    stroke="currentColor" strokeOpacity={0.07} strokeWidth={1}
-                  />
-                ))
-            )}
+                  )))}
 
             {/* Area fills + stroke — single colour or slope-coloured */}
             {singleColor ? (
               <>
                 <path
-                  d={singleAreaPath} fill={singleColor} fillOpacity={0.8}
+                  d={singleAreaPath}
+                  fill={`url(#${strokeGradientId}-area)`}
+                  fillOpacity={1}
                   clipPath={`url(#${clipPathId})`}
                 />
                 <path
-                  d={linePath} fill="none"
-                  stroke={singleColor} strokeWidth={3} strokeOpacity={1}
+                  d={linePath}
+                  fill="none"
+                  stroke="var(--color-primary)"
+                  strokeWidth={2}
+                  strokeOpacity={0.9}
                   clipPath={`url(#${clipPathId})`}
                 />
               </>
@@ -499,14 +538,18 @@ export function TrailElevationChart({
               <>
                 {colorSegmentPaths.map((seg, i) => (
                   <path
-                    key={i} d={seg.path}
-                    fill={seg.color} fillOpacity={compact ? 0.85 : isMobile ? 0.55 : 0.25}
+                    key={i}
+                    d={seg.path}
+                    fill={seg.color}
+                    fillOpacity={compact ? 0.85 : isMobile ? 0.55 : 0.25}
                     clipPath={`url(#${clipPathId})`}
                   />
                 ))}
                 <path
-                  d={linePath} fill="none"
-                  stroke={`url(#${strokeGradientId})`} strokeWidth={compact ? 3 : 2.5}
+                  d={linePath}
+                  fill="none"
+                  stroke={`url(#${strokeGradientId})`}
+                  strokeWidth={compact ? 3 : 2.5}
                   clipPath={`url(#${clipPathId})`}
                 />
               </>
@@ -515,10 +558,15 @@ export function TrailElevationChart({
             {/* Drag preview rect */}
             {dragPreviewPx && dragPreviewPx.width > 0 && (
               <rect
-                x={dragPreviewPx.left} y={0}
-                width={dragPreviewPx.width} height={innerH}
-                fill="hsl(var(--primary))" fillOpacity={0.2}
-                stroke="hsl(var(--primary))" strokeOpacity={0.5} strokeWidth={1}
+                x={dragPreviewPx.left}
+                y={0}
+                width={dragPreviewPx.width}
+                height={innerH}
+                fill="hsl(var(--primary))"
+                fillOpacity={0.2}
+                stroke="hsl(var(--primary))"
+                strokeOpacity={0.5}
+                strokeWidth={1}
                 clipPath={`url(#${clipPathId})`}
               />
             )}
@@ -527,12 +575,22 @@ export function TrailElevationChart({
             {activeTooltip && !dragPreview && (
               <>
                 <line
-                  x1={activeTooltip.x} x2={activeTooltip.x} y1={0} y2={innerH}
-                  stroke="currentColor" strokeOpacity={0.2} strokeWidth={1} strokeDasharray="3 3"
+                  x1={activeTooltip.x}
+                  x2={activeTooltip.x}
+                  y1={0}
+                  y2={innerH}
+                  stroke="currentColor"
+                  strokeOpacity={0.2}
+                  strokeWidth={1}
+                  strokeDasharray="3 3"
                 />
                 <circle
-                  cx={activeTooltip.x} cy={activeTooltip.y} r={compact ? 3 : 4}
-                  fill={activeTooltip.color} stroke="white" strokeWidth={1.5}
+                  cx={activeTooltip.x}
+                  cy={activeTooltip.y}
+                  r={compact ? 3 : 4}
+                  fill={activeTooltip.color}
+                  stroke="white"
+                  strokeWidth={1.5}
                 />
               </>
             )}
@@ -543,8 +601,14 @@ export function TrailElevationChart({
                 <line x1={0} x2={innerW} stroke="currentColor" strokeOpacity={0.1} />
                 {xTicks.map((t) => (
                   <text
-                    key={t.v} x={t.x} dy="1.4em" textAnchor="middle"
-                    fontSize={10} fill="currentColor" fillOpacity={0.55} fontWeight={500}
+                    key={t.v}
+                    x={t.x}
+                    dy="1.4em"
+                    textAnchor="middle"
+                    fontSize={10}
+                    fill="currentColor"
+                    fillOpacity={0.55}
+                    fontWeight={500}
                   >
                     {t.v.toFixed(1)} {labels.km}
                   </text>
@@ -553,14 +617,22 @@ export function TrailElevationChart({
             )}
 
             {/* Y axis labels — hidden in compact mode */}
-            {!compact && yTicks.map((t) => (
-              <text
-                key={t.v} x={-6} y={t.y} dy="0.32em" textAnchor="end"
-                fontSize={10} fill="currentColor" fillOpacity={0.55} fontWeight={500}
-              >
-                {Math.round(t.v)}
-              </text>
-            ))}
+            {!compact &&
+              yTicks.map((t) => (
+                <text
+                  key={t.v}
+                  x={-6}
+                  y={t.y}
+                  dy="0.32em"
+                  textAnchor="end"
+                  fontSize={10}
+                  fill="currentColor"
+                  fillOpacity={0.55}
+                  fontWeight={500}
+                >
+                  {Math.round(t.v)}
+                </text>
+              ))}
           </g>
         </svg>
       </div>
@@ -586,7 +658,9 @@ export function TrailElevationChart({
               ].map(({ color, label }, i) => (
                 <span
                   key={color}
-                  className={i === 0 ? 'flex-1' : i === 3 ? 'flex-1 text-right' : 'flex-1 text-center'}
+                  className={
+                    i === 0 ? 'flex-1' : i === 3 ? 'flex-1 text-right' : 'flex-1 text-center'
+                  }
                   style={{ color }}
                 >
                   {label}

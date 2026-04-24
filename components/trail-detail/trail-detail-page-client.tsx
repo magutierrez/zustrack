@@ -112,7 +112,10 @@ export function TrailDetailPageClient({
       e.preventDefault();
       const delta = e.touches[0].clientY - dragStateRef.current.startY;
       const newH = dragStateRef.current.startH + delta;
-      const clamped = Math.max(window.innerHeight * 0.12, Math.min(window.innerHeight * 0.85, newH));
+      const clamped = Math.max(
+        window.innerHeight * 0.12,
+        Math.min(window.innerHeight * 0.85, newH),
+      );
       setMapHeightPx(clamped);
       setNearFullscreen(clamped > window.innerHeight * FULLSCREEN_THRESHOLD);
     };
@@ -655,7 +658,7 @@ export function TrailDetailPageClient({
 
             {/* Compact elevation chart — overlaid at bottom of map, mobile only, not fullscreen */}
             {trackProfile.length > 1 && !mapExpanded && (
-              <div className="absolute inset-x-0 bottom-0 z-[2] lg:hidden text-slate-500 dark:text-slate-300">
+              <div className="absolute inset-x-0 bottom-3 z-2 text-slate-500 lg:hidden dark:text-slate-300">
                 <TrailElevationChart
                   compact
                   singleColor="currentColor"
