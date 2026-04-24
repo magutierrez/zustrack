@@ -307,11 +307,14 @@ export function TrailHazards({
   selectedRange,
   onSegmentSelect,
   onReset,
+  hidden = false,
 }: {
   trackProfile: TrackPoint[];
   selectedRange?: { start: number; end: number } | null;
   onSegmentSelect?: (start: number, end: number, color: string) => void;
   onReset?: () => void;
+  /** Suppress rendering of the Recharts charts (e.g. when container is display:none on mobile) */
+  hidden?: boolean;
 }) {
   const t = useTranslations('Hazards');
 
@@ -399,7 +402,7 @@ export function TrailHazards({
 
               {/* Elevation mini-chart */}
               <div className="h-28 w-full cursor-crosshair">
-                <ResponsiveContainer width="100%" height="100%">
+                {!hidden && <ResponsiveContainer width="100%" height="100%" debounce={50}>
                   <AreaChart
                     data={chartData}
                     margin={{ top: 10, right: 0, left: 0, bottom: 0 }}
@@ -468,7 +471,7 @@ export function TrailHazards({
                     <XAxis type="number" dataKey="dist" hide domain={[seg.startDist, seg.endDist]} />
                     <YAxis hide domain={[yMin, yMax]} />
                   </AreaChart>
-                </ResponsiveContainer>
+                </ResponsiveContainer>}
               </div>
 
               {/* Footer */}

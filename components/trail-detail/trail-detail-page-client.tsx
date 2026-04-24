@@ -388,6 +388,7 @@ export function TrailDetailPageClient({
                   selectedRange={selectedRange}
                   onSegmentSelect={(start, end, color) => setSelectedRange({ start, end, color })}
                   onReset={() => setSelectedRange(null)}
+                  hidden={mapExpanded}
                 />
               )}
 
