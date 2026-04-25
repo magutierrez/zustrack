@@ -175,6 +175,7 @@
     "mudLow": "Posible barro ligero en tramos sin asfaltar tras las últimas lluvias.",
     "mudKmRange": "Tramo afectado: km {start}–{end}",
     "viewOnMap": "Ver en mapa",
+    "viewFullRoute": "Ver ruta completa",
     "mudLevel": {
       "none": "Seco",
       "low": "Bajo",
@@ -784,7 +785,7 @@
       "unknown": "Sendero"
     },
     "backToTrails": "Todos los senderos",
-    "analyzeWithZustrack": "Analizar el tiempo para este sendero",
+    "analyzeWithZustrack": "Analizar ruta",
     "metaDescription": "Sendero de {distance} km con {elevationGain}m de desnivel. Nivel: {effort}.",
     "km": "km",
     "meters": "m",

@@ -3,12 +3,11 @@ import { setRequestLocale } from 'next-intl/server';
 import { routing } from '@/i18n/routing';
 import { notFound } from 'next/navigation';
 import React from 'react';
+import { SessionProvider } from 'next-auth/react';
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
-
-export const dynamicParams = false;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://www.zustrack.com';
 
@@ -184,12 +183,12 @@ export default async function LocaleLayout({
   const jsonLd = buildJsonLd(locale, m);
 
   return (
-    <>
+    <SessionProvider>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       {children}
-    </>
+    </SessionProvider>
   );
 }

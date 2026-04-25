@@ -10,6 +10,9 @@
     "collapseMap": "Chiudi",
     "mountainPeaksHide": "Nascondi vette",
     "mountainPeaksShow": "Mostra vette",
+    "loadRoute": "Carica un percorso per vedere la mappa",
+    "terrain3DShow": "Attiva rilievo 3D",
+    "terrain3DHide": "Disattiva rilievo 3D",
     "errors": {
       "insufficientPoints": "Il file GPX non contiene abbastanza punti.",
       "readError": "Errore nella lettura del file GPX. Controlla il formato.",
@@ -379,7 +382,9 @@
       "unknown": "Sconosciuto",
       "sett": "Pavé / Selciato",
       "rock": "Roccia",
-      "scree": "Ghiaione"
+      "scree": "Ghiaione",
+      "wood": "Legno",
+      "pebblestone": "Acciottolato tondo"
     }
   },
   "Auth": {
@@ -724,6 +729,15 @@
     "share": "Condividi percorso",
     "copied": "Link copiato!"
   },
+  "Annotations": {
+    "addNote": "Aggiungi nota",
+    "placeholder": "Scrivi la tua nota per questa posizione...",
+    "save": "Salva",
+    "saveRouteFirst": "Salva prima il percorso per aggiungere note",
+    "edit": "Modifica",
+    "delete": "Elimina",
+    "cancel": "Annulla"
+  },
   "TrailPage": {
     "notFound": "Sentiero non trovato",
     "distance": "Distanza",
@@ -761,6 +775,8 @@
     "maxSlope": "Pendenza massima",
     "pointCount": "Punti traccia",
     "waypointCount": "Punti di interesse",
+    "region": "Regione",
+    "place": "Comune di partenza",
     "trailType": {
       "GR": "Grande Percorso (GR)",
       "PR": "Piccolo Percorso (PR)",
@@ -769,7 +785,7 @@
       "unknown": "Sentiero"
     },
     "backToTrails": "Tutti i sentieri",
-    "analyzeWithZustrack": "Analizza il meteo per questo sentiero",
+    "analyzeWithZustrack": "Analizza il percorso",
     "metaDescription": "Sentiero di {distance} km con {elevationGain}m di dislivello. Livello: {effort}.",
     "km": "km",
     "meters": "m",
@@ -828,6 +844,35 @@
     "unreliable": "Non affidabile",
     "kmAway": "km",
     "showOnMap": "Mostra sulla mappa",
+    "infoTab": "Info",
+    "mapTab": "Mappa",
+    "downloadGpx": "Scarica GPX",
+    "weatherForecast": "Previsioni 7 giorni",
+    "bestDay": "Giorno migliore",
+    "weatherLoading": "Caricamento previsioni...",
+    "precipitation": "Pioggia",
+    "wind": "Vento",
+    "equipmentTitle": "Lista attrezzatura",
+    "equipmentFootwear": "Calzature",
+    "equipmentPoles": "Bastoncini",
+    "equipmentWater": "Acqua",
+    "equipmentLayers": "Strati",
+    "equipmentSun": "Protezione solare",
+    "equipmentCrampons": "Ramponi / microspike",
+    "equipmentFirstAid": "Kit di pronto soccorso",
+    "equipmentNavigation": "Navigazione",
+    "essential": "Essenziale",
+    "recommended": "Consigliato",
+    "paceEstimator": "Stimatore di ritmo",
+    "calorieEstimator": "Calorie",
+    "bodyWeight": "Peso corporeo",
+    "kg": "kg",
+    "perKm": "/ km",
+    "estimatedCalories": "Calorie stimate",
+    "waterGapMax": "Tratto più lungo senza acqua",
+    "waterCarryRecommendation": "Porta almeno",
+    "liters": "L",
+    "similarTrails": "Percorsi simili",
     "equipmentFootwearVibram": "Scarpe da montagna con suola Vibram",
     "equipmentFootwearTrail": "Scarpe da trail running",
     "equipmentFootwearLight": "Scarpe da trekking leggere",
@@ -887,6 +932,15 @@
       "es": "Esplora i sentieri GR e PR nella penisola iberica e nelle isole.",
       "it": "Scopri i sentieri CAI, le Alte Vie e i percorsi storici attraverso le Alpi, gli Appennini e oltre.",
       "de": "Percorri i sentieri GR e PR attraverso la Foresta Nera, la Baviera e le Alpi tedesche."
+    }
+  },
+  "TrailMap": {
+    "layers": {
+      "ignRaster": "Mappa Raster IGN",
+      "ignBase": "Mappa Base IGN",
+      "osm": "OpenStreetMap",
+      "pnoa": "Ortofoto PNOA",
+      "opentopomap": "OpenTopoMap"
     }
   }
 }

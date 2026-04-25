@@ -784,7 +784,7 @@
       "unknown": "Trail"
     },
     "backToTrails": "All trails",
-    "analyzeWithZustrack": "Analyze weather for this trail",
+    "analyzeWithZustrack": "Analyze route",
     "metaDescription": "{distance} km trail with {elevationGain}m elevation gain. Effort: {effort}.",
     "km": "km",
     "meters": "m",

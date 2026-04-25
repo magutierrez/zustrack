@@ -10,6 +10,9 @@
     "collapseMap": "Fermer",
     "mountainPeaksHide": "Masquer les sommets",
     "mountainPeaksShow": "Afficher les sommets",
+    "loadRoute": "Chargez un itinéraire pour voir la carte",
+    "terrain3DShow": "Activer le relief 3D",
+    "terrain3DHide": "Désactiver le relief 3D",
     "errors": {
       "insufficientPoints": "Le fichier GPX ne contient pas assez de points.",
       "readError": "Erreur lors de la lecture du fichier GPX. Vérifiez le format.",
@@ -379,7 +382,9 @@
       "unknown": "Inconnu",
       "sett": "Pavé irrégulier",
       "rock": "Roche",
-      "scree": "Éboulis"
+      "scree": "Éboulis",
+      "wood": "Bois",
+      "pebblestone": "Pavés ronds"
     }
   },
   "Auth": {
@@ -724,6 +729,15 @@
     "share": "Partager l'itinéraire",
     "copied": "Lien copié !"
   },
+  "Annotations": {
+    "addNote": "Ajouter une note",
+    "placeholder": "Écrivez votre note pour cet emplacement...",
+    "save": "Enregistrer",
+    "saveRouteFirst": "Enregistrez l'itinéraire d'abord pour ajouter des notes",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "cancel": "Annuler"
+  },
   "TrailPage": {
     "notFound": "Sentier non trouvé",
     "distance": "Distance",
@@ -761,6 +775,8 @@
     "maxSlope": "Pente maximale",
     "pointCount": "Points de trace",
     "waypointCount": "Points d'intérêt",
+    "region": "Région",
+    "place": "Commune de départ",
     "trailType": {
       "GR": "Grande Randonnée (GR)",
       "PR": "Petite Randonnée (PR)",
@@ -769,7 +785,7 @@
       "unknown": "Sentier"
     },
     "backToTrails": "Tous les sentiers",
-    "analyzeWithZustrack": "Analyser la météo pour ce sentier",
+    "analyzeWithZustrack": "Analyser l'itinéraire",
     "metaDescription": "Sentier de {distance} km avec {elevationGain}m de dénivelé. Niveau : {effort}.",
     "km": "km",
     "meters": "m",
@@ -828,6 +844,35 @@
     "unreliable": "Non fiable",
     "kmAway": "km",
     "showOnMap": "Voir sur la carte",
+    "infoTab": "Infos",
+    "mapTab": "Carte",
+    "downloadGpx": "Télécharger GPX",
+    "weatherForecast": "Prévisions 7 jours",
+    "bestDay": "Meilleur jour",
+    "weatherLoading": "Chargement des prévisions...",
+    "precipitation": "Pluie",
+    "wind": "Vent",
+    "equipmentTitle": "Liste d'équipement",
+    "equipmentFootwear": "Chaussures",
+    "equipmentPoles": "Bâtons",
+    "equipmentWater": "Eau",
+    "equipmentLayers": "Couches",
+    "equipmentSun": "Protection solaire",
+    "equipmentCrampons": "Crampons / microspikes",
+    "equipmentFirstAid": "Trousse de secours",
+    "equipmentNavigation": "Navigation",
+    "essential": "Essentiel",
+    "recommended": "Recommandé",
+    "paceEstimator": "Estimateur d'allure",
+    "calorieEstimator": "Calories",
+    "bodyWeight": "Poids corporel",
+    "kg": "kg",
+    "perKm": "/ km",
+    "estimatedCalories": "Calories estimées",
+    "waterGapMax": "Plus grand tronçon sans eau",
+    "waterCarryRecommendation": "Emportez au moins",
+    "liters": "L",
+    "similarTrails": "Itinéraires similaires",
     "equipmentFootwearVibram": "Chaussures de montagne à semelle Vibram",
     "equipmentFootwearTrail": "Chaussures de trail running",
     "equipmentFootwearLight": "Chaussures de randonnée légères",
@@ -887,6 +932,15 @@
       "es": "Explorez les sentiers GR et PR à travers la péninsule ibérique et les îles.",
       "it": "Découvrez les sentiers CAI, les Alte Vie et les routes historiques à travers les Alpes, les Apennins et au-delà.",
       "de": "Randonnez sur les sentiers GR et PR à travers la Forêt-Noire, la Bavière et les Alpes allemandes."
+    }
+  },
+  "TrailMap": {
+    "layers": {
+      "ignRaster": "Carte Raster IGN",
+      "ignBase": "Carte Base IGN",
+      "osm": "OpenStreetMap",
+      "pnoa": "Orthophoto PNOA",
+      "opentopomap": "OpenTopoMap"
     }
   }
 }

@@ -784,7 +784,7 @@
       "unknown": "Wanderweg"
     },
     "backToTrails": "Alle Trails",
-    "analyzeWithZustrack": "Wetter für diesen Trail analysieren",
+    "analyzeWithZustrack": "Route analysieren",
     "metaDescription": "{distance} km Trail mit {elevationGain} m Höhengewinn. Anstrengung: {effort}.",
     "km": "km",
     "meters": "m",

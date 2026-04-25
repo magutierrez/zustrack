@@ -46,6 +46,7 @@ interface TrailMapProps {
   focusPoint?: { lat: number; lng: number } | null;
   onFocusPointConsumed?: () => void;
   activePOI?: { lat: number; lng: number } | null;
+  mapExpanded?: boolean;
 }
 
 /** Build color-stop stops for MapLibre line-gradient from slope values */
@@ -132,6 +133,7 @@ export default function TrailMap({
   focusPoint,
   onFocusPointConsumed,
   activePOI,
+  mapExpanded,
 }: TrailMapProps) {
   const mapRef = useRef<MapRef | null>(null);
   const [mapType, setMapType] = useState<TrailMapLayerType>('osm');
@@ -290,7 +292,7 @@ export default function TrailMap({
             [Math.min(...ptLngs), Math.min(...ptLats)],
             [Math.max(...ptLngs), Math.max(...ptLats)],
           ],
-          { padding: 60, duration: 800 },
+          { padding: isMobile ? { top: 30, bottom: 100, left: 40, right: 40 } : 60, duration: 800 },
         );
       }
     } else {
@@ -299,7 +301,7 @@ export default function TrailMap({
           [minLng, minLat],
           [maxLng, maxLat],
         ],
-        { padding: 40, duration: 800 },
+        { padding: isMobile ? { top: 30, bottom: 100, left: 40, right: 40 } : 40, duration: 800 },
       );
     }
   }, [selectedRange, trackProfile, minLat, maxLat, minLng, maxLng]);
@@ -376,7 +378,7 @@ export default function TrailMap({
               [minLng, minLat],
               [maxLng, maxLat],
             ],
-            { padding: 40, duration: 0 },
+            { padding: isMobile ? { top: 30, bottom: 100, left: 40, right: 40 } : 40, duration: 0 },
           );
         }}
         onMouseMove={handleMapMouseMove}
@@ -384,20 +386,28 @@ export default function TrailMap({
         attributionControl={false}
         transformRequest={transformRequest}
       >
-        <NavigationControl position="bottom-right" />
-        <TrailLayerControl mapType={mapType} setMapType={setMapType} />
-        <div className="absolute top-14 right-3 z-10">
-          <Button
-            variant={enable3D ? 'default' : 'secondary'}
-            size="icon"
-            className="h-10 w-10 text-xs font-bold shadow-md"
-            onClick={() => setEnable3D((v) => !v)}
-            disabled={terrainLoading}
-            title={enable3D ? '2D' : '3D'}
-          >
-            {enable3D ? '2D' : '3D'}
-          </Button>
-        </div>
+        {!isMobile && <NavigationControl position="bottom-right" />}
+        {(!isMobile || mapExpanded) && (
+          <TrailLayerControl
+            mapType={mapType}
+            setMapType={setMapType}
+            className={mapExpanded && isMobile ? 'absolute top-[104px] right-3 z-10' : 'absolute top-2 right-3 z-10'}
+          />
+        )}
+        {(!isMobile || mapExpanded) && (
+          <div className="absolute top-14 right-3 z-10">
+            <Button
+              variant={enable3D ? 'default' : 'secondary'}
+              size="icon"
+              className="h-10 w-10 text-xs font-bold shadow-md"
+              onClick={() => setEnable3D((v) => !v)}
+              disabled={terrainLoading}
+              title={enable3D ? '2D' : '3D'}
+            >
+              {enable3D ? '2D' : '3D'}
+            </Button>
+          </div>
+        )}
 
         {/* Base trail */}
         <Source id="trail" type="geojson" data={geojson} lineMetrics>
@@ -413,7 +423,11 @@ export default function TrailMap({
             type="line"
             source="trail"
             layout={{ 'line-join': 'round', 'line-cap': 'round' }}
-            paint={{ 'line-color': '#ffffff', 'line-width': 6.5, 'line-opacity': 0.9 * baseOpacity }}
+            paint={{
+              'line-color': '#ffffff',
+              'line-width': 6.5,
+              'line-opacity': 0.9 * baseOpacity,
+            }}
           />
           <Layer
             id="trail-line"
@@ -443,7 +457,7 @@ export default function TrailMap({
               'icon-opacity': 0.6 * baseOpacity,
             }}
           />
-          </Source>
+        </Source>
         {/* Segment highlight overlay */}
         {selectedRange && highlightGeoJSON && highlightGradientStops && (
           <Source id="trail-highlight" type="geojson" data={highlightGeoJSON} lineMetrics>
@@ -554,11 +568,7 @@ export default function TrailMap({
         )}
 
         {popupInfo && !isMobile && (
-          <MapPopup
-            popupInfo={popupInfo}
-            onClose={() => setPopupInfo(null)}
-            hideNotes={true}
-          />
+          <MapPopup popupInfo={popupInfo} onClose={() => setPopupInfo(null)} hideNotes={true} />
         )}
       </Map>
 
