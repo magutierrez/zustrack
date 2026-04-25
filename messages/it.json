@@ -903,6 +903,8 @@
     },
     "subtitle": "Scegli un paese per esplorare la nostra selezione di percorsi escursionistici e ciclistici.",
     "metaDescription": "Scopri sentieri ufficiali con tracce GPS dettagliate, profili altimetrici e analisi meteo punto per punto. Filtra per difficoltà, distanza e regione.",
+    "titleWithRegion": "Sentieri in {regionName}",
+    "metaDescriptionRegion": "Scopri i sentieri ufficiali di escursionismo e ciclismo in {regionName}. Tracce GPS, profili altimetrici e analisi meteo punto per punto.",
     "searchPlaceholder": "Cerca per nome...",
     "results": "{count} sentieri trovati",
     "noResults": "Nessun sentiero corrisponde ai filtri",

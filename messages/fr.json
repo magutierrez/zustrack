@@ -903,6 +903,8 @@
     },
     "subtitle": "Choisissez un pays pour explorer notre sélection de randonnées et de circuits cyclistes.",
     "metaDescription": "Découvrez des sentiers officiels avec des traces GPS détaillées, des profils d'élévation et une analyse météo point par point. Filtrez par difficulté, distance et région.",
+    "titleWithRegion": "Sentiers en {regionName}",
+    "metaDescriptionRegion": "Découvrez les sentiers officiels de randonnée et de cyclisme en {regionName}. Traces GPS, profils d'altitude et analyse météo point par point.",
     "searchPlaceholder": "Rechercher par nom...",
     "results": "{count} sentiers trouvés",
     "noResults": "Aucun sentier ne correspond aux filtres",

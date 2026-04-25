@@ -902,6 +902,8 @@
     },
     "subtitle": "Land auswählen, um unsere kuratierte Auswahl an Wander- und Radwegen zu erkunden.",
     "metaDescription": "Offizielle Wanderwege mit detaillierten GPS-Tracks, Höhenprofilen und Punkt-für-Punkt-Wetteranalyse entdecken. Nach Schwierigkeit, Distanz und Region filtern.",
+    "titleWithRegion": "Wanderwege in {regionName}",
+    "metaDescriptionRegion": "Entdecke offizielle Wander- und Radwege in {regionName}. GPS-Tracks, Höhenprofile und Punkt-für-Punkt-Wetteranalyse.",
     "searchPlaceholder": "Nach Name suchen...",
     "results": "{count} Trails gefunden",
     "noResults": "Keine Trails entsprechen deinen Filtern",

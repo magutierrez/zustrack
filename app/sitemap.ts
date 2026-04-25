@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { routing } from '@/i18n/routing';
 import { createClient } from '@supabase/supabase-js';
+import { regionToSlug } from '@/lib/trails';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://www.zustrack.com';
 
@@ -72,6 +73,44 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
               languages: {
                 ...localizedUrls,
                 'x-default': `${BASE_URL}/en${trailPath}`,
+              },
+            },
+          });
+        }
+      }
+    }
+    // Region pages
+    const COUNTRIES = ['es', 'it', 'de'];
+    for (const country of COUNTRIES) {
+      const { data: regionRows } = await supabase
+        .from('trails')
+        .select('region')
+        .eq('country', country)
+        .not('region', 'is', null);
+
+      const uniqueRegions = [
+        ...new Set(
+          (regionRows ?? [])
+            .map((r: { region: string }) => r.region)
+            .filter(Boolean),
+        ),
+      ] as string[];
+
+      for (const region of uniqueRegions) {
+        const slug = regionToSlug(region);
+        const path = `/trail/${country}/region/${slug}`;
+        const localizedUrls = Object.fromEntries(
+          routing.locales.map((locale) => [locale, `${BASE_URL}/${locale}${path}`]),
+        );
+        for (const locale of routing.locales) {
+          entries.push({
+            url: `${BASE_URL}/${locale}${path}`,
+            changeFrequency: 'weekly',
+            priority: 0.75,
+            alternates: {
+              languages: {
+                ...localizedUrls,
+                'x-default': `${BASE_URL}/en${path}`,
               },
             },
           });

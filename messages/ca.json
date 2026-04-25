@@ -902,6 +902,8 @@
     },
     "subtitle": "Tria un país per explorar la nostra selecció de rutes de senderisme i ciclisme.",
     "metaDescription": "Descobreix senders oficials amb tracks GPS detallats, perfils d'elevació i anàlisi meteorològica punt a punt. Filtra per dificultat, distància i regió.",
+    "titleWithRegion": "Senderisme a {regionName}",
+    "metaDescriptionRegion": "Descobreix els senders oficials de {regionName}. Tracks GPS, perfils d'elevació i anàlisi meteorològica punt a punt.",
     "searchPlaceholder": "Cercar per nom...",
     "results": "{count} senders trobats",
     "noResults": "Cap sender coincideix amb els filtres",

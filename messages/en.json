@@ -902,6 +902,8 @@
     },
     "subtitle": "Choose a country to explore our curated selection of hiking and cycling trails.",
     "metaDescription": "Discover official hiking trails with detailed GPS tracks, elevation profiles and point-by-point weather analysis. Filter by difficulty, distance and region.",
+    "titleWithRegion": "Trails in {regionName}",
+    "metaDescriptionRegion": "Discover official hiking and cycling trails in {regionName}. GPS tracks, elevation profiles and point-by-point weather analysis.",
     "searchPlaceholder": "Search by name...",
     "results": "{count} trails found",
     "noResults": "No trails match your filters",
