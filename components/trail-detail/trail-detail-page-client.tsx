@@ -270,6 +270,33 @@ export function TrailDetailPageClient({
         .dark .maplibregl-ctrl-group button .maplibregl-ctrl-icon {
           filter: invert(1) brightness(0.85) !important;
         }
+
+        /* MapLibre popup — adapt to dark/light via CSS tokens */
+        .maplibregl-popup-content {
+          background: var(--card) !important;
+          border: 1px solid var(--border) !important;
+          color: var(--foreground) !important;
+          border-radius: 8px !important;
+          padding: 0 !important;
+          box-shadow: 0 4px 16px rgb(0 0 0 / 0.12) !important;
+        }
+        /* Tip arrow (anchor=bottom → tip points down, uses border-top-color) */
+        .maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
+          border-top-color: var(--card) !important;
+        }
+        .maplibregl-popup-anchor-top .maplibregl-popup-tip {
+          border-bottom-color: var(--card) !important;
+        }
+        .maplibregl-popup-anchor-left .maplibregl-popup-tip {
+          border-right-color: var(--card) !important;
+        }
+        .maplibregl-popup-anchor-right .maplibregl-popup-tip {
+          border-left-color: var(--card) !important;
+        }
+        /* Hide default close button (component renders its own) */
+        .maplibregl-popup-close-button {
+          display: none !important;
+        }
       `}</style>
 
       <div
@@ -290,7 +317,7 @@ export function TrailDetailPageClient({
           {/* LEFT: scrollable content — bottom sheet on mobile */}
           <div
             className={cn(
-              'trail-scrollbar z-3 order-2 -mt-8 flex flex-col overflow-y-auto rounded-t-3xl bg-white shadow-[0_-8px_24px_rgba(0,0,0,0.08)] lg:order-1 lg:mt-0 lg:w-[55%] lg:rounded-none lg:bg-transparent lg:shadow-none dark:bg-[#0e0f18] dark:shadow-[0_-8px_24px_rgba(0,0,0,0.35)] dark:lg:bg-transparent',
+              'trail-scrollbar z-3 order-2 -mt-8 flex flex-col overflow-y-auto rounded-t-3xl bg-white shadow-[0_-8px_24px_rgba(0,0,0,0.08)] lg:order-1 lg:mt-0 lg:w-[55%] lg:overflow-hidden lg:rounded-none lg:bg-transparent lg:shadow-none dark:bg-[#0e0f18] dark:shadow-[0_-8px_24px_rgba(0,0,0,0.35)] dark:lg:bg-transparent',
               mapExpanded && 'hidden lg:flex',
             )}
           >
@@ -310,7 +337,7 @@ export function TrailDetailPageClient({
             </div>
 
             {/* Inner content wrapper */}
-            <div className="flex flex-col gap-6 px-4 pb-24 lg:gap-8 lg:p-8 lg:pb-4">
+            <div className="trail-scrollbar flex flex-col gap-6 px-4 pb-24 lg:flex-1 lg:gap-8 lg:overflow-y-auto lg:p-8 lg:pb-4">
               {/* Back link — desktop only (mobile uses map overlay button) */}
               <Link
                 href={`/${locale}/trail/${trail.country}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`}
@@ -690,8 +717,8 @@ export function TrailDetailPageClient({
                 </table>
               </section>
 
-              {/* CTA */}
-              <div className="flex justify-center pb-4">
+              {/* CTA — mobile only (desktop has the sticky footer below) */}
+              <div className="flex justify-center pb-4 lg:hidden">
                 <button
                   onClick={handleAnalyze}
                   className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
@@ -702,6 +729,17 @@ export function TrailDetailPageClient({
               </div>
             </div>
             {/* end inner content wrapper */}
+
+            {/* Desktop sticky CTA footer */}
+            <div className="hidden shrink-0 border-t border-slate-200 bg-white px-6 py-4 lg:block dark:border-slate-700/60 dark:bg-[#0e0f18]">
+              <button
+                onClick={handleAnalyze}
+                className="font-headline inline-flex h-auto w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-6 py-4 text-base font-bold text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
+              >
+                <MapPin className="h-5 w-5" />
+                {t('analyzeWithZustrack')}
+              </button>
+            </div>
           </div>
 
           {/* RIGHT: map — 38vh on mobile (bottom sheet overlaps ~32px), fills full height on desktop */}
