@@ -62,6 +62,8 @@ interface StatsGridProps {
     km: string;
     meters: string;
     showOnMap: string;
+    durationH: string;
+    durationMin: string;
   };
 }
 
@@ -80,7 +82,12 @@ export function StatsGrid({
 }: StatsGridProps) {
   const hours = Math.floor(estimatedDurationMin / 60);
   const mins = estimatedDurationMin % 60;
-  const durationStr = mins > 0 ? `${hours}h ${mins}min` : `${hours}h`;
+  const durationStr =
+    hours === 0
+      ? `${mins}${labels.durationMin}`
+      : mins > 0
+        ? `${hours}${labels.durationH} ${mins}${labels.durationMin}`
+        : `${hours}${labels.durationH}`;
 
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

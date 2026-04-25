@@ -76,6 +76,8 @@ export async function TrailSearchView({
     linear: tTrail('linear'),
     km: tTrail('km'),
     meters: tTrail('meters'),
+    durationH: tTrail('durationH'),
+    durationMin: tTrail('durationMin'),
   };
 
   const initialFilters = {

@@ -747,6 +747,8 @@
     "avgElevation": "Durchschnittshöhe",
     "duration": "Geschätzte Dauer",
     "durationUnit": "h {hours}min",
+    "durationH": "h",
+    "durationMin": "Min.",
     "routeType": "Routentyp",
     "circular": "Rundweg",
     "linear": "Lineare Route",

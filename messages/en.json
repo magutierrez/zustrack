@@ -747,6 +747,8 @@
     "avgElevation": "Average elevation",
     "duration": "Est. duration",
     "durationUnit": "h {hours}m",
+    "durationH": "h",
+    "durationMin": "min",
     "routeType": "Route type",
     "circular": "Circular",
     "linear": "Linear",

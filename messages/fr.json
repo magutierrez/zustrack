@@ -748,6 +748,8 @@
     "avgElevation": "Altitude moyenne",
     "duration": "Durée est.",
     "durationUnit": "h {hours}min",
+    "durationH": "h",
+    "durationMin": "min",
     "routeType": "Type de parcours",
     "circular": "Circulaire",
     "linear": "Linéaire",

@@ -423,6 +423,8 @@ export function TrailDetailPageClient({
                     km: t('km'),
                     meters: t('meters'),
                     showOnMap: t('showOnMap'),
+                    durationH: t('durationH'),
+                    durationMin: t('durationMin'),
                   }}
                 />
               </div>
@@ -664,6 +666,8 @@ export function TrailDetailPageClient({
                           linear: t('linear'),
                           km: t('km'),
                           meters: t('meters'),
+                          durationH: t('durationH'),
+                          durationMin: t('durationMin'),
                         }}
                       />
                     ))}
