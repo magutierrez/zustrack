@@ -80,6 +80,22 @@ export function TrailDetailPageClient({
   const searchParams = useSearchParams();
 
   const [mapExpanded, setMapExpanded] = useState(false);
+
+  // Back-button collapses fullscreen map instead of navigating away
+  useEffect(() => {
+    if (mapExpanded) {
+      history.pushState({ mapExpanded: true }, '');
+    }
+  }, [mapExpanded]);
+
+  useEffect(() => {
+    const onPopState = (e: PopStateEvent) => {
+      if (e.state?.mapExpanded) return; // navigating within fullscreen states, ignore
+      setMapExpanded(false);
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
   const [selectedRange, setSelectedRange] = useState<Range | null>(null);
   const [hoverDist, setHoverDist] = useState<number | null>(null);
   const [focusPoint, setFocusPoint] = useState<POIPoint | null>(null);
@@ -326,7 +342,7 @@ export function TrailDetailPageClient({
                     )}
                   </span>
                 </div>
-                <h1 className="text-xl font-bold tracking-tight sm:text-2xl lg:text-3xl lg:text-4xl">
+                <h1 className="text-xl font-bold tracking-tight sm:text-2xl lg:text-4xl">
                   {trail.name}
                 </h1>
                 {(trail.place || regionName) && (
