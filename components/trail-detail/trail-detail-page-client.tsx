@@ -29,10 +29,12 @@ import { TrailHazards } from './trail-hazards';
 import { TrailElevationChart } from './trail-elevation-chart';
 import { TrailMapWrapper } from './trail-map-wrapper';
 import { TrailGpxDownload } from './trail-gpx-download';
+import { TrailVideoExport } from './trail-video-export';
 import { TrailWeatherForecast } from './trail-weather-forecast';
 import { TrailCard } from './trail-card';
 import { TrailInfoTabs } from './trail-info-tabs';
 import { Button } from '@/components/ui/button';
+import type maplibregl from 'maplibre-gl';
 
 type Range = { start: number; end: number; color?: string };
 type POIPoint = { lat: number; lng: number };
@@ -80,6 +82,7 @@ export function TrailDetailPageClient({
   const searchParams = useSearchParams();
 
   const [mapExpanded, setMapExpanded] = useState(false);
+  const mapInstanceRef = useRef<maplibregl.Map | null>(null);
 
   // Back-button collapses fullscreen map instead of navigating away
   useEffect(() => {
@@ -363,11 +366,27 @@ export function TrailDetailPageClient({
                   </span>
                 </div>
                 {trackProfile.length > 0 && (
-                  <div className="pt-1">
+                  <div className="flex flex-wrap items-center gap-2 pt-1">
                     <TrailGpxDownload
                       name={trail.name}
                       trackProfile={trackProfile}
                       label={t('downloadGpx')}
+                    />
+                    <TrailVideoExport
+                      trackProfile={trackProfile}
+                      mapInstanceRef={mapInstanceRef}
+                      trailName={trail.name}
+                      onStartRecording={() => setMapExpanded(true)}
+                      labels={{
+                        exportVideo: t('exportVideo'),
+                        viewVideo: t('viewVideo'),
+                        reRecord: t('reRecord'),
+                        recording: t('videoRecording'),
+                        processing: t('videoProcessing'),
+                        cancelRecording: t('cancelRecording'),
+                        videoPreviewTitle: t('videoPreviewTitle'),
+                        downloadVideo: t('downloadVideo'),
+                      }}
                     />
                   </div>
                 )}
@@ -683,6 +702,7 @@ export function TrailDetailPageClient({
                 onFocusPointConsumed={() => setFocusPoint(null)}
                 activePOI={activePOI}
                 mapExpanded={mapExpanded}
+                onMapReady={(map) => { mapInstanceRef.current = map; }}
               />
             ) : (
               <div className="flex h-full items-center justify-center bg-slate-100 dark:bg-slate-900">

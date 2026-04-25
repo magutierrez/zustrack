@@ -47,6 +47,7 @@ interface TrailMapProps {
   onFocusPointConsumed?: () => void;
   activePOI?: { lat: number; lng: number } | null;
   mapExpanded?: boolean;
+  onMapReady?: (map: maplibregl.Map) => void;
 }
 
 /** Build color-stop stops for MapLibre line-gradient from slope values */
@@ -134,6 +135,7 @@ export default function TrailMap({
   onFocusPointConsumed,
   activePOI,
   mapExpanded,
+  onMapReady,
 }: TrailMapProps) {
   const mapRef = useRef<MapRef | null>(null);
   const [mapType, setMapType] = useState<TrailMapLayerType>('osm');
@@ -380,6 +382,7 @@ export default function TrailMap({
             ],
             { padding: isMobile ? { top: 30, bottom: 100, left: 40, right: 40 } : 40, duration: 0 },
           );
+          onMapReady?.(map);
         }}
         onMouseMove={handleMapMouseMove}
         onMouseLeave={handleMapMouseLeave}

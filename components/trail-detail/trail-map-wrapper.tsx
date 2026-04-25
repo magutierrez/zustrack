@@ -13,6 +13,8 @@ interface TrackPoint {
   e: number | null;
 }
 
+import type maplibregl from 'maplibre-gl';
+
 interface Props {
   trackProfile: TrackPoint[];
   name: string;
@@ -27,13 +29,14 @@ interface Props {
   onFocusPointConsumed?: () => void;
   activePOI?: { lat: number; lng: number } | null;
   mapExpanded?: boolean;
+  onMapReady?: (map: maplibregl.Map) => void;
 }
 
 export function TrailMapWrapper({
   trackProfile, name, isCircular, selectedRange, onReset,
   hoverDist, onHoverDist,
   escapePoints, waterSources, focusPoint, onFocusPointConsumed, activePOI,
-  mapExpanded,
+  mapExpanded, onMapReady,
 }: Props) {
   return (
     <TrailMapInner
@@ -50,6 +53,7 @@ export function TrailMapWrapper({
       onFocusPointConsumed={onFocusPointConsumed}
       activePOI={activePOI}
       mapExpanded={mapExpanded}
+      onMapReady={onMapReady}
     />
   );
 }
