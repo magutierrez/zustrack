@@ -5,7 +5,7 @@ import { getTrail } from '@/lib/trails';
 import { TrailDetailView } from '@/components/trail-detail/trail-detail-view';
 import { routing } from '@/i18n/routing';
 
-export const revalidate = 3600; // ISR: cache 1h, se regenera en background tras expirar
+export const revalidate = 3600;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://www.zustrack.com';
 
@@ -64,11 +64,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function TrailPage({
-  params,
-}: {
-  params: Promise<PageParams>;
-}) {
+export default async function TrailPage({ params }: { params: Promise<PageParams> }) {
   const { locale, country, slug } = await params;
 
   setRequestLocale(locale);
