@@ -10,6 +10,15 @@ const SIZE_PRESETS: Record<string, [number, number]> = {
   lsquare: [400, 400],
   square: [300, 300],
   wide: [600, 300],
+  card: [400, 200],
+};
+
+type ImageFormat = 'webp' | 'jpeg' | 'png';
+
+const MIME: Record<ImageFormat, string> = {
+  webp: 'image/webp',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
 };
 
 interface TrackPoint {
@@ -39,6 +48,17 @@ function parseSize(size: string): [number, number] | null {
   return [w, h];
 }
 
+function resolveFormat(req: NextRequest): ImageFormat {
+  const param = req.nextUrl.searchParams.get('format');
+  if (param === 'webp') return 'webp';
+  if (param === 'png') return 'png';
+  if (param === 'jpeg' || param === 'jpg') return 'jpeg';
+  // Auto-negotiate: serve WebP if the browser supports it
+  const accept = req.headers.get('accept') ?? '';
+  if (accept.includes('image/webp')) return 'webp';
+  return 'jpeg';
+}
+
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const numericId = parseInt(id, 10);
@@ -48,16 +68,16 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const { searchParams } = req.nextUrl;
   const sizeParam = searchParams.get('size') ?? '400x300';
-  const format = searchParams.get('format') === 'png' ? 'png' : 'jpeg';
 
   const dimensions = parseSize(sizeParam);
   if (!dimensions) {
     return NextResponse.json(
-      { error: `Invalid size. Use a preset (lsquare, square, wide) or WxH (max ${MAX_DIMENSION})` },
+      { error: `Invalid size. Use a preset (lsquare, square, wide, card) or WxH (max ${MAX_DIMENSION})` },
       { status: 400 },
     );
   }
   const [width, height] = dimensions;
+  const format = resolveFormat(req);
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -87,15 +107,15 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   map.addLine({ coords, color: '#e85d04', width: 3 });
   await map.render();
 
-  const buffer: Buffer = await map.image.buffer(format === 'png' ? 'image/png' : 'image/jpeg', {
-    quality: 85,
-  });
+  const quality = format === 'png' ? undefined : 80;
+  const buffer: Buffer = await map.image.buffer(MIME[format], quality !== undefined ? { quality } : {});
 
   return new NextResponse(buffer as unknown as BodyInit, {
     status: 200,
     headers: {
-      'Content-Type': format === 'png' ? 'image/png' : 'image/jpeg',
+      'Content-Type': MIME[format],
       'Cache-Control': 'public, s-maxage=86400, stale-while-revalidate=604800',
+      Vary: 'Accept',
     },
   });
 }

@@ -78,9 +78,10 @@ export function TrailCard({
           </div>
         )}
         <img
-          src={`/api/trails/${trail.id}/map-image?size=wide`}
+          src={`/api/trails/${trail.id}/map-image?size=card`}
           alt={trail.name}
           loading="lazy"
+          decoding="async"
           className={`h-full w-full object-cover transition-all duration-500 group-hover:scale-105 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
           onLoad={() => setImgLoaded(true)}
           onError={(e) => {
