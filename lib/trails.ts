@@ -280,6 +280,34 @@ export const getRegions = unstable_cache(
   { revalidate: 3600, tags: ['trail-regions'] },
 );
 
+/** Convierte un nombre de región en un slug URL-safe: "Castilla y León" → "castilla-y-leon" */
+export function regionToSlug(region: string): string {
+  return region
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
+/** Dado un slug, devuelve el valor exacto de DB que le corresponde */
+export function slugToRegion(regions: string[], slug: string): string | null {
+  return regions.find((r) => regionToSlug(r) === slug) ?? null;
+}
+
+/** Para generateStaticParams: todos los pares {country, region} como slugs */
+export async function getAllCountryRegions(): Promise<{ country: string; region: string }[]> {
+  const countries = ['es', 'it', 'de'];
+  const results: { country: string; region: string }[] = [];
+  for (const country of countries) {
+    const regions = await getRegions(country);
+    for (const r of regions) {
+      results.push({ country, region: regionToSlug(r.value) });
+    }
+  }
+  return results;
+}
+
 export const getRouteTypes = unstable_cache(
   async (country: string): Promise<string[]> => {
     const { data } = await getSupabase().rpc('get_route_types', { p_country: country });

@@ -32,12 +32,16 @@ interface TrailCardLabels {
   linear: string;
   km: string;
   meters: string;
+  durationH: string;
+  durationMin: string;
 }
 
-function formatDuration(mins: number): string {
+function formatDuration(mins: number, labels: Pick<TrailCardLabels, 'durationH' | 'durationMin'>): string {
   const h = Math.floor(mins / 60);
   const m = mins % 60;
-  return m > 0 ? `${h}h ${m}m` : `${h}h`;
+  if (h === 0) return `${m}${labels.durationMin}`;
+  if (m === 0) return `${h}${labels.durationH}`;
+  return `${h}${labels.durationH} ${m}${labels.durationMin}`;
 }
 
 export function TrailCard({
@@ -122,7 +126,7 @@ export function TrailCard({
           </span>
           <span className="flex items-center gap-1">
             <Clock className="h-3.5 w-3.5" />
-            {formatDuration(trail.estimated_duration_min)}
+            {formatDuration(trail.estimated_duration_min, labels)}
           </span>
           <span className="flex items-center gap-1">
             {trail.is_circular ? (
