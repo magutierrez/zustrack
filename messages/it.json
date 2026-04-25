@@ -847,6 +847,8 @@
     "infoTab": "Info",
     "mapTab": "Mappa",
     "downloadGpx": "Scarica GPX",
+    "elevationProfileTab": "Profilo altimetrico",
+    "criticalSections": "Sezioni critiche",
     "weatherForecast": "Previsioni 7 giorni",
     "bestDay": "Giorno migliore",
     "weatherLoading": "Caricamento previsioni...",

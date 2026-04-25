@@ -42,7 +42,7 @@ type ChartPoint = { dist: number; ele: number; slope: number; color: string };
 // Works with track_profile points {d, e} instead of RouteWeatherPoint[]
 // ---------------------------------------------------------------------------
 
-function analyzeTrackSegments(pts: TrackPoint[]): TrailSegment[] {
+export function analyzeTrackSegments(pts: TrackPoint[]): TrailSegment[] {
   if (pts.length < 2) return [];
 
   // 1. Raw slopes

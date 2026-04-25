@@ -25,8 +25,9 @@ import { EffortBadge } from './effort-badge';
 import { SuitabilityChips } from './suitability-chips';
 import { SlopeBreakdownBar } from './slope-breakdown-bar';
 import { SurfaceSection } from './surface-section';
-import { TrailHazards } from './trail-hazards';
+import { TrailHazards, analyzeTrackSegments } from './trail-hazards';
 import { TrailElevationChart } from './trail-elevation-chart';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { TrailMapWrapper } from './trail-map-wrapper';
 import { TrailGpxDownload } from './trail-gpx-download';
 import { TrailWeatherForecast } from './trail-weather-forecast';
@@ -193,6 +194,8 @@ export function TrailDetailPageClient({
   const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${trail.start_lat},${trail.start_lng}`;
 
   const trackProfile = trail.track_profile ?? [];
+
+  const hasHazards = useMemo(() => analyzeTrackSegments(trackProfile).length > 0, [trackProfile]);
 
   // Find the lat/lng of the highest and lowest elevation points in the track profile
   const highPointCoords = useMemo(() => {
@@ -371,68 +374,109 @@ export function TrailDetailPageClient({
                     />
                   </div>
                 )}
+                <StatsGrid
+                  distanceKm={trail.distance_km}
+                  elevationGainM={trail.elevation_gain_m}
+                  elevationLossM={trail.elevation_loss_m}
+                  elevationMaxM={trail.elevation_max_m}
+                  elevationMinM={trail.elevation_min_m}
+                  avgElevationM={trail.avg_elevation_m}
+                  estimatedDurationMin={trail.estimated_duration_min}
+                  highPointCoords={highPointCoords}
+                  lowPointCoords={lowPointCoords}
+                  onShowOnMap={handleShowOnMap}
+                  labels={{
+                    distance: t('distance'),
+                    elevationGain: t('elevationGain'),
+                    elevationLoss: t('elevationLoss'),
+                    highPoint: t('highPoint'),
+                    lowPoint: t('lowPoint'),
+                    avgElevation: t('avgElevation'),
+                    duration: t('duration'),
+                    km: t('km'),
+                    meters: t('meters'),
+                    showOnMap: t('showOnMap'),
+                  }}
+                />
               </div>
 
-              {/* Elevation chart — desktop only (mobile uses compact strip above drag handle) */}
+              {/* Elevation chart + hazards — desktop only */}
               {trackProfile.length > 1 && (
                 <div className="hidden lg:block">
-                  <TrailElevationChart
-                    trackProfile={trackProfile}
-                    labels={{
-                      elevationProfile: t('elevationProfile'),
-                      slope: t('slope'),
-                      flat: t('flat'),
-                      gentle: t('gentle'),
-                      steep: t('steep'),
-                      extreme: t('extreme'),
-                      km: t('km'),
-                      meters: t('meters'),
-                      resetZoom: t('resetZoom'),
-                    }}
-                    externalHoverDist={hoverDist}
-                    onHoverDist={setHoverDist}
-                    onRangeSelect={(s, e) => setSelectedRange({ start: s, end: e })}
-                    onRangeReset={() => setSelectedRange(null)}
-                  />
+                  {hasHazards ? (
+                    <Tabs defaultValue="elevation">
+                      <TabsList className="mb-3">
+                        <TabsTrigger value="elevation">{t('elevationProfileTab')}</TabsTrigger>
+                        <TabsTrigger value="hazards">{t('criticalSections')}</TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="elevation">
+                        <TrailElevationChart
+                          trackProfile={trackProfile}
+                          labels={{
+                            elevationProfile: t('elevationProfile'),
+                            slope: t('slope'),
+                            flat: t('flat'),
+                            gentle: t('gentle'),
+                            steep: t('steep'),
+                            extreme: t('extreme'),
+                            km: t('km'),
+                            meters: t('meters'),
+                            resetZoom: t('resetZoom'),
+                          }}
+                          externalHoverDist={hoverDist}
+                          onHoverDist={setHoverDist}
+                          onRangeSelect={(s, e) => setSelectedRange({ start: s, end: e })}
+                          onRangeReset={() => setSelectedRange(null)}
+                        />
+                      </TabsContent>
+                      <TabsContent value="hazards">
+                        <TrailHazards
+                          trackProfile={trackProfile}
+                          selectedRange={selectedRange}
+                          onSegmentSelect={(start, end, color) =>
+                            setSelectedRange({ start, end, color })
+                          }
+                          onReset={() => setSelectedRange(null)}
+                        />
+                      </TabsContent>
+                    </Tabs>
+                  ) : (
+                    <TrailElevationChart
+                      trackProfile={trackProfile}
+                      labels={{
+                        elevationProfile: t('elevationProfile'),
+                        slope: t('slope'),
+                        flat: t('flat'),
+                        gentle: t('gentle'),
+                        steep: t('steep'),
+                        extreme: t('extreme'),
+                        km: t('km'),
+                        meters: t('meters'),
+                        resetZoom: t('resetZoom'),
+                      }}
+                      externalHoverDist={hoverDist}
+                      onHoverDist={setHoverDist}
+                      onRangeSelect={(s, e) => setSelectedRange({ start: s, end: e })}
+                      onRangeReset={() => setSelectedRange(null)}
+                    />
+                  )}
                 </div>
               )}
 
-              {/* Hazards */}
+              {/* Hazards — mobile only */}
               {trackProfile.length > 0 && (
-                <TrailHazards
-                  trackProfile={trackProfile}
-                  selectedRange={selectedRange}
-                  onSegmentSelect={(start, end, color) => setSelectedRange({ start, end, color })}
-                  onReset={() => setSelectedRange(null)}
-                  hidden={mapExpanded}
-                />
+                <div className="lg:hidden">
+                  <TrailHazards
+                    trackProfile={trackProfile}
+                    selectedRange={selectedRange}
+                    onSegmentSelect={(start, end, color) =>
+                      setSelectedRange({ start, end, color })
+                    }
+                    onReset={() => setSelectedRange(null)}
+                    hidden={mapExpanded}
+                  />
+                </div>
               )}
-
-              {/* Stats */}
-              <StatsGrid
-                distanceKm={trail.distance_km}
-                elevationGainM={trail.elevation_gain_m}
-                elevationLossM={trail.elevation_loss_m}
-                elevationMaxM={trail.elevation_max_m}
-                elevationMinM={trail.elevation_min_m}
-                avgElevationM={trail.avg_elevation_m}
-                estimatedDurationMin={trail.estimated_duration_min}
-                highPointCoords={highPointCoords}
-                lowPointCoords={lowPointCoords}
-                onShowOnMap={handleShowOnMap}
-                labels={{
-                  distance: t('distance'),
-                  elevationGain: t('elevationGain'),
-                  elevationLoss: t('elevationLoss'),
-                  highPoint: t('highPoint'),
-                  lowPoint: t('lowPoint'),
-                  avgElevation: t('avgElevation'),
-                  duration: t('duration'),
-                  km: t('km'),
-                  meters: t('meters'),
-                  showOnMap: t('showOnMap'),
-                }}
-              />
 
               {/* Weather forecast */}
               <TrailWeatherForecast

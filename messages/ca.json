@@ -846,6 +846,8 @@
     "infoTab": "Info",
     "mapTab": "Mapa",
     "downloadGpx": "Descarregar GPX",
+    "elevationProfileTab": "Perfil d'elevació",
+    "criticalSections": "Trams crítics",
     "weatherForecast": "Previsió 7 dies",
     "bestDay": "Millor dia",
     "weatherLoading": "Carregant previsió...",

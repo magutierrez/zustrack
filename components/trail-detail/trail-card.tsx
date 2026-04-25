@@ -67,13 +67,13 @@ export function TrailCard({
       className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
     >
       {/* Map image hero */}
-      <div className="relative aspect-[2/1] overflow-hidden bg-slate-200 dark:bg-slate-800">
+      <div className="relative aspect-2/1 overflow-hidden bg-slate-200 dark:bg-slate-800">
         {/* Skeleton */}
         {!imgLoaded && (
           <div className="absolute inset-0 animate-pulse">
-            <div className="h-full w-full bg-gradient-to-br from-slate-200 via-slate-100 to-slate-200 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800" />
+            <div className="h-full w-full bg-linear-to-br from-slate-200 via-slate-100 to-slate-200 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800" />
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="h-8 w-8 rounded-full border-2 border-slate-300 border-t-slate-400 animate-spin dark:border-slate-600 dark:border-t-slate-500" />
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-slate-400 dark:border-slate-600 dark:border-t-slate-500" />
             </div>
           </div>
         )}
@@ -88,9 +88,9 @@ export function TrailCard({
           }}
         />
         {/* Bottom gradient so badges are always readable */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/10 to-transparent" />
         {/* Badges overlaid on image */}
-        <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-end justify-between gap-2">
+        <div className="absolute right-2.5 bottom-2.5 left-2.5 flex items-end justify-between gap-2">
           {trail.trail_code ? (
             <span className="rounded-full bg-white/90 px-2.5 py-0.5 text-[10px] font-bold text-slate-900 shadow backdrop-blur-sm">
               {trail.trail_code}
@@ -116,8 +116,8 @@ export function TrailCard({
             {trail.distance_km.toFixed(1)} {labels.km}
           </span>
           <span className="flex items-center gap-1">
-            <ArrowUp className="h-3.5 w-3.5 text-emerald-500" />
-            +{trail.elevation_gain_m.toLocaleString()} {labels.meters}
+            <ArrowUp className="h-3.5 w-3.5 text-emerald-500" />+
+            {trail.elevation_gain_m.toLocaleString()} {labels.meters}
           </span>
           <span className="flex items-center gap-1">
             <Clock className="h-3.5 w-3.5" />
