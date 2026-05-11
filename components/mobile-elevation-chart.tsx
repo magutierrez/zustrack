@@ -83,8 +83,9 @@ export function MobileElevationChart() {
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
             onClick={(e) => {
-              if (e && e.activePayload && e.activePayload.length) {
-                setClickedChartPointDist(e.activePayload[0].payload.distance);
+              const idx = e?.activeTooltipIndex;
+              if (typeof idx === 'number' && activeData[idx] != null) {
+                setClickedChartPointDist(activeData[idx].distance);
               }
             }}
             margin={{ top: 4, right: 8, left: 0, bottom: 0 }}
