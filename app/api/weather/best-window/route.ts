@@ -18,7 +18,7 @@ const bodySchema = z.object({
   keyPoints: z.array(keyPointSchema).min(2).max(500),
   activityType: z.enum(['cycling', 'walking']).optional(),
   baseSpeed: z.number().positive(),
-  startTime: z.string().datetime().optional(),
+  startTime: z.iso.datetime().optional(),
 });
 
 export async function POST(request: NextRequest) {

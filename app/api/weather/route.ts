@@ -5,7 +5,7 @@ import { z } from 'zod';
 const pointSchema = z.object({
   lat: z.number().min(-90).max(90),
   lon: z.number().min(-180).max(180),
-  estimatedTime: z.string().datetime(),
+  estimatedTime: z.iso.datetime(),
 });
 const bodySchema = z.object({ points: z.array(pointSchema).min(1).max(500) });
 

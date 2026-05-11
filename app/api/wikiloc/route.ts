@@ -10,7 +10,7 @@ export const runtime = 'edge';
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
 
-  const urlParseResult = z.string().url().safeParse(searchParams.get('url'));
+  const urlParseResult = z.url().safeParse(searchParams.get('url'));
   if (!urlParseResult.success) {
     return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
   }
