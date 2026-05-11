@@ -43,7 +43,7 @@ export function Header({ session, mobileMenuContent, extraActions }: HeaderProps
   return (
     <header className="border-border bg-background sticky top-0 z-40 flex h-14 items-center justify-between border-b px-4 lg:px-6">
       <Link href="/app/setup" className="flex items-center gap-2">
-        <LogoIcon className="text-primary h-6 w-6" />
+        <LogoIcon className="text-primary size-6" />
         <span className="font-heading text-lg font-bold">zustrack</span>
       </Link>
 
@@ -54,19 +54,19 @@ export function Header({ session, mobileMenuContent, extraActions }: HeaderProps
         <Button
           variant="ghost"
           size="icon"
-          className="h-9 w-9"
+          className="size-9"
           onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
         >
-          <Sun className="h-5 w-5 hidden dark:block" aria-hidden="true" />
-          <Moon className="h-5 w-5 block dark:hidden" aria-hidden="true" />
+          <Sun className="size-5 hidden dark:block" aria-hidden="true" />
+          <Moon className="size-5 block dark:hidden" aria-hidden="true" />
           <span className="sr-only">Toggle theme</span>
         </Button>
 
         {isMobile && mobileMenuContent && (
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-9 w-9">
-                <Menu className="h-5 w-5" />
+              <Button variant="ghost" size="icon" className="size-9">
+                <Menu className="size-5" />
                 <span className="sr-only">Toggle Menu</span>
               </Button>
             </SheetTrigger>
@@ -79,8 +79,8 @@ export function Header({ session, mobileMenuContent, extraActions }: HeaderProps
         {session && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-                <Avatar className="h-9 w-9">
+              <Button variant="ghost" className="relative size-9 rounded-full">
+                <Avatar className="size-9">
                   <AvatarImage
                     src={session.user?.image || undefined}
                     alt={session.user?.name || 'User'}
@@ -91,12 +91,12 @@ export function Header({ session, mobileMenuContent, extraActions }: HeaderProps
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
-                <Settings className="mr-2 h-4 w-4" />
+                <Settings className="mr-2 size-4" />
                 <span>{t('settings')}</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => signOut({ redirectTo: '/app/login' })}>
-                <LogOut className="mr-2 h-4 w-4" />
+                <LogOut className="mr-2 size-4" />
                 <span>{t('logout')}</span>
               </DropdownMenuItem>
             </DropdownMenuContent>

@@ -287,25 +287,25 @@ export function AppMockup() {
   return (
     <div
       aria-hidden="true"
-      className="bg-background dark:border-border relative mx-auto max-w-5xl overflow-hidden rounded-2xl border border-slate-200 shadow-2xl shadow-slate-300/50 dark:shadow-blue-900/10"
+      className="bg-background dark:border-border relative mx-auto max-w-5xl overflow-hidden rounded-2xl border border-zinc-200 shadow-2xl shadow-zinc-300/50 dark:shadow-blue-900/10"
     >
       {/* App Header Mockup */}
       <div className="border-border bg-card flex h-14 items-center justify-between border-b px-4 md:px-6">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <div className="h-3 w-3 rounded-full bg-red-400 shadow-sm" />
-            <div className="h-3 w-3 rounded-full bg-amber-400 shadow-sm" />
-            <div className="h-3 w-3 rounded-full bg-green-400 shadow-sm" />
+            <div className="size-3 rounded-full bg-red-400 shadow-sm" />
+            <div className="size-3 rounded-full bg-amber-400 shadow-sm" />
+            <div className="size-3 rounded-full bg-green-400 shadow-sm" />
           </div>
         </div>
         <div className="flex flex-1 items-center justify-center px-4">
           <div className="bg-muted/50 text-muted-foreground flex h-8 w-full max-w-sm items-center justify-center gap-2 rounded-md text-xs font-medium">
-            <Navigation className="h-3 w-3" />
+            <Navigation className="size-3" />
             zustrack.com/app/route
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <div className="bg-muted h-8 w-8 rounded-full" />
+          <div className="bg-muted size-8 rounded-full" />
         </div>
       </div>
 
@@ -317,7 +317,7 @@ export function AppMockup() {
           <div className="border-border bg-card rounded-xl border p-4 shadow-sm">
             <div className="mb-4 flex items-center justify-between">
               <h3 className="text-foreground flex items-center gap-2 text-sm font-semibold">
-                <Settings2 className="text-primary h-4 w-4" />
+                <Settings2 className="text-primary size-4" />
                 {t('config')}
               </h3>
             </div>
@@ -335,8 +335,8 @@ export function AppMockup() {
               <div className="bg-primary text-primary-foreground flex h-10 flex-1 items-center justify-center rounded-md text-sm font-medium shadow-sm">
                 {t('analyzeBtn')}
               </div>
-              <div className="border-input bg-background flex h-10 w-10 items-center justify-center rounded-md border">
-                <Filter className="text-muted-foreground h-4 w-4" />
+              <div className="border-input bg-background flex size-10 items-center justify-center rounded-md border">
+                <Filter className="text-muted-foreground size-4" />
               </div>
             </div>
           </div>
@@ -404,7 +404,7 @@ export function AppMockup() {
           {/* Summary Route */}
           <div className="border-border bg-card rounded-xl border p-4 shadow-sm">
             <h3 className="text-foreground mb-4 flex items-center gap-2 text-sm font-semibold">
-              <Activity className="text-primary h-4 w-4" />
+              <Activity className="text-primary size-4" />
               {t('summary')}
             </h3>
             <div className="grid grid-cols-3 gap-x-2 gap-y-4">
@@ -498,17 +498,17 @@ export function AppMockup() {
           <div className="no-scrollbar absolute right-4 bottom-4 left-4 z-10 flex flex-col gap-2 overflow-x-auto pb-2 sm:pb-0 lg:flex-row">
             {[
               {
-                icon: <Thermometer className="h-4 w-4 text-orange-500" />,
+                icon: <Thermometer className="size-4 text-orange-500" />,
                 val: '18°C',
                 sub: t('avgLabel'),
               },
               {
-                icon: <Wind className="h-4 w-4 text-blue-500" />,
+                icon: <Wind className="size-4 text-blue-500" />,
                 val: '15 km/h',
                 sub: t('windLabel'),
               },
               {
-                icon: <CloudRain className="h-4 w-4 text-indigo-500" />,
+                icon: <CloudRain className="size-4 text-violet-500" />,
                 val: '0 mm',
                 sub: t('rainLabel'),
               },

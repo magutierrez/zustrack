@@ -490,7 +490,7 @@ export function TrailElevationChart({
       className={
         compact
           ? 'relative w-full'
-          : 'rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900'
+          : 'rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900'
       }
     >
       {/* Gradient overlay — only in compact mode when not suppressed */}
@@ -505,18 +505,18 @@ export function TrailElevationChart({
       {/* Title + reset — hidden in compact mode */}
       {!compact && (
         <div className="mb-3 flex items-center gap-2">
-          <div className="rounded-lg bg-slate-100 p-1.5 dark:bg-slate-800">
-            <TrendingUp className="h-4 w-4 text-slate-600 dark:text-slate-300" />
+          <div className="rounded-lg bg-zinc-100 p-1.5 dark:bg-zinc-800">
+            <TrendingUp className="size-4 text-zinc-600 dark:text-zinc-300" />
           </div>
-          <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
+          <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">
             {labels.elevationProfile}
           </h2>
           {zoomRange && (
             <button
               onClick={resetZoom}
-              className="ml-auto flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-bold tracking-tight text-slate-500 uppercase hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+              className="ml-auto flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-bold tracking-tight text-zinc-500 uppercase hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
             >
-              <RefreshCcw className="h-3 w-3" />
+              <RefreshCcw className="size-3" />
               {labels.resetZoom}
             </button>
           )}
@@ -529,20 +529,20 @@ export function TrailElevationChart({
           <div className="flex items-center gap-2">
             {activeTooltip && !dragPreview ? (
               <>
-                <span className="font-mono text-[11px] font-bold text-slate-800 dark:text-slate-100">
+                <span className="font-mono text-[11px] font-bold text-zinc-800 dark:text-zinc-100">
                   {Math.round(activeTooltip.ele)} {labels.meters}
                 </span>
-                <span className="text-slate-300 dark:text-slate-600">·</span>
-                <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                <span className="text-zinc-300 dark:text-zinc-600">·</span>
+                <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
                   {activeTooltip.dist.toFixed(1)} {labels.km}
                 </span>
-                <span className="text-slate-300 dark:text-slate-600">·</span>
+                <span className="text-zinc-300 dark:text-zinc-600">·</span>
                 <div className="flex items-center gap-1">
                   <div
-                    className="h-2 w-2 rounded-full"
+                    className="size-2 rounded-full"
                     style={{ backgroundColor: activeTooltip.color }}
                   />
-                  <span className="font-mono text-[11px] font-bold text-slate-800 dark:text-slate-100">
+                  <span className="font-mono text-[11px] font-bold text-zinc-800 dark:text-zinc-100">
                     {activeTooltip.slope > 0 ? '+' : ''}
                     {activeTooltip.slope}%
                   </span>
@@ -553,9 +553,9 @@ export function TrailElevationChart({
           {zoomRange && (
             <button
               onClick={resetZoom}
-              className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-bold tracking-tight text-slate-400 uppercase hover:bg-slate-100 dark:text-slate-500 dark:hover:bg-slate-800"
+              className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-bold tracking-tight text-zinc-400 uppercase hover:bg-zinc-100 dark:text-zinc-500 dark:hover:bg-zinc-800"
             >
-              <RefreshCcw className="h-2.5 w-2.5" />
+              <RefreshCcw className="size-2.5" />
               {labels.resetZoom}
             </button>
           )}
@@ -574,21 +574,21 @@ export function TrailElevationChart({
                 : { right: size.w - activeTooltip.x - margin.left + 10 }
             }
           >
-            <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white/95 px-2.5 py-1.5 shadow-lg backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/95">
-              <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">
+            <div className="flex items-center gap-2 rounded-lg border border-zinc-200 bg-white/95 px-2.5 py-1.5 shadow-lg backdrop-blur-sm dark:border-zinc-700 dark:bg-zinc-900/95">
+              <span className="font-mono text-xs font-bold text-zinc-900 dark:text-white">
                 {Math.round(activeTooltip.ele)} {labels.meters}
               </span>
-              <span className="text-slate-300 dark:text-slate-600">·</span>
-              <span className="text-xs text-slate-500">
+              <span className="text-zinc-300 dark:text-zinc-600">·</span>
+              <span className="text-xs text-zinc-500">
                 {activeTooltip.dist.toFixed(1)} {labels.km}
               </span>
-              <span className="text-slate-300 dark:text-slate-600">·</span>
+              <span className="text-zinc-300 dark:text-zinc-600">·</span>
               <div className="flex items-center gap-1">
                 <div
-                  className="h-2 w-2 rounded-full"
+                  className="size-2 rounded-full"
                   style={{ backgroundColor: activeTooltip.color }}
                 />
-                <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">
+                <span className="font-mono text-xs font-bold text-zinc-900 dark:text-white">
                   {activeTooltip.slope}%
                 </span>
               </div>
@@ -840,7 +840,7 @@ export function TrailElevationChart({
 
       {/* Color legend — hidden in compact mode */}
       {!compact && (
-        <div className="mt-3 border-t border-slate-100 pt-3 dark:border-slate-800">
+        <div className="mt-3 border-t border-zinc-100 pt-3 dark:border-zinc-800">
           {/* Mobile: gradient bar with labels */}
           <div className="lg:hidden">
             <div className="flex h-3 overflow-hidden rounded-full">
@@ -879,8 +879,8 @@ export function TrailElevationChart({
               { color: SLOPE_COLOR_EXTREME, label: labels.extreme },
             ].map(({ color, label }) => (
               <div key={color} className="flex items-center gap-1.5">
-                <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color }} />
-                <span className="text-xs text-slate-500 dark:text-slate-400">{label}</span>
+                <div className="size-2.5 rounded-full" style={{ backgroundColor: color }} />
+                <span className="text-xs text-zinc-500 dark:text-zinc-400">{label}</span>
               </div>
             ))}
           </div>

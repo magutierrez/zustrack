@@ -38,13 +38,13 @@ interface MapPopupProps {
 function getWindEffectIcon(effect: string) {
   switch (effect) {
     case 'tailwind':
-      return <ArrowDown className="h-3 w-3 text-emerald-500" />;
+      return <ArrowDown className="size-3 text-emerald-500" />;
     case 'headwind':
-      return <ArrowUp className="h-3 w-3 text-red-500" />;
+      return <ArrowUp className="size-3 text-red-500" />;
     case 'crosswind-left':
-      return <ArrowLeft className="h-3 w-3 text-amber-500" />;
+      return <ArrowLeft className="size-3 text-amber-500" />;
     case 'crosswind-right':
-      return <ArrowRight className="h-3 w-3 text-amber-500" />;
+      return <ArrowRight className="size-3 text-amber-500" />;
     default:
       return null;
   }
@@ -96,7 +96,7 @@ export function MapPopup({
               className="gap-2 font-bold tracking-wider uppercase"
               onClick={() => setShowStreetView(false)}
             >
-              <MapIcon className="h-4 w-4" />
+              <MapIcon className="size-4" />
               {t('backToMap')}
             </Button>
             <div className="bg-border h-6 w-px" />
@@ -118,13 +118,13 @@ export function MapPopup({
           <Button
             variant="ghost"
             size="icon"
-            className="hover:bg-destructive/10 hover:text-destructive h-9 w-9 rounded-full transition-colors"
+            className="hover:bg-destructive/10 hover:text-destructive size-9 rounded-full transition-colors"
             onClick={() => {
               setShowStreetView(false);
               onClose();
             }}
           >
-            <X className="h-5 w-5" />
+            <X className="size-5" />
           </Button>
         </div>
         <div className="bg-muted relative flex-1">
@@ -158,7 +158,7 @@ export function MapPopup({
               setNoteText(currentAnnotation.text);
             }}
           >
-            <Pencil className="h-2.5 w-2.5" />
+            <Pencil className="size-2.5" />
             {ta('edit')}
           </button>
           <button
@@ -168,7 +168,7 @@ export function MapPopup({
               setShowNote(false);
             }}
           >
-            <Trash2 className="h-2.5 w-2.5" />
+            <Trash2 className="size-2.5" />
             {ta('delete')}
           </button>
         </div>
@@ -184,6 +184,7 @@ export function MapPopup({
           value={noteText}
           onChange={(e) => setNoteText(e.target.value)}
           disabled={!savedRouteId}
+          // eslint-disable-next-line jsx-a11y/no-autofocus
           autoFocus
         />
         {!savedRouteId && (
@@ -209,7 +210,7 @@ export function MapPopup({
               setShowNote(false);
             }}
           >
-            {isSaving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+            {isSaving ? <Loader2 className="size-3 animate-spin" /> : <Check className="size-3" />}
             {ta('save')}
           </Button>
           <Button
@@ -238,7 +239,8 @@ export function MapPopup({
           </span>
           {isWeatherPoint && (
             <span className="text-foreground font-mono text-[11px] font-bold">
-              {new Date(popupInfo.point.estimatedTime || popupInfo.weather.time).toLocaleTimeString(
+              {/* eslint-disable-next-line react-doctor/rendering-hydration-mismatch-time */}
+            {new Date(popupInfo.point.estimatedTime || popupInfo.weather.time).toLocaleTimeString(
                 'es-ES',
                 {
                   hour: '2-digit',
@@ -257,7 +259,7 @@ export function MapPopup({
           {/* Note toggle button */}
           {!hideNotes && (
             <button
-              className={`flex h-6 w-6 items-center justify-center rounded-full transition-colors ${
+              className={`flex size-6 items-center justify-center rounded-full transition-colors ${
                 currentAnnotation
                   ? 'bg-amber-500 text-white'
                   : showNote
@@ -275,7 +277,7 @@ export function MapPopup({
                 }
               }}
             >
-              <MessageSquare className="h-3 w-3" />
+              <MessageSquare className="size-3" />
             </button>
           )}
         </div>
@@ -283,7 +285,7 @@ export function MapPopup({
 
       {isWeatherPoint && (
         <div className="bg-primary/5 mb-3 flex items-center gap-3 rounded-lg p-2">
-          <WeatherIcon code={popupInfo.weather.weatherCode} className="h-8 w-8 shrink-0" />
+          <WeatherIcon code={popupInfo.weather.weatherCode} className="size-8 shrink-0" />
           <div className="flex flex-col">
             <span className="leading-tight font-bold">{weatherDescription}</span>
             <span className="text-primary text-sm font-black">
@@ -309,7 +311,7 @@ export function MapPopup({
           </span>
           <div className="flex items-center justify-center gap-1">
             <ArrowUp
-              className="text-muted-foreground h-3 w-3"
+              className="text-muted-foreground size-3"
               style={{
                 transform: `rotate(${Math.min(90, Math.max(-90, (popupInfo.point.slope || 0) * 4))}deg)`,
               }}
@@ -340,7 +342,7 @@ export function MapPopup({
                 {tt('summary.solarTitle')}
               </span>
               <div className="flex items-center justify-center gap-1">
-                <Sun className="h-3 w-3 text-amber-500" />
+                <Sun className="size-3 text-amber-500" />
                 <span className="font-mono text-[10px] font-bold tracking-tighter uppercase">
                   {tt(
                     `solarExposure.${popupInfo.solarIntensity === 'night' ? 'night' : popupInfo.solarIntensity === 'shade' ? 'shade' : 'sun'}` as any,
@@ -360,9 +362,9 @@ export function MapPopup({
         disabled={streetViewAvailable === false}
       >
         {streetViewAvailable === null ? (
-          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          <Loader2 className="size-3.5 animate-spin" />
         ) : (
-          <MapPinned className="h-3.5 w-3.5" />
+          <MapPinned className="size-3.5" />
         )}
         {t('streetView')}
       </Button>
@@ -379,10 +381,10 @@ export function MapPopup({
           <Button
             variant="ghost"
             size="icon"
-            className="hover:bg-destructive/10 hover:text-destructive mt-0.5 h-7 w-7 shrink-0 rounded-full transition-colors"
+            className="hover:bg-destructive/10 hover:text-destructive mt-0.5 size-7 shrink-0 rounded-full transition-colors"
             onClick={onClose}
           >
-            <X className="h-4 w-4" />
+            <X className="size-4" />
           </Button>
         </div>
       </div>
@@ -404,10 +406,10 @@ export function MapPopup({
         <Button
           variant="ghost"
           size="icon"
-          className="bg-background border-border hover:bg-destructive hover:text-destructive-foreground hover:border-destructive absolute -top-3 -right-3 z-10 h-6 w-6 rounded-full border shadow-sm transition-all"
+          className="bg-background border-border hover:bg-destructive hover:text-destructive-foreground hover:border-destructive absolute -top-3 -right-3 z-10 size-6 rounded-full border shadow-sm transition-all"
           onClick={onClose}
         >
-          <X className="h-3 w-3" />
+          <X className="size-3" />
         </Button>
         <div className="p-2">{content}</div>
       </div>

@@ -84,7 +84,7 @@ export function MudRiskCard({ overallRisk, segments, activityType, inputs }: Mud
             <div
               key={level}
               className={cn(
-                'h-3 w-3 rounded-full transition-opacity',
+                'size-3 rounded-full transition-opacity',
                 level === overallRisk ? TRAFFIC_LIGHT_COLORS[level] : 'bg-muted-foreground/20',
               )}
             />
@@ -94,7 +94,7 @@ export function MudRiskCard({ overallRisk, segments, activityType, inputs }: Mud
         {/* Content */}
         <div className="flex min-w-0 flex-col gap-1.5">
           <div className="flex items-center gap-2">
-            <Footprints className="text-muted-foreground h-4 w-4 flex-shrink-0" />
+            <Footprints className="text-muted-foreground size-4 flex-shrink-0" />
             <span className="text-muted-foreground text-[10px] font-bold tracking-wider uppercase">
               {t('mud')}
             </span>
@@ -115,7 +115,7 @@ export function MudRiskCard({ overallRisk, segments, activityType, inputs }: Mud
             <Popover>
               <PopoverTrigger asChild>
                 <button className="text-muted-foreground hover:text-foreground ml-auto transition-colors">
-                  <Info className="h-3.5 w-3.5" />
+                  <Info className="size-3.5" />
                   <span className="sr-only">{t('mudInfoTitle')}</span>
                 </button>
               </PopoverTrigger>
@@ -126,25 +126,25 @@ export function MudRiskCard({ overallRisk, segments, activityType, inputs }: Mud
                   </p>
                   <ul className="flex flex-col gap-2">
                     <MudInfoRow
-                      icon={<CloudHail className="h-3.5 w-3.5 text-blue-500" />}
+                      icon={<CloudHail className="size-3.5 text-blue-500" />}
                       label={t('mudInfoPrecipLabel')}
                       value={`${inputs.avgPrecip} mm`}
                       detail={t('mudInfoPrecipDetail')}
                     />
                     <MudInfoRow
-                      icon={<Layers className="h-3.5 w-3.5 text-amber-600" />}
+                      icon={<Layers className="size-3.5 text-amber-600" />}
                       label={t('mudInfoSurfaceLabel')}
                       value={inputs.dominantSurface ?? t('mudInfoSurfaceUnknown')}
                       detail={t('mudInfoSurfaceDetail')}
                     />
                     <MudInfoRow
-                      icon={<Thermometer className="h-3.5 w-3.5 text-orange-500" />}
+                      icon={<Thermometer className="size-3.5 text-orange-500" />}
                       label={t('mudInfoDryingLabel')}
                       value={`${inputs.avgTemp}°C · ${inputs.avgWind} km/h`}
                       detail={t('mudInfoDryingDetail')}
                     />
                     <MudInfoRow
-                      icon={<MountainSnow className="h-3.5 w-3.5 text-slate-500" />}
+                      icon={<MountainSnow className="size-3.5 text-zinc-500" />}
                       label={t('mudInfoSlopeLabel')}
                       value={
                         inputs.shadedPct > 0
@@ -170,7 +170,7 @@ export function MudRiskCard({ overallRisk, segments, activityType, inputs }: Mud
                 <li key={i} className="text-muted-foreground flex items-center gap-1.5 text-xs">
                   <span
                     className={cn(
-                      'inline-block h-2 w-2 flex-shrink-0 rounded-full',
+                      'inline-block size-2 flex-shrink-0 rounded-full',
                       seg.level === 'high' ? 'bg-red-500' : 'bg-orange-400',
                     )}
                   />
@@ -179,7 +179,7 @@ export function MudRiskCard({ overallRisk, segments, activityType, inputs }: Mud
                     onClick={() => setSelectedRange({ start: seg.startKm, end: seg.endKm })}
                     className="text-primary hover:text-primary/80 ml-auto flex items-center gap-0.5 transition-colors"
                   >
-                    <MapPin className="h-3 w-3" />
+                    <MapPin className="size-3" />
                     <span>{t('viewOnMap')}</span>
                   </button>
                 </li>

@@ -6,8 +6,8 @@ import type { TrailSearchParams } from '@/lib/trails';
 const TrailsMap = dynamic(() => import('./trails-map').then((m) => ({ default: m.TrailsMap })), {
   ssr: false,
   loading: () => (
-    <div className="flex h-full w-full items-center justify-center bg-slate-100 dark:bg-slate-900">
-      <span className="text-sm text-slate-400">Loading map…</span>
+    <div className="flex h-full w-full items-center justify-center bg-zinc-100 dark:bg-zinc-900">
+      <span className="text-sm text-zinc-400">Loading map…</span>
     </div>
   ),
 });

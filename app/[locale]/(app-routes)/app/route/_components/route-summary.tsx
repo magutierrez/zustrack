@@ -85,6 +85,7 @@ export function RouteSummary() {
                   onBlur={commitName}
                   placeholder={t('routeNamePlaceholder')}
                   maxLength={80}
+                  // eslint-disable-next-line jsx-a11y/no-autofocus
                   autoFocus
                   className="border-border bg-background text-foreground focus:ring-ring min-w-0 flex-1 truncate rounded border px-2 py-0.5 text-right text-sm font-medium focus:ring-1 focus:outline-none"
                 />
@@ -93,14 +94,14 @@ export function RouteSummary() {
                   className="text-primary hover:text-primary/80 shrink-0"
                   aria-label={t('editRouteName')}
                 >
-                  <Check className="h-3.5 w-3.5" />
+                  <Check className="size-3.5" />
                 </button>
                 <button
                   onClick={cancelEditing}
                   className="text-muted-foreground hover:text-foreground shrink-0"
                   aria-label="Cancel"
                 >
-                  <X className="h-3.5 w-3.5" />
+                  <X className="size-3.5" />
                 </button>
               </>
             ) : (
@@ -116,7 +117,7 @@ export function RouteSummary() {
                     currentName
                   )}
                 </span>
-                <Pencil className="text-muted-foreground h-3 w-3 shrink-0 opacity-0 transition-all group-hover:scale-125 group-hover:rotate-[-12deg] group-hover:opacity-100" />
+                <Pencil className="text-muted-foreground size-3 shrink-0 opacity-0 transition-all group-hover:scale-125 group-hover:rotate-[-12deg] group-hover:opacity-100" />
               </button>
             )}
           </div>
@@ -196,7 +197,7 @@ export function RouteSummary() {
             rel="noopener noreferrer"
             className="group flex flex-1 items-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 transition-colors hover:border-emerald-500/40 hover:bg-emerald-500/20"
           >
-            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-black text-white shadow-sm">
+            <div className="flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-black text-white shadow-sm">
               A
             </div>
             <div className="min-w-0 flex-1">
@@ -207,7 +208,7 @@ export function RouteSummary() {
                 {startPoint.lat.toFixed(4)}, {startPoint.lon.toFixed(4)}
               </p>
             </div>
-            <ExternalLink className="h-3 w-3 shrink-0 translate-x-1 text-emerald-600 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
+            <ExternalLink className="size-3 shrink-0 translate-x-1 text-emerald-600 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
           </a>
 
           <a
@@ -216,7 +217,7 @@ export function RouteSummary() {
             rel="noopener noreferrer"
             className="group flex flex-1 items-center gap-2 rounded-lg border border-rose-500/20 bg-rose-500/10 px-3 py-2 transition-colors hover:border-rose-500/40 hover:bg-rose-500/20"
           >
-            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-rose-500 text-[10px] font-black text-white shadow-sm">
+            <div className="flex size-5 shrink-0 items-center justify-center rounded-full bg-rose-500 text-[10px] font-black text-white shadow-sm">
               B
             </div>
             <div className="min-w-0 flex-1">
@@ -227,7 +228,7 @@ export function RouteSummary() {
                 {endPoint.lat.toFixed(4)}, {endPoint.lon.toFixed(4)}
               </p>
             </div>
-            <ExternalLink className="h-3 w-3 shrink-0 translate-x-1 text-rose-600 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
+            <ExternalLink className="size-3 shrink-0 translate-x-1 text-rose-600 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
           </a>
         </div>
       )}

@@ -157,26 +157,26 @@ export function TrailEquipmentCard({
             </span>
           )}
         </div>
-        {open ? <ChevronUp className="h-4 w-4 text-slate-400" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}
+        {open ? <ChevronUp className="size-4 text-zinc-400" /> : <ChevronDown className="size-4 text-zinc-400" />}
       </button>
 
       {open && (
-        <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-900">
+        <ul className="divide-y divide-zinc-100 overflow-hidden rounded-xl border border-zinc-200 bg-white dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-900">
           {items.map((item, i) => (
             <li key={i} className="flex items-center gap-3 px-4 py-3">
               <span className="text-xl leading-none">{item.icon}</span>
               <div className="min-w-0 flex-1">
-                <span className="block text-sm font-medium text-slate-900 dark:text-white">
+                <span className="block text-sm font-medium text-zinc-900 dark:text-white">
                   {item.text}
                 </span>
-                <span className="text-xs text-slate-400 dark:text-slate-500">{item.category}</span>
+                <span className="text-xs text-zinc-400 dark:text-zinc-500">{item.category}</span>
               </div>
               <span
                 className={cn(
                   'shrink-0 rounded-full px-2 py-0.5 text-xs font-medium',
                   item.level === 'essential'
                     ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400'
-                    : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400',
+                    : 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400',
                 )}
               >
                 {item.level === 'essential' ? labels.essential : labels.recommended}

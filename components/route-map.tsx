@@ -150,6 +150,7 @@ export default function RouteMap({
     // Use the dense GPX points so the heatmap flows continuously along the route shape.
     const features: Feature[] = [];
     for (const p of points) {
+      // eslint-disable-next-line react-doctor/js-index-maps
       const range = merged.find(
         (r) => p.distanceFromStart >= r.start && p.distanceFromStart <= r.end,
       );
@@ -192,16 +193,19 @@ export default function RouteMap({
 
   const { resetToFullRouteView } = useMapView(mapRef, points, selectedRange);
 
+  // eslint-disable-next-line react-doctor/rendering-hydration-no-flicker
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
+  /* eslint-disable react-doctor/no-prop-callback-in-effect */
   useEffect(() => {
     if (onResetToFullRouteView) {
       onResetToFullRouteView(resetToFullRouteView);
     }
   }, [onResetToFullRouteView, resetToFullRouteView]);
+  /* eslint-enable react-doctor/no-prop-callback-in-effect */
 
   // Reset map to full-route view when requested from the store (e.g. mobile "show on map" buttons)
   useEffect(() => {
@@ -439,7 +443,7 @@ export default function RouteMap({
           className="border-border bg-background/80 absolute top-3 right-3 z-20 rounded-lg border p-2 shadow-md backdrop-blur-sm lg:hidden"
           aria-label={isMobileFullscreen ? tMap('collapseMap') : tMap('expandMap')}
         >
-          {isMobileFullscreen ? <X className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+          {isMobileFullscreen ? <X className="size-4" /> : <Maximize2 className="size-4" />}
         </button>
       )}
 
@@ -452,7 +456,7 @@ export default function RouteMap({
           <Button
             variant={show3DTerrain ? 'default' : 'secondary'}
             size="icon"
-            className="h-10 w-10 shadow-md"
+            className="size-10 shadow-md"
             disabled={terrainLoading}
             onClick={() => {
               const next = !show3DTerrain;
@@ -463,11 +467,11 @@ export default function RouteMap({
             title={tMap(show3DTerrain ? 'terrain3DHide' : 'terrain3DShow')}
           >
             {terrainLoading ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
+              <Loader2 className="size-5 animate-spin" />
             ) : (
               <MountainSnow
                 className={cn(
-                  'h-5 w-5',
+                  'size-5',
                   terrainJustLoaded && 'animate-[pop-in_0.4s_cubic-bezier(0.16,1,0.3,1)_both]',
                 )}
               />
@@ -478,16 +482,16 @@ export default function RouteMap({
             <Button
               variant={showMountainPeaks && !mountainPeaksLoading ? 'default' : 'secondary'}
               size="icon"
-              className="h-10 w-10 shadow-md"
+              className="size-10 shadow-md"
               onClick={() => setShowMountainPeaks(!showMountainPeaks)}
               disabled={mountainPeaksLoading}
               aria-label={tMap(showMountainPeaks ? 'mountainPeaksHide' : 'mountainPeaksShow')}
               title={tMap(showMountainPeaks ? 'mountainPeaksHide' : 'mountainPeaksShow')}
             >
               {mountainPeaksLoading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
+                <Loader2 className="size-5 animate-spin" />
               ) : (
-                <Mountain className="h-5 w-5" />
+                <Mountain className="size-5" />
               )}
             </Button>
           )}

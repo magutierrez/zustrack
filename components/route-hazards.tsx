@@ -22,10 +22,10 @@ interface RouteHazardsProps {
 }
 
 const segmentIcons: Record<string, React.ReactNode> = {
-  steepClimb: <TrendingUp className="h-4 w-4" />,
-  steepDescent: <TrendingDown className="h-4 w-4" />,
-  heatStress: <Flame className="h-4 w-4" />,
-  effort: <Activity className="h-4 w-4" />,
+  steepClimb: <TrendingUp className="size-4" />,
+  steepDescent: <TrendingDown className="size-4" />,
+  heatStress: <Flame className="size-4" />,
+  effort: <Activity className="size-4" />,
 };
 
 const segmentColors: Record<string, string> = {
@@ -35,9 +35,11 @@ const segmentColors: Record<string, string> = {
   effort: 'text-blue-600 bg-blue-500/10 border-blue-200',
 };
 
+const EMPTY_ROUTE_POINTS: import('@/lib/types').RoutePoint[] = [];
+
 export function RouteHazards({
   weatherPoints,
-  allPoints = [],
+  allPoints = EMPTY_ROUTE_POINTS,
   onSelectSegment,
   onSelectPoint,
   setActiveFilter,
@@ -79,7 +81,7 @@ export function RouteHazards({
             onSelectPoint?.(null);
           }}
         >
-          <RefreshCcw className="h-3.5 w-3.5" />
+          <RefreshCcw className="size-3.5" />
           <span className="text-[10px] font-bold tracking-wider uppercase">
             {tRouteMap('resetView')}
           </span>
@@ -123,7 +125,7 @@ export function RouteHazards({
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h4 className="text-foreground text-sm leading-tight font-bold">
+                        <h4 className="text-foreground text-sm leading-tight font-semibold">
                           {t(seg.type)}
                         </h4>
                         {seg.climbCategory && seg.climbCategory !== 'none' && (
@@ -145,7 +147,7 @@ export function RouteHazards({
                       variant="outline"
                       className="bg-background/50 gap-1 font-mono text-[10px]"
                     >
-                      <Activity className="h-3 w-3" />
+                      <Activity className="size-3" />
                       {Math.round(seg.avgSlope)}% {t('avg')}
                     </Badge>
                     <span className="text-muted-foreground text-[9px] font-bold tabular-nums">
@@ -278,7 +280,7 @@ export function RouteHazards({
                       handleShowOnMap(seg);
                     }}
                   >
-                    <Map className="h-3 w-3" />
+                    <Map className="size-3" />
                     {t('showOnMap')}
                   </Button>
                 </div>
@@ -290,7 +292,7 @@ export function RouteHazards({
 
       {sortedSegments.length === 0 && (
         <div className="border-border rounded-xl border-2 border-dashed p-12 text-center">
-          <Zap className="text-muted-foreground mx-auto mb-3 h-8 w-8 opacity-20" />
+          <Zap className="text-muted-foreground mx-auto mb-3 size-8 opacity-20" />
           <p className="text-muted-foreground text-sm italic">{t('noSegments')}</p>
         </div>
       )}

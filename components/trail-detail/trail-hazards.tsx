@@ -287,9 +287,9 @@ function buildChartData(points: TrackPoint[]): ChartPoint[] {
 // ---------------------------------------------------------------------------
 
 const SEGMENT_ICONS: Record<string, React.ReactNode> = {
-  steepClimb: <TrendingUp className="h-4 w-4" />,
-  steepDescent: <TrendingDown className="h-4 w-4" />,
-  effort: <Activity className="h-4 w-4" />,
+  steepClimb: <TrendingUp className="size-4" />,
+  steepDescent: <TrendingDown className="size-4" />,
+  effort: <Activity className="size-4" />,
 };
 
 const SEGMENT_COLORS: Record<string, string> = {
@@ -333,7 +333,7 @@ export function TrailHazards({
             className="h-8 gap-1.5 text-[10px] font-bold uppercase tracking-wider"
             onClick={onReset}
           >
-            <RefreshCcw className="h-3.5 w-3.5" />
+            <RefreshCcw className="size-3.5" />
             {t('showFullRoute')}
           </Button>
         )}
@@ -361,21 +361,21 @@ export function TrailHazards({
           return (
             <div
               key={idx}
-              className={`overflow-hidden rounded-xl border bg-white transition-all dark:bg-slate-900 ${
+              className={`overflow-hidden rounded-xl border bg-white transition-all dark:bg-zinc-900 ${
                 isSelected
                   ? 'border-amber-400 ring-2 ring-amber-400/50 dark:border-amber-400'
-                  : 'border-slate-200 dark:border-slate-800'
+                  : 'border-zinc-200 dark:border-zinc-800'
               }`}
             >
               {/* Header */}
-              <div className="flex items-start justify-between border-b border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/50">
+              <div className="flex items-start justify-between border-b border-zinc-100 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-800/50">
                 <div className="flex items-center gap-3">
                   <div className={`rounded-lg border p-2 ${SEGMENT_COLORS[seg.type]}`}>
                     {SEGMENT_ICONS[seg.type]}
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h4 className="text-sm font-bold leading-tight text-slate-900 dark:text-white">
+                      <h4 className="text-sm font-semibold leading-tight text-zinc-900 dark:text-white">
                         {t(seg.type)}
                       </h4>
                       {seg.climbCategory && seg.climbCategory !== 'none' && (
@@ -384,17 +384,17 @@ export function TrailHazards({
                         </Badge>
                       )}
                     </div>
-                    <p className="text-[10px] font-semibold uppercase text-slate-500 dark:text-slate-400">
+                    <p className="text-[10px] font-semibold uppercase text-zinc-500 dark:text-zinc-400">
                       km {seg.startDist.toFixed(1)} · {seg.lengthKm.toFixed(1)} km {t('distance')}
                     </p>
                   </div>
                 </div>
                 <div className="flex flex-col items-end gap-1">
                   <Badge variant="outline" className="gap-1 font-mono text-[10px]">
-                    <Activity className="h-3 w-3" />
+                    <Activity className="size-3" />
                     {Math.round(seg.avgSlope)}% {t('avg')}
                   </Badge>
-                  <span className="text-[9px] font-bold tabular-nums text-slate-400 dark:text-slate-500">
+                  <span className="text-[9px] font-bold tabular-nums text-zinc-400 dark:text-zinc-500">
                     {Math.round(minEle)}m – {Math.round(maxEle)}m
                   </span>
                 </div>
@@ -427,14 +427,14 @@ export function TrailHazards({
                         if (!active || !payload?.length) return null;
                         const d = payload[0].payload as ChartPoint;
                         return (
-                          <div className="rounded-lg border border-slate-200 bg-white/95 p-2 shadow-xl backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/95">
+                          <div className="rounded-lg border border-zinc-200 bg-white/95 p-2 shadow-xl backdrop-blur-sm dark:border-zinc-700 dark:bg-zinc-900/95">
                             <div className="flex min-w-[70px] flex-col gap-0.5">
-                              <span className="font-mono text-[9px] text-slate-400">
+                              <span className="font-mono text-[9px] text-zinc-400">
                                 km {d.dist.toFixed(2)}
                               </span>
-                              <span className="flex items-center justify-between font-mono text-[10px] font-black text-slate-900 dark:text-white">
+                              <span className="flex items-center justify-between font-mono text-[10px] font-black text-zinc-900 dark:text-white">
                                 {Math.round(d.ele)}m
-                                <span className="ml-2 rounded bg-slate-100 px-1 dark:bg-slate-800">
+                                <span className="ml-2 rounded bg-zinc-100 px-1 dark:bg-zinc-800">
                                   {Math.round(d.slope)}%
                                 </span>
                               </span>
@@ -475,18 +475,18 @@ export function TrailHazards({
               </div>
 
               {/* Footer */}
-              <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50/50 px-4 py-2 dark:border-slate-800 dark:bg-slate-800/30">
+              <div className="flex items-center justify-between border-t border-zinc-100 bg-zinc-50/50 px-4 py-2 dark:border-zinc-800 dark:bg-zinc-800/30">
                 <div className="flex gap-4">
                   <div className="flex flex-col">
-                    <span className="text-[9px] font-bold uppercase text-slate-400 dark:text-slate-500">
+                    <span className="text-[9px] font-bold uppercase text-zinc-400 dark:text-zinc-500">
                       {t('slope')}
                     </span>
-                    <span className="text-xs font-bold text-slate-900 dark:text-white">
+                    <span className="text-xs font-bold text-zinc-900 dark:text-white">
                       {Math.round(seg.maxSlope)}% {t('max')}
                     </span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[9px] font-bold uppercase text-slate-400 dark:text-slate-500">
+                    <span className="text-[9px] font-bold uppercase text-zinc-400 dark:text-zinc-500">
                       {t('danger')}
                     </span>
                     <span className={`text-xs font-bold uppercase ${seg.dangerColor}`}>
@@ -500,7 +500,7 @@ export function TrailHazards({
                   className="h-7 gap-1.5 px-2 text-[10px] font-bold uppercase transition-colors hover:bg-amber-50 hover:text-amber-700 dark:hover:bg-amber-900/20 dark:hover:text-amber-400"
                   onClick={() => onSegmentSelect?.(seg.startDist, seg.endDist, fillColor)}
                 >
-                  <Map className="h-3 w-3" />
+                  <Map className="size-3" />
                   {t('showOnMap')}
                 </Button>
               </div>

@@ -45,19 +45,26 @@ export function StravaImport({ onRouteLoaded }: StravaImportProps) {
   useEffect(() => {
     if (!isStravaConnected) return;
 
+    const controller = new AbortController();
+    const { signal } = controller;
+
     setLoadingList(true);
     setError(null);
 
     Promise.all([
-      fetch('/api/strava/activities').then((r) => r.json()),
-      fetch('/api/strava/routes').then((r) => r.json()),
+      fetch('/api/strava/activities', { signal }).then((r) => r.json()),
+      fetch('/api/strava/routes', { signal }).then((r) => r.json()),
     ])
       .then(([acts, rts]) => {
         if (Array.isArray(acts)) setActivities(acts);
         if (Array.isArray(rts)) setRoutes(rts);
       })
-      .catch(() => setError(t('stravaImportError')))
+      .catch((err) => {
+        if ((err as Error).name !== 'AbortError') setError(t('stravaImportError'));
+      })
       .finally(() => setLoadingList(false));
+
+    return () => controller.abort();
   }, [isStravaConnected, t]);
 
   const handleImport = async (type: 'activity' | 'route', item: StravaActivity | StravaRoute) => {
@@ -87,7 +94,7 @@ export function StravaImport({ onRouteLoaded }: StravaImportProps) {
   if (!isStravaConnected) {
     return (
       <div className="flex flex-col items-center gap-4 py-8">
-        <Activity className="text-muted-foreground h-10 w-10" />
+        <Activity className="text-muted-foreground size-10" />
         <p className="text-muted-foreground max-w-xs text-center text-sm">
           {t('stravaConnectDesc')}
         </p>
@@ -108,7 +115,7 @@ export function StravaImport({ onRouteLoaded }: StravaImportProps) {
 
         {loadingList ? (
           <div className="flex items-center justify-center py-10">
-            <Loader2 className="text-muted-foreground h-5 w-5 animate-spin" />
+            <Loader2 className="text-muted-foreground size-5 animate-spin" />
           </div>
         ) : (
           <>
@@ -135,19 +142,20 @@ export function StravaImport({ onRouteLoaded }: StravaImportProps) {
                           disabled={isImporting}
                         >
                           {a.activityType === 'cycling' ? (
-                            <Bike className={`h-4 w-4 shrink-0 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
+                            <Bike className={`size-4 shrink-0 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
                           ) : (
-                            <Footprints className={`h-4 w-4 shrink-0 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
+                            <Footprints className={`size-4 shrink-0 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
                           )}
                           <div className="min-w-0 flex-1">
                             <p className="truncate text-sm font-medium">{a.name}</p>
                             <p className="text-muted-foreground text-xs">
                               {a.distance} km · +{a.elevationGain} m ·{' '}
+                              {/* eslint-disable-next-line react-doctor/rendering-hydration-mismatch-time */}
                               {new Date(a.date).toLocaleDateString()}
                             </p>
                           </div>
-                          {isImporting && <Loader2 className="text-muted-foreground h-4 w-4 shrink-0 animate-spin" />}
-                          {isSelected && !isImporting && <CheckCircle2 className="text-primary h-4 w-4 shrink-0" />}
+                          {isImporting && <Loader2 className="text-muted-foreground size-4 shrink-0 animate-spin" />}
+                          {isSelected && !isImporting && <CheckCircle2 className="text-primary size-4 shrink-0" />}
                         </button>
                       </li>
                     );
@@ -179,9 +187,9 @@ export function StravaImport({ onRouteLoaded }: StravaImportProps) {
                           disabled={isImporting}
                         >
                           {r.activityType === 'cycling' ? (
-                            <Bike className={`h-4 w-4 shrink-0 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
+                            <Bike className={`size-4 shrink-0 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
                           ) : (
-                            <Footprints className={`h-4 w-4 shrink-0 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
+                            <Footprints className={`size-4 shrink-0 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
                           )}
                           <div className="min-w-0 flex-1">
                             <p className="truncate text-sm font-medium">{r.name}</p>
@@ -189,8 +197,8 @@ export function StravaImport({ onRouteLoaded }: StravaImportProps) {
                               {r.distance} km · +{r.elevationGain} m
                             </p>
                           </div>
-                          {isImporting && <Loader2 className="text-muted-foreground h-4 w-4 shrink-0 animate-spin" />}
-                          {isSelected && !isImporting && <CheckCircle2 className="text-primary h-4 w-4 shrink-0" />}
+                          {isImporting && <Loader2 className="text-muted-foreground size-4 shrink-0 animate-spin" />}
+                          {isSelected && !isImporting && <CheckCircle2 className="text-primary size-4 shrink-0" />}
                         </button>
                       </li>
                     );

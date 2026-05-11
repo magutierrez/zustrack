@@ -26,10 +26,10 @@ export function WeatherVisual() {
           </div>
 
           <div className="flex flex-col items-center gap-0.5">
-            <span className="text-xs font-black tracking-tighter text-slate-800 dark:text-white">
+            <span className="text-xs font-black tracking-tighter text-zinc-800 dark:text-white">
               {temps[i]}
             </span>
-            <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[9px] font-semibold text-slate-600 dark:bg-white/10 dark:text-white/60">
+            <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-[9px] font-semibold text-zinc-600 dark:bg-white/10 dark:text-white/60">
               km {kms[i]}
             </span>
           </div>
@@ -139,17 +139,17 @@ export async function HazardVisual() {
       {hazards.map((h) => (
         <div
           key={h.label}
-          className="group relative overflow-hidden rounded-xl border border-slate-200 bg-white p-3 shadow-sm transition-all hover:shadow-md dark:border-white/10 dark:bg-slate-800/50"
+          className="group relative overflow-hidden rounded-xl border border-zinc-200 bg-white p-3 shadow-sm transition-all hover:shadow-md dark:border-white/10 dark:bg-zinc-800/50"
         >
           <div className="relative z-10 mb-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div
-                className="flex h-6 w-6 items-center justify-center rounded-md"
+                className="flex size-6 items-center justify-center rounded-md"
                 style={{ backgroundColor: `${h.color}20` }}
               >
-                <AlertTriangle className="h-3.5 w-3.5" style={{ color: h.color }} />
+                <AlertTriangle className="size-3.5" style={{ color: h.color }} />
               </div>
-              <span className="text-xs font-bold text-slate-800 dark:text-white">{h.label}</span>
+              <span className="text-xs font-bold text-zinc-800 dark:text-white">{h.label}</span>
             </div>
             <span
               className="rounded-full px-2 py-0.5 text-[9px] font-black tracking-wider uppercase"
@@ -163,7 +163,7 @@ export async function HazardVisual() {
             </span>
           </div>
           <div className="relative z-10 flex items-center gap-3">
-            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700/50">
+            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-700/50">
               <div
                 className="h-full rounded-full"
                 style={{
@@ -172,7 +172,7 @@ export async function HazardVisual() {
                 }}
               />
             </div>
-            <span className="text-[10px] font-medium text-slate-500 dark:text-white/50">
+            <span className="text-[10px] font-medium text-zinc-500 dark:text-white/50">
               {h.km}
             </span>
           </div>
@@ -231,25 +231,25 @@ export async function EscapeVisual() {
 
         {/* Pins */}
         <div className="absolute top-[10%] left-[35%] flex flex-col items-center">
-          <div className="flex h-7 w-7 items-center justify-center rounded-full border border-white bg-gradient-to-b from-emerald-400 to-emerald-600 shadow-sm">
+          <div className="flex size-7 items-center justify-center rounded-full border border-white bg-gradient-to-b from-emerald-400 to-emerald-600 shadow-sm">
             <span className="text-xs">🏠</span>
           </div>
-          <div className="mt-1 rounded-md bg-white/90 px-1.5 py-0.5 text-[8px] font-bold text-slate-800 dark:bg-black/80 dark:text-white">
+          <div className="mt-1 rounded-md bg-white/90 px-1.5 py-0.5 text-[8px] font-bold text-zinc-800 dark:bg-black/80 dark:text-white">
             {tv('escapeKm1')}
           </div>
         </div>
 
         <div className="absolute top-[5%] left-[75%] flex flex-col items-center">
-          <div className="flex h-7 w-7 items-center justify-center rounded-full border border-white bg-gradient-to-b from-amber-400 to-amber-600 shadow-sm">
+          <div className="flex size-7 items-center justify-center rounded-full border border-white bg-gradient-to-b from-amber-400 to-amber-600 shadow-sm">
             <span className="text-xs">🛣️</span>
           </div>
-          <div className="mt-1 rounded-md bg-white/90 px-1.5 py-0.5 text-[8px] font-bold text-slate-800 dark:bg-black/80 dark:text-white">
+          <div className="mt-1 rounded-md bg-white/90 px-1.5 py-0.5 text-[8px] font-bold text-zinc-800 dark:bg-black/80 dark:text-white">
             {tv('escapeKm2')}
           </div>
         </div>
       </div>
 
-      <div className="absolute right-2 bottom-2 rounded-xl border border-emerald-500/20 bg-white/90 px-3 py-1.5 shadow-md backdrop-blur-md dark:bg-slate-800/90">
+      <div className="absolute right-2 bottom-2 rounded-xl border border-emerald-500/20 bg-white/90 px-3 py-1.5 shadow-md backdrop-blur-md dark:bg-zinc-800/90">
         <span className="text-[10px] font-black tracking-wider text-emerald-600 uppercase dark:text-emerald-400">
           {tv('escapePointsFound')}
         </span>
@@ -262,7 +262,7 @@ export async function CoverageVisual() {
   const tv = await getTranslations('Landing.visuals');
   return (
     <div className="group relative h-32 w-full overflow-hidden p-2">
-      <div className="absolute inset-0 m-2 overflow-hidden rounded-2xl border border-slate-700 bg-slate-900">
+      <div className="absolute inset-0 m-2 overflow-hidden rounded-2xl border border-zinc-700 bg-zinc-900">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:20px_20px] opacity-10" />
 
         <svg
@@ -280,17 +280,17 @@ export async function CoverageVisual() {
         </svg>
 
         {/* Static heatmaps */}
-        <div className="absolute top-[30%] left-[35%] h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full bg-red-500/20 mix-blend-screen blur-md" />
-        <div className="absolute top-[30%] left-[35%] h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-red-500" />
+        <div className="absolute top-[30%] left-[35%] size-16 -translate-x-1/2 -translate-y-1/2 rounded-full bg-red-500/20 mix-blend-screen blur-md" />
+        <div className="absolute top-[30%] left-[35%] size-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-red-500" />
 
-        <div className="absolute top-[40%] left-[70%] h-20 w-20 -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-500/20 mix-blend-screen blur-md" />
-        <div className="absolute top-[40%] left-[70%] h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-500" />
+        <div className="absolute top-[40%] left-[70%] size-20 -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-500/20 mix-blend-screen blur-md" />
+        <div className="absolute top-[40%] left-[70%] size-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-500" />
       </div>
 
       <div className="absolute top-4 right-4 flex items-center gap-1.5 rounded-lg border border-white/10 bg-black/80 px-2 py-1 backdrop-blur-md">
-        <span className="relative flex h-2 w-2">
+        <span className="relative flex size-2">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75"></span>
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500"></span>
+          <span className="relative inline-flex size-2 rounded-full bg-red-500"></span>
         </span>
         <span className="text-[9px] font-bold tracking-widest text-white uppercase">
           {tv('coverageZones')}
@@ -311,18 +311,18 @@ export async function WindowVisual() {
   return (
     <div className="flex h-32 flex-col justify-center gap-2.5 p-2">
       <div className="mb-1 flex items-center justify-between">
-        <span className="text-[10px] font-bold tracking-widest text-slate-500 uppercase dark:text-white/50">
+        <span className="text-[10px] font-bold tracking-widest text-zinc-500 uppercase dark:text-white/50">
           {tv('windowLabel')}
         </span>
-        <Zap className="h-3 w-3 text-amber-500" />
+        <Zap className="size-3 text-amber-500" />
       </div>
 
       {windows.map((w) => (
         <div key={w.time} className="group flex items-center gap-3">
-          <span className="w-10 text-[10px] font-medium text-slate-600 dark:text-white/60">
+          <span className="w-10 text-[10px] font-medium text-zinc-600 dark:text-white/60">
             {w.time}
           </span>
-          <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800/80">
+          <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800/80">
             <div
               className="relative h-full rounded-full"
               style={{

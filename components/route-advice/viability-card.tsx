@@ -28,10 +28,10 @@ const SCORE_COLORS = {
 } as const;
 
 const THREAT_ICONS: Record<ViabilityThreat['type'], React.ReactNode> = {
-  wind: <Wind className="h-3.5 w-3.5" />,
-  storm: <Zap className="h-3.5 w-3.5" />,
-  temperature: <Thermometer className="h-3.5 w-3.5" />,
-  visibility: <EyeOff className="h-3.5 w-3.5" />,
+  wind: <Wind className="size-3.5" />,
+  storm: <Zap className="size-3.5" />,
+  temperature: <Thermometer className="size-3.5" />,
+  visibility: <EyeOff className="size-3.5" />,
 };
 
 export function ViabilityCard({ viability }: { viability: ViabilityResult }) {
@@ -66,7 +66,7 @@ export function ViabilityCard({ viability }: { viability: ViabilityResult }) {
           {/* Score ring */}
           <div
             className={cn(
-              'flex h-20 w-20 shrink-0 flex-col items-center justify-center rounded-full ring-4',
+              'flex size-20 shrink-0 flex-col items-center justify-center rounded-full ring-4',
               colors.ring,
             )}
           >

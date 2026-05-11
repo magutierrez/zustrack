@@ -42,6 +42,7 @@ export function useEditableRouteName(routeId: string | null) {
     }
 
     if (gpxData) {
+      // eslint-disable-next-line react-doctor/rerender-functional-setstate
       setGpxData({ ...gpxData, name: trimmed });
       setGpxFileName(trimmed);
     }

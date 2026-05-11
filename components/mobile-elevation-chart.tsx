@@ -70,7 +70,7 @@ export function MobileElevationChart() {
             onClick={() => setMobileHazardRange(null)}
             className="text-primary hover:text-primary/80 flex items-center gap-1 text-[9px] font-black tracking-wider uppercase"
           >
-            <RouteOff className="h-3 w-3" />
+            <RouteOff className="size-3" />
             {tHazards('showFullRoute')}
           </button>
         </div>
@@ -132,7 +132,7 @@ export function MobileElevationChart() {
                       <span className="text-muted-foreground text-[8px]">·</span>
                       <div className="flex items-center gap-0.5">
                         <div
-                          className="h-1.5 w-1.5 rounded-full"
+                          className="size-1.5 rounded-full"
                           style={{ backgroundColor: data.color }}
                         />
                         <span className="text-foreground font-mono text-[9px] font-black">

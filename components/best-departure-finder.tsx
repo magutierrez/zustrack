@@ -32,12 +32,12 @@ export function BestDepartureFinder({
   };
 
   const getReasonIcon = (reason: string) => {
-    if (reason.includes('rain')) return <CloudRain className="h-3 w-3" />;
-    if (reason.includes('wind')) return <Wind className="h-3 w-3" />;
-    if (reason.includes('temp')) return <Thermometer className="h-3 w-3" />;
-    if (reason.includes('daylight')) return <Star className="h-3 w-3" />;
-    if (reason.includes('night')) return <Moon className="h-3 w-3" />;
-    return <Info className="h-3 w-3" />;
+    if (reason.includes('rain')) return <CloudRain className="size-3" />;
+    if (reason.includes('wind')) return <Wind className="size-3" />;
+    if (reason.includes('temp')) return <Thermometer className="size-3" />;
+    if (reason.includes('daylight')) return <Star className="size-3" />;
+    if (reason.includes('night')) return <Moon className="size-3" />;
+    return <Info className="size-3" />;
   };
 
   const isPositiveReason = (reason: string) => {
@@ -48,8 +48,8 @@ export function BestDepartureFinder({
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between px-1">
         <div className="flex items-center gap-2">
-          <Star className="text-primary h-4 w-4" />
-          <h3 className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
+          <Star className="text-primary size-4" />
+          <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
             {t('title')}
           </h3>
         </div>
@@ -67,6 +67,7 @@ export function BestDepartureFinder({
       {windows.length > 0 ? (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {windows.slice(0, 4).map((window, idx) => {
+            // eslint-disable-next-line react-doctor/rendering-hydration-mismatch-time
             const time = new Date(window.startTime).toLocaleTimeString([], {
               hour: '2-digit',
               minute: '2-digit',
@@ -96,11 +97,11 @@ export function BestDepartureFinder({
 
                     <div className="text-muted-foreground mb-3 flex items-center gap-3 font-mono text-[10px]">
                       <span className="text-foreground flex items-center gap-1 font-bold">
-                        <Thermometer className="h-3 w-3 opacity-50" />
+                        <Thermometer className="size-3 opacity-50" />
                         {formatTemperature(window.avgTemp, unitSystem)}
                       </span>
                       <span className="flex items-center gap-1">
-                        <Wind className="h-3 w-3 opacity-50" />
+                        <Wind className="size-3 opacity-50" />
                         {formatWindSpeed(window.maxWind, windUnit)}
                       </span>
                     </div>
@@ -147,7 +148,7 @@ export function BestDepartureFinder({
       ) : (
         !isLoading && (
           <div className="border-border bg-muted/5 rounded-2xl border-2 border-dashed p-8 text-center">
-            <Info className="text-muted-foreground mx-auto mb-3 h-8 w-8 opacity-20" />
+            <Info className="text-muted-foreground mx-auto mb-3 size-8 opacity-20" />
             <p className="text-muted-foreground px-4 text-xs leading-relaxed italic">
               {t('description')}
             </p>

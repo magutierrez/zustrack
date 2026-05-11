@@ -107,7 +107,7 @@ const SEASON_OPTIONS: { value: string; labelKey: keyof FilterLabels }[] = [
 function FilterSection({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-1.5">
-      <p className="text-[10px] font-semibold tracking-wider text-slate-400 uppercase dark:text-slate-500">
+      <p className="text-[10px] font-semibold tracking-wider text-zinc-400 uppercase dark:text-zinc-500">
         {label}
       </p>
       <div className="flex flex-wrap gap-1.5">{children}</div>
@@ -116,7 +116,7 @@ function FilterSection({ label, children }: { label: string; children: React.Rea
 }
 
 function VSep() {
-  return <div className="hidden w-px self-stretch bg-slate-200 md:block dark:bg-slate-700" />;
+  return <div className="hidden w-px self-stretch bg-zinc-200 md:block dark:bg-zinc-700" />;
 }
 
 function Chip({
@@ -137,8 +137,8 @@ function Chip({
         'rounded-full border px-3 py-1 text-xs font-medium transition-all',
         active
           ? (color ??
-              'border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-900')
-          : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400',
+              'border-zinc-900 bg-zinc-900 text-white dark:border-white dark:bg-white dark:text-zinc-900')
+          : 'border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400',
       )}
     >
       {children}
@@ -181,16 +181,16 @@ function SliderCard({
       className={cn(
         'rounded-xl border p-3 transition-colors',
         isFiltered
-          ? 'border-slate-900 bg-slate-50 dark:border-slate-400 dark:bg-slate-800/60'
-          : 'border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/40',
+          ? 'border-zinc-900 bg-zinc-50 dark:border-zinc-400 dark:bg-zinc-800/60'
+          : 'border-zinc-200 bg-zinc-50/50 dark:border-zinc-800 dark:bg-zinc-900/40',
       )}
     >
       <div className="mb-3 flex items-baseline justify-between gap-2">
-        <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">{label}</span>
+        <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">{label}</span>
         <span
           className={cn(
             'text-xs font-bold tabular-nums',
-            isFiltered ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500',
+            isFiltered ? 'text-zinc-900 dark:text-white' : 'text-zinc-400 dark:text-zinc-500',
           )}
         >
           {value[0]}–{value[1]} {unit}
@@ -213,7 +213,7 @@ function SliderCard({
                 key={i}
                 className={cn(
                   'flex-1 rounded-t-sm transition-colors',
-                  inRange ? 'bg-blue-500/80 dark:bg-blue-500/60' : 'bg-slate-200 dark:bg-slate-700',
+                  inRange ? 'bg-blue-500/80 dark:bg-blue-500/60' : 'bg-zinc-200 dark:bg-zinc-700',
                 )}
                 style={{ height: `${heightPct}%` }}
               />
@@ -230,7 +230,7 @@ function SliderCard({
         onValueChange={(v) => onChange(v as [number, number])}
         onValueCommit={onCommit}
       />
-      <div className="mt-1.5 flex justify-between text-[10px] text-slate-400 dark:text-slate-600">
+      <div className="mt-1.5 flex justify-between text-[10px] text-zinc-400 dark:text-zinc-600">
         <span>
           {min} {unit}
         </span>
@@ -267,12 +267,12 @@ function RegionCombobox({
           className={cn(
             'flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-all',
             value
-              ? 'border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-900'
-              : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400',
+              ? 'border-zinc-900 bg-zinc-900 text-white dark:border-white dark:bg-white dark:text-zinc-900'
+              : 'border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400',
           )}
         >
           <span className="max-w-[140px] truncate">{value ? selectedLabel : allLabel}</span>
-          <ChevronsUpDown className="h-3 w-3 shrink-0 opacity-50" />
+          <ChevronsUpDown className="size-3 shrink-0 opacity-50" />
         </button>
       </PopoverTrigger>
       <PopoverContent
@@ -294,7 +294,7 @@ function RegionCombobox({
                     onChange('');
                     setOpen(false);
                   }}
-                  className="text-slate-500"
+                  className="text-zinc-500"
                 >
                   {allLabel}
                 </CommandItem>
@@ -309,7 +309,7 @@ function RegionCombobox({
                   }}
                 >
                   <Check
-                    className={cn('mr-2 h-3.5 w-3.5', value === r.value ? 'opacity-100' : 'opacity-0')}
+                    className={cn('mr-2 size-3.5', value === r.value ? 'opacity-100' : 'opacity-0')}
                   />
                   {r.label}
                 </CommandItem>
@@ -345,6 +345,7 @@ export function TrailFilters({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
+  // eslint-disable-next-line react-doctor/no-derived-useState
   const [q, setQ] = useState(initial.q);
 
   const [distRange, setDistRange] = useState<[number, number]>([
@@ -549,7 +550,7 @@ export function TrailFilters({
       <div className={cn('space-y-4 transition-opacity', isPending && 'opacity-60')}>
         {/* Search */}
         <div className="relative">
-          <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-zinc-400" />
           <input
             type="text"
             value={q}
@@ -559,7 +560,7 @@ export function TrailFilters({
             }}
             onBlur={() => updateParam('q', q)}
             placeholder={labels.searchPlaceholder}
-            className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pr-9 pl-9 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder-slate-500"
+            className="w-full rounded-xl border border-zinc-200 bg-white py-2.5 pr-9 pl-9 text-sm text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder-zinc-500"
           />
           {q && (
             <button
@@ -567,9 +568,9 @@ export function TrailFilters({
                 setQ('');
                 updateParam('q', '');
               }}
-              className="absolute top-1/2 right-3 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              className="absolute top-1/2 right-3 -translate-y-1/2 text-zinc-400 hover:text-zinc-600"
             >
-              <X className="h-4 w-4" />
+              <X className="size-4" />
             </button>
           )}
         </div>
@@ -611,11 +612,11 @@ export function TrailFilters({
         {hasFilters && (
           <button
             onClick={clearAll}
-            className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:text-white"
+            className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-600 transition hover:border-zinc-300 hover:text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:text-white"
           >
-            <X className="h-3.5 w-3.5" />
+            <X className="size-3.5" />
             {labels.clearFilters}
-            <span className="rounded-full bg-slate-900 px-1.5 py-0.5 text-[10px] font-bold text-white dark:bg-white dark:text-slate-900">
+            <span className="rounded-full bg-zinc-900 px-1.5 py-0.5 text-[10px] font-bold text-white dark:bg-white dark:text-zinc-900">
               {activeCount}
             </span>
           </button>
@@ -629,7 +630,7 @@ export function TrailFilters({
       {/* ── Row 1: Search + Clear (desktop) ─────────────────────────────── */}
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-zinc-400" />
           <input
             type="text"
             value={q}
@@ -639,7 +640,7 @@ export function TrailFilters({
             }}
             onBlur={() => updateParam('q', q)}
             placeholder={labels.searchPlaceholder}
-            className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pr-9 pl-9 text-sm text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder-slate-500"
+            className="w-full rounded-xl border border-zinc-200 bg-white py-2.5 pr-9 pl-9 text-sm text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder-zinc-500"
           />
           {q && (
             <button
@@ -647,9 +648,9 @@ export function TrailFilters({
                 setQ('');
                 updateParam('q', '');
               }}
-              className="absolute top-1/2 right-3 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              className="absolute top-1/2 right-3 -translate-y-1/2 text-zinc-400 hover:text-zinc-600"
             >
-              <X className="h-4 w-4" />
+              <X className="size-4" />
             </button>
           )}
         </div>
@@ -658,11 +659,11 @@ export function TrailFilters({
         {hasFilters && (
           <button
             onClick={clearAll}
-            className="hidden shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 transition hover:border-slate-300 hover:text-slate-900 md:flex dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:text-white"
+            className="hidden shrink-0 items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-600 transition hover:border-zinc-300 hover:text-zinc-900 md:flex dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:text-white"
           >
-            <X className="h-3.5 w-3.5" />
+            <X className="size-3.5" />
             {labels.clearFilters}
-            <span className="rounded-full bg-slate-900 px-1.5 py-0.5 text-[10px] font-bold text-white dark:bg-white dark:text-slate-900">
+            <span className="rounded-full bg-zinc-900 px-1.5 py-0.5 text-[10px] font-bold text-white dark:bg-white dark:text-zinc-900">
               {activeCount}
             </span>
           </button>
@@ -676,11 +677,11 @@ export function TrailFilters({
         </div>
         <Sheet>
           <SheetTrigger asChild>
-            <button className="ml-auto flex shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
-              <SlidersHorizontal className="h-4 w-4" />
+            <button className="ml-auto flex shrink-0 items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 shadow-sm transition hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
+              <SlidersHorizontal className="size-4" />
               {labels.filterMore}
               {activeCount > 0 && (
-                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-slate-900 text-[10px] font-bold text-white dark:bg-white dark:text-slate-900">
+                <span className="flex size-4 items-center justify-center rounded-full bg-zinc-900 text-[10px] font-bold text-white dark:bg-white dark:text-zinc-900">
                   {activeCount}
                 </span>
               )}
@@ -688,7 +689,7 @@ export function TrailFilters({
           </SheetTrigger>
 
           <SheetContent side="bottom" className="max-h-[85dvh] overflow-y-auto rounded-t-2xl px-0">
-            <SheetHeader className="flex flex-row items-center justify-between border-b border-slate-100 px-4 pb-3 dark:border-slate-800">
+            <SheetHeader className="flex flex-row items-center justify-between border-b border-zinc-100 px-4 pb-3 dark:border-zinc-800">
               <SheetTitle className="text-base">{labels.filterMore}</SheetTitle>
               {hasFilters && (
                 <button
@@ -710,16 +711,16 @@ export function TrailFilters({
                 <FilterSection label={labels.filterRegion}>{regionCombobox}</FilterSection>
               )}
               <div className="space-y-1.5">
-                <p className="text-[10px] font-semibold tracking-wider text-slate-400 uppercase dark:text-slate-500">
+                <p className="text-[10px] font-semibold tracking-wider text-zinc-400 uppercase dark:text-zinc-500">
                   {labels.filterDistance} / {labels.filterElevation}
                 </p>
                 {sliders}
               </div>
             </div>
 
-            <div className="border-t border-slate-100 px-4 py-3 dark:border-slate-800">
+            <div className="border-t border-zinc-100 px-4 py-3 dark:border-zinc-800">
               <SheetClose asChild>
-                <button className="w-full rounded-xl bg-slate-900 py-3 text-sm font-semibold text-white dark:bg-white dark:text-slate-900">
+                <button className="w-full rounded-xl bg-zinc-900 py-3 text-sm font-semibold text-white dark:bg-white dark:text-zinc-900">
                   {labels.viewResults}
                 </button>
               </SheetClose>

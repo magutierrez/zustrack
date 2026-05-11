@@ -54,10 +54,10 @@ function LocaleSwitcherContent() {
         <Button
           variant="ghost"
           size="icon"
-          className={cn('relative h-9 w-9', isPending && 'opacity-50')}
+          className={cn('relative size-9', isPending && 'opacity-50')}
           disabled={isPending}
         >
-          <Globe className={cn('h-5 w-5', isPending && 'animate-spin')} />
+          <Globe className={cn('size-5', isPending && 'animate-spin')} />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-40" align="end">
@@ -77,7 +77,7 @@ function LocaleSwitcherContent() {
 
 export function LocaleSwitcher() {
   return (
-    <Suspense fallback={<div className="h-9 w-9" />}>
+    <Suspense fallback={<div className="size-9" />}>
       <LocaleSwitcherContent />
     </Suspense>
   );

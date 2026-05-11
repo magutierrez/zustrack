@@ -146,11 +146,11 @@ export function SetupPageClient({ session: serverSession }: SetupPageClientProps
         <Button
           variant="ghost"
           size="icon"
-          className="h-9 w-9"
+          className="size-9"
           onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
         >
-          <Sun className="h-5 w-5 hidden dark:block" aria-hidden="true" />
-          <Moon className="h-5 w-5 block dark:hidden" aria-hidden="true" />
+          <Sun className="size-5 hidden dark:block" aria-hidden="true" />
+          <Moon className="size-5 block dark:hidden" aria-hidden="true" />
           <span className="sr-only">Toggle theme</span>
         </Button>
         <LocaleSwitcher />
@@ -162,25 +162,25 @@ export function SetupPageClient({ session: serverSession }: SetupPageClientProps
       </div>
 
       <div className="border-border bg-card w-full max-w-2xl animate-[slide-in-up_0.45s_cubic-bezier(0.16,1,0.3,1)_both] rounded-xl border p-6 shadow-xl">
-        <h1 className="text-foreground mb-6 text-center text-2xl font-bold">{t('title')}</h1>
+        <h1 className="text-foreground mb-6 text-center text-2xl font-semibold">{t('title')}</h1>
 
         <Tabs defaultValue="gpx" className="mb-8 w-full">
           <TabsList className="mb-6 grid h-auto w-full grid-cols-4">
             <TabsTrigger value="gpx" className="flex-col gap-1 py-2.5">
-              <FileUp className="h-4 w-4 shrink-0" />
+              <FileUp className="size-4 shrink-0" />
               <span className="text-[11px] leading-none">{t('tabGPX')}</span>
             </TabsTrigger>
             <TabsTrigger value="saved" className="flex-col gap-1 py-2.5">
-              <History className="h-4 w-4 shrink-0" />
+              <History className="size-4 shrink-0" />
               <span className="text-[11px] leading-none">{t('tabSaved')}</span>
             </TabsTrigger>
             <TabsTrigger value="wikiloc" className="flex-col gap-1 py-2.5">
-              <Globe className="h-4 w-4 shrink-0" />
+              <Globe className="size-4 shrink-0" />
               <span className="text-[11px] leading-none">{t('tabWikiloc')}</span>
             </TabsTrigger>
             <TabsTrigger value="strava" className="flex-col gap-1 py-2.5">
               <svg
-                className="h-4 w-4 shrink-0"
+                className="size-4 shrink-0"
                 viewBox="0 0 64 64"
                 aria-hidden="true"
                 xmlns="http://www.w3.org/2000/svg"
@@ -249,7 +249,7 @@ export function SetupPageClient({ session: serverSession }: SetupPageClientProps
                         : 'border-border bg-secondary text-muted-foreground hover:border-primary/30',
                     )}
                   >
-                    <Bike className="h-4 w-4" />
+                    <Bike className="size-4" />
                     {tRouteConfig('cycling')}
                   </button>
                   <button
@@ -261,7 +261,7 @@ export function SetupPageClient({ session: serverSession }: SetupPageClientProps
                         : 'border-border bg-secondary text-muted-foreground hover:border-primary/30',
                     )}
                   >
-                    <Footprints className="h-4 w-4" />
+                    <Footprints className="size-4" />
                     {tRouteConfig('walking')}
                   </button>
                 </div>
@@ -282,7 +282,7 @@ export function SetupPageClient({ session: serverSession }: SetupPageClientProps
           className="group h-12 w-full gap-2 text-lg"
         >
           {t('analyzeRoute')}{' '}
-          <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+          <ArrowRight className="size-5 transition-transform group-hover:translate-x-1" />
         </Button>
       </div>
     </div>

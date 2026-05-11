@@ -31,15 +31,15 @@ export function Nav() {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50 md:hidden dark:border-white/10 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+            className="flex size-9 items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-600 transition-colors hover:bg-zinc-50 md:hidden dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
             aria-label="Toggle Menu"
           >
-            {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {isMobileMenuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
           </button>
 
           {/* Logo */}
           <div className="z-50 flex items-center gap-2.5">
-            <LogoIcon className="h-7 w-7 text-[#3b82f6]" />
+            <LogoIcon className="size-7 text-[#3b82f6]" />
             <span className="font-heading text-lg font-bold tracking-tight">zustrack</span>
           </div>
 
@@ -51,11 +51,11 @@ export function Nav() {
               href="https://github.com/magutierrez/zustrack"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-white/50 dark:hover:bg-white/8 dark:hover:text-white"
+              className="flex size-9 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-white/50 dark:hover:bg-white/8 dark:hover:text-white"
               aria-label="GitHub"
             >
               <svg
-                className="h-4.5 w-4.5"
+                className="size-4.5"
                 viewBox="0 0 24 24"
                 fill="currentColor"
                 aria-hidden="true"
@@ -68,7 +68,7 @@ export function Nav() {
               href="/app/login"
               className="flex items-center gap-1.5 rounded-lg bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-blue-500/20 transition-all hover:bg-[#1d4ed8]"
             >
-              {t('access')} <ChevronRight className="h-3.5 w-3.5" />
+              {t('access')} <ChevronRight className="size-3.5" />
             </Link>
           </div>
 
@@ -76,7 +76,7 @@ export function Nav() {
             href="/app/login"
             className="flex items-center gap-1 rounded-lg bg-[#2563eb] px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-all hover:bg-[#1d4ed8] active:scale-95 md:hidden"
           >
-            {t('access')} <ChevronRight className="h-3.5 w-3.5" />
+            {t('access')} <ChevronRight className="size-3.5" />
           </Link>
         </div>
 
@@ -91,15 +91,15 @@ export function Nav() {
         >
           <div className="overflow-hidden">
             <div className="flex flex-col gap-4">
-              <div className="flex items-center justify-between rounded-xl border border-slate-100 bg-white p-4 dark:border-white/5 dark:bg-white/5">
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              <div className="flex items-center justify-between rounded-xl border border-zinc-100 bg-white p-4 dark:border-white/5 dark:bg-white/5">
+                <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
                   {t('language')}
                 </span>
                 <LocaleSwitcher />
               </div>
 
-              <div className="flex items-center justify-between rounded-xl border border-slate-100 bg-white p-4 dark:border-white/5 dark:bg-white/5">
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              <div className="flex items-center justify-between rounded-xl border border-zinc-100 bg-white p-4 dark:border-white/5 dark:bg-white/5">
+                <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
                   {t('appearance')}
                 </span>
                 <LandingThemeToggle />
@@ -109,10 +109,10 @@ export function Nav() {
                 href="https://github.com/magutierrez/zustrack"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white p-4 text-sm font-semibold text-slate-900 transition-all active:scale-95 dark:border-white/10 dark:bg-slate-900 dark:text-white"
+                className="flex items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white p-4 text-sm font-semibold text-zinc-900 transition-all active:scale-95 dark:border-white/10 dark:bg-zinc-900 dark:text-white"
               >
                 <svg
-                  className="h-5 w-5"
+                  className="size-5"
                   viewBox="0 0 24 24"
                   fill="currentColor"
                   aria-hidden="true"

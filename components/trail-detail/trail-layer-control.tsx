@@ -25,8 +25,8 @@ export function TrailLayerControl({ mapType, setMapType, className }: TrailLayer
     <div className={className ?? 'absolute top-2 right-3 z-10'}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="secondary" size="icon" className="h-10 w-10 shadow-md">
-            <Layers className="h-5 w-5" />
+          <Button variant="secondary" size="icon" className="size-10 shadow-md">
+            <Layers className="size-5" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="min-w-[170px]">

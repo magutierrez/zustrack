@@ -35,7 +35,7 @@ export function MapOverlayControls({
             className="bg-card/90 hover:bg-card hover:text-primary border-primary/20 h-9 gap-2 rounded-full border px-4 text-[11px] font-bold uppercase shadow-lg backdrop-blur-sm transition-all"
             onClick={onStartPlayer}
           >
-            <Box className="h-4 w-4" />
+            <Box className="size-4" />
             {t('player.title')}
           </Button>
         </div>
@@ -49,7 +49,7 @@ export function MapOverlayControls({
             className="bg-card/90 hover:bg-card hover:text-primary border-primary/20 h-9 gap-2 rounded-full border px-4 text-[11px] font-bold uppercase shadow-lg backdrop-blur-sm transition-all"
             onClick={onClearSelection}
           >
-            <RefreshCcw className="h-3.5 w-3.5" />
+            <RefreshCcw className="size-3.5" />
             <span className="text-[10px] font-bold tracking-wider uppercase">{t('resetView')}</span>
           </Button>
         </div>

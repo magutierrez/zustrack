@@ -18,9 +18,9 @@ interface WeatherListProps {
 function getSolarIntensityColor(intensity: string) {
   switch (intensity) {
     case 'night':
-      return 'bg-slate-900 text-slate-200';
+      return 'bg-zinc-900 text-zinc-200';
     case 'shade':
-      return 'bg-slate-500 text-white';
+      return 'bg-zinc-500 text-white';
     case 'weak':
       return 'bg-yellow-200 text-yellow-800';
     case 'moderate':
@@ -35,13 +35,13 @@ function getSolarIntensityColor(intensity: string) {
 function getWindEffectIcon(effect: string) {
   switch (effect) {
     case 'tailwind':
-      return <ArrowDown className="h-3.5 w-3.5 text-emerald-500" />;
+      return <ArrowDown className="size-3.5 text-emerald-500" />;
     case 'headwind':
-      return <ArrowUp className="h-3.5 w-3.5 text-red-500" />;
+      return <ArrowUp className="size-3.5 text-red-500" />;
     case 'crosswind-left':
-      return <ArrowLeft className="h-3.5 w-3.5 text-amber-500" />;
+      return <ArrowLeft className="size-3.5 text-amber-500" />;
     case 'crosswind-right':
-      return <ArrowRight className="h-3.5 w-3.5 text-amber-500" />;
+      return <ArrowRight className="size-3.5 text-amber-500" />;
     default:
       return null;
   }
@@ -58,9 +58,11 @@ export function WeatherList({ weatherPoints, selectedIndex, onSelect }: WeatherL
       <ScrollArea className="w-full whitespace-nowrap">
         <div className="flex w-max gap-2 pb-4">
           {weatherPoints.map((wp, idx) => {
+            /* eslint-disable react-doctor/rendering-hydration-mismatch-time */
             const time = wp.point.estimatedTime
               ? new Date(wp.point.estimatedTime)
               : new Date(wp.weather.time);
+            /* eslint-enable react-doctor/rendering-hydration-mismatch-time */
             const locale = 'es-ES';
             const timeStr = time.toLocaleTimeString(locale, {
               hour: '2-digit',
@@ -106,13 +108,13 @@ export function WeatherList({ weatherPoints, selectedIndex, onSelect }: WeatherL
                   </div>
                 )}
 
-                <WeatherIcon code={wp.weather.weatherCode} className="h-6 w-6" />
+                <WeatherIcon code={wp.weather.weatherCode} className="size-6" />
                 <span className="text-muted-foreground text-[10px]">{weatherDescription}</span>
                 <span className="text-foreground font-mono text-sm font-bold">
                   {formatTemperature(wp.weather.temperature, unitSystem)}
                 </span>
                 <div className="flex items-center gap-1">
-                  <Wind className="text-muted-foreground h-3 w-3" />
+                  <Wind className="text-muted-foreground size-3" />
                   <span className="text-muted-foreground font-mono text-[10px]">
                     {formatWindSpeed(wp.weather.windSpeed, windUnit)}
                   </span>

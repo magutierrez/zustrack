@@ -10,6 +10,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
 
   return {
     locale,
+    // eslint-disable-next-line react-doctor/no-dynamic-import-path
     messages: (await import(`../messages/${locale}.json`)).default,
   };
 });

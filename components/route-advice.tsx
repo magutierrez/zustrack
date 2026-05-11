@@ -99,7 +99,7 @@ export function RouteAdvice({
   const advices = [
     {
       condition: hasWater,
-      icon: <Droplets className="h-5 w-5 text-cyan-500" />,
+      icon: <Droplets className="size-5 text-cyan-500" />,
       text: (
         <div className="flex flex-col gap-3">
           <p>{hasLowReliabilityWater ? t('waterWarning') : t('waterOk')}</p>
@@ -117,7 +117,7 @@ export function RouteAdvice({
                 : 'bg-card border-border hover:bg-muted',
             )}
           >
-            {showWaterSources ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+            {showWaterSources ? <EyeOff className="size-3" /> : <Eye className="size-3" />}
             {showWaterSources ? t('hideFromMap') : t('showOnMap')}
           </Button>
         </div>
@@ -129,8 +129,8 @@ export function RouteAdvice({
       icon: (
         <LifeBuoy
           className={cn(
-            'h-5 w-5',
-            uniqueEscapePoints.length > 0 ? 'text-indigo-500' : 'text-muted-foreground',
+            'size-5',
+            uniqueEscapePoints.length > 0 ? 'text-violet-500' : 'text-muted-foreground',
           )}
         />
       ),
@@ -145,7 +145,7 @@ export function RouteAdvice({
             <Popover>
               <PopoverTrigger asChild>
                 <button className="text-muted-foreground hover:text-foreground shrink-0 transition-colors">
-                  <Info className="h-3.5 w-3.5" />
+                  <Info className="size-3.5" />
                 </button>
               </PopoverTrigger>
               <PopoverContent className="w-72 text-xs" side="top">
@@ -170,11 +170,11 @@ export function RouteAdvice({
               className={cn(
                 'h-7 w-fit gap-2 text-[10px] font-bold uppercase transition-all',
                 showEscapePoints
-                  ? 'bg-indigo-500 text-white hover:bg-indigo-600 hover:text-white'
+                  ? 'bg-violet-500 text-white hover:bg-violet-600 hover:text-white'
                   : 'bg-card border-border hover:bg-muted',
               )}
             >
-              {showEscapePoints ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+              {showEscapePoints ? <EyeOff className="size-3" /> : <Eye className="size-3" />}
               {showEscapePoints ? t('hideFromMap') : t('showOnMap')}
             </Button>
           )}
@@ -187,7 +187,7 @@ export function RouteAdvice({
       icon: (
         <Signal
           className={cn(
-            'h-5 w-5',
+            'size-5',
             !hasCoverageData
               ? 'text-muted-foreground'
               : hasNoCoverageZones
@@ -215,7 +215,7 @@ export function RouteAdvice({
                 : 'bg-card border-border hover:bg-muted',
             )}
           >
-            {showNoCoverageZones ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+            {showNoCoverageZones ? <EyeOff className="size-3" /> : <Eye className="size-3" />}
             {showNoCoverageZones ? t('hideFromMap') : t('showOnMap')}
           </Button>
         </div>
@@ -226,37 +226,37 @@ export function RouteAdvice({
     },
     {
       condition: hasRain,
-      icon: <CloudRain className="h-5 w-5 text-blue-500" />,
+      icon: <CloudRain className="size-5 text-blue-500" />,
       text: t(`${typeKey}.rain`),
       category: t('weather'),
     },
     {
       condition: hasStrongWind,
-      icon: <Wind className="h-5 w-5 text-slate-500" />,
+      icon: <Wind className="size-5 text-zinc-500" />,
       text: t(`${typeKey}.wind`),
       category: t('weather'),
     },
     {
       condition: hasHeat,
-      icon: <ThermometerSun className="h-5 w-5 text-orange-500" />,
+      icon: <ThermometerSun className="size-5 text-orange-500" />,
       text: t(`${typeKey}.heat`),
       category: t('nutrition'),
     },
     {
       condition: hasCold,
-      icon: <ThermometerSnowflake className="h-5 w-5 text-cyan-500" />,
+      icon: <ThermometerSnowflake className="size-5 text-cyan-500" />,
       text: t(`${typeKey}.cold`),
       category: t('gear'),
     },
     {
       condition: hasNight,
-      icon: <Moon className="h-5 w-5 text-indigo-500" />,
+      icon: <Moon className="size-5 text-violet-500" />,
       text: t(`${typeKey}.night`),
       category: t('safety'),
     },
     {
       condition: true,
-      icon: <ShieldCheck className="text-primary h-5 w-5" />,
+      icon: <ShieldCheck className="text-primary size-5" />,
       text: t(`${typeKey}.general`),
       category: t('safety'),
     },
@@ -272,7 +272,7 @@ export function RouteAdvice({
         <Card className="border-primary/20 bg-primary/5">
           <CardContent className="flex items-center gap-4 p-4">
             <div className="bg-primary/10 rounded-full p-2">
-              <Zap className="h-5 w-5 text-orange-500" />
+              <Zap className="size-5 text-orange-500" />
             </div>
             <div>
               <p className="text-muted-foreground text-[10px] font-bold tracking-wider uppercase">
@@ -292,7 +292,7 @@ export function RouteAdvice({
         <Card className="border-primary/20 bg-primary/5">
           <CardContent className="flex items-center gap-4 p-4">
             <div className="bg-primary/10 rounded-full p-2">
-              <Droplets className="h-5 w-5 text-cyan-600" />
+              <Droplets className="size-5 text-cyan-600" />
             </div>
             <div>
               <p className="text-muted-foreground text-[10px] font-bold tracking-wider uppercase">

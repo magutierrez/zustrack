@@ -14,7 +14,7 @@ const SNOW_CONDITION_COLORS: Record<SnowCondition, string> = {
   none: 'bg-muted-foreground/20',
   boots: 'bg-sky-400',
   snowshoes: 'bg-blue-500',
-  crampons: 'bg-indigo-600',
+  crampons: 'bg-violet-600',
   mountaineering: 'bg-red-600',
 };
 
@@ -22,7 +22,7 @@ const SNOW_CARD_BORDER: Record<SnowCondition, string> = {
   none: '',
   boots: 'border-sky-400/30',
   snowshoes: 'border-blue-500/40',
-  crampons: 'border-indigo-600/40',
+  crampons: 'border-violet-600/40',
   mountaineering: 'border-red-600/50',
 };
 
@@ -30,7 +30,7 @@ const SNOW_CARD_BG: Record<SnowCondition, string> = {
   none: '',
   boots: 'bg-sky-400/5',
   snowshoes: 'bg-blue-500/5',
-  crampons: 'bg-indigo-600/5',
+  crampons: 'bg-violet-600/5',
   mountaineering: 'bg-red-600/8',
 };
 
@@ -38,7 +38,7 @@ const SNOW_BADGE_CLASS: Record<SnowCondition, string> = {
   none: '',
   boots: 'bg-sky-400/15 text-sky-700 dark:text-sky-300',
   snowshoes: 'bg-blue-500/15 text-blue-700 dark:text-blue-300',
-  crampons: 'bg-indigo-600/15 text-indigo-700 dark:text-indigo-300',
+  crampons: 'bg-violet-600/15 text-violet-700 dark:text-violet-300',
   mountaineering: 'bg-red-600/15 text-red-700 dark:text-red-400',
 };
 
@@ -79,7 +79,7 @@ export function SnowshoeCard({
             <div
               key={level}
               className={cn(
-                'h-3 w-3 rounded-full transition-opacity',
+                'size-3 rounded-full transition-opacity',
                 level === overallCondition
                   ? SNOW_CONDITION_COLORS[level]
                   : 'bg-muted-foreground/20',
@@ -91,7 +91,7 @@ export function SnowshoeCard({
         {/* Content */}
         <div className="flex min-w-0 flex-col gap-1.5">
           <div className="flex flex-wrap items-center gap-2">
-            <Snowflake className="text-muted-foreground h-4 w-4 flex-shrink-0" />
+            <Snowflake className="text-muted-foreground size-4 flex-shrink-0" />
             <span className="text-muted-foreground text-[10px] font-bold tracking-wider uppercase">
               {t('snowTitle')}
             </span>
@@ -119,7 +119,7 @@ export function SnowshoeCard({
                 >
                   <span
                     className={cn(
-                      'inline-block h-2 w-2 flex-shrink-0 rounded-full',
+                      'inline-block size-2 flex-shrink-0 rounded-full',
                       SNOW_CONDITION_COLORS[seg.condition],
                     )}
                   />
@@ -132,7 +132,7 @@ export function SnowshoeCard({
                     onClick={() => setSelectedRange({ start: seg.startKm, end: seg.endKm })}
                     className="text-primary hover:text-primary/80 ml-auto flex items-center gap-0.5 transition-colors"
                   >
-                    <MapPin className="h-3 w-3" />
+                    <MapPin className="size-3" />
                     <span>{t('viewOnMap')}</span>
                   </button>
                 </li>

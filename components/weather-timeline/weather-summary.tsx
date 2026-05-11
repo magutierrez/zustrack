@@ -64,7 +64,7 @@ export function WeatherSummary({ weatherPoints }: WeatherSummaryProps) {
     <div className="grid grid-cols-2 gap-2 lg:grid-cols-5">
       <div className="border-border bg-card rounded-lg border p-3">
         <div className="text-muted-foreground flex items-center gap-2">
-          <Thermometer className="h-4 w-4" />
+          <Thermometer className="size-4" />
           <span className="text-xs">{t('summary.avgTemp')}</span>
         </div>
         <p className="text-foreground mt-1 font-mono text-xl font-bold">
@@ -74,7 +74,7 @@ export function WeatherSummary({ weatherPoints }: WeatherSummaryProps) {
 
       <div className="border-border bg-card rounded-lg border p-3">
         <div className="text-muted-foreground flex items-center gap-2">
-          <Sun className="h-4 w-4" />
+          <Sun className="size-4" />
           <span className="text-xs">{t('summary.solarTitle')}</span>
         </div>
         <div className="bg-secondary mt-2 flex h-2 w-full overflow-hidden rounded-full">
@@ -84,8 +84,8 @@ export function WeatherSummary({ weatherPoints }: WeatherSummaryProps) {
                 intense: 'bg-red-600',
                 moderate: 'bg-orange-400',
                 weak: 'bg-yellow-200',
-                shade: 'bg-slate-500',
-                night: 'bg-slate-900',
+                shade: 'bg-zinc-500',
+                night: 'bg-zinc-900',
               };
               const intensityLabel =
                 wp.solarIntensity === 'night'
@@ -118,7 +118,7 @@ export function WeatherSummary({ weatherPoints }: WeatherSummaryProps) {
             </span>
           )}
           {shadePoints > 0 && (
-            <span className="text-[9px] font-bold text-slate-500">
+            <span className="text-[9px] font-bold text-zinc-500">
               {t('summary.shadeLabel', { percent: getPercent(shadePoints) })}
             </span>
           )}
@@ -128,14 +128,14 @@ export function WeatherSummary({ weatherPoints }: WeatherSummaryProps) {
       {/* Daylight / Night Trap card */}
       <div className="border-border bg-card rounded-lg border p-3">
         <div className="text-muted-foreground flex items-center gap-2">
-          <Clock className="h-4 w-4" />
+          <Clock className="size-4" />
           <span className="text-xs">{t('summary.daylight')}</span>
         </div>
 
         {arrivesAtNight ? (
           <div className="mt-1 space-y-1.5">
             <div className="text-destructive flex items-center gap-1">
-              <AlertTriangle className="h-4 w-4 shrink-0" />
+              <AlertTriangle className="size-4 shrink-0" />
               <span className="text-xs font-bold tracking-tighter uppercase">
                 {t('summary.nightArrival')}
               </span>
@@ -174,7 +174,7 @@ export function WeatherSummary({ weatherPoints }: WeatherSummaryProps) {
 
       <div className="border-border bg-card rounded-lg border p-3">
         <div className="text-muted-foreground flex items-center gap-2">
-          <Wind className="h-4 w-4" />
+          <Wind className="size-4" />
           <span className="text-xs">{t('summary.maxWind')}</span>
         </div>
         <p className="text-foreground mt-1 font-mono text-xl font-bold">
@@ -189,7 +189,7 @@ export function WeatherSummary({ weatherPoints }: WeatherSummaryProps) {
       </div>
       <div className="border-border bg-card rounded-lg border p-3">
         <div className="text-muted-foreground flex items-center gap-2">
-          <Droplets className="h-4 w-4" />
+          <Droplets className="size-4" />
           <span className="text-xs">{t('summary.precipProb')}</span>
         </div>
         <p className="text-foreground mt-1 font-mono text-xl font-bold">
@@ -198,7 +198,7 @@ export function WeatherSummary({ weatherPoints }: WeatherSummaryProps) {
       </div>
       <div className="border-border bg-card rounded-lg border p-3">
         <div className="text-muted-foreground flex items-center gap-2">
-          <Wind className="h-4 w-4" />
+          <Wind className="size-4" />
           <span className="text-xs">{t('summary.wind')}</span>
         </div>
         <div className="mt-1 flex items-center gap-2">
@@ -214,7 +214,7 @@ export function WeatherSummary({ weatherPoints }: WeatherSummaryProps) {
       {hasSnow && (
         <div className="border-border bg-card rounded-lg border p-3">
           <div className="text-muted-foreground flex items-center gap-2">
-            <Snowflake className="h-4 w-4 text-blue-400" />
+            <Snowflake className="size-4 text-blue-400" />
             <span className="text-xs">{t('summary.snowTitle')}</span>
           </div>
           <p className="text-foreground mt-1 font-mono text-xl font-bold">
@@ -245,17 +245,17 @@ function NightTrapButton({
   return (
     <button
       onClick={onClick}
-      className="flex w-full items-center gap-1.5 rounded-md bg-slate-800/80 px-2 py-1.5 text-left transition-colors hover:bg-slate-700/80 dark:bg-slate-900/80 dark:hover:bg-slate-800/80"
+      className="flex w-full items-center gap-1.5 rounded-md bg-zinc-800/80 px-2 py-1.5 text-left transition-colors hover:bg-zinc-700/80 dark:bg-zinc-900/80 dark:hover:bg-zinc-800/80"
     >
-      <Moon className="h-3.5 w-3.5 shrink-0 text-indigo-300" />
+      <Moon className="size-3.5 shrink-0 text-violet-300" />
       <div className="min-w-0 flex-1">
-        <p className="font-mono text-[11px] font-bold text-indigo-200">
+        <p className="font-mono text-[11px] font-bold text-violet-200">
           {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           {' · '}km {km.toFixed(1)}
         </p>
-        {isValleyAdjusted && <p className="text-[9px] text-indigo-400/80">{valleyLabel}</p>}
+        {isValleyAdjusted && <p className="text-[9px] text-violet-400/80">{valleyLabel}</p>}
       </div>
-      <span className="shrink-0 text-[9px] font-medium text-indigo-300 underline underline-offset-2">
+      <span className="shrink-0 text-[9px] font-medium text-violet-300 underline underline-offset-2">
         {label}
       </span>
     </button>

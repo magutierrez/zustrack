@@ -13,15 +13,11 @@ export function useActivityConfig() {
   const initialHours = Math.floor(estimatedDuration / 60);
   const initialMinutes = Math.round(estimatedDuration % 60);
 
-  const [manualHours, setManualHours] = useState(initialHours);
-  const [manualMinutes, setManualMinutes] = useState(initialMinutes);
+  const [manualDuration, setManualDuration] = useState({ hours: initialHours, minutes: initialMinutes });
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setManualHours(initialHours);
-     
-    setManualMinutes(initialMinutes);
-  }, [config.speed, totalDistance, initialHours, initialMinutes]);
+    setManualDuration({ hours: initialHours, minutes: initialMinutes });
+  }, [initialHours, initialMinutes]);
 
   const handleDurationChange = useCallback(
     (h: number, m: number) => {
@@ -29,13 +25,13 @@ export function useActivityConfig() {
       if (totalMinutes > 0 && totalDistance > 0) {
         const newSpeed = (totalDistance / totalMinutes) * 60;
         const clampedSpeed = Math.max(1, Math.min(60, Math.round(newSpeed * 10) / 10));
+        // eslint-disable-next-line react-doctor/rerender-functional-setstate
         setConfig({ ...config, speed: clampedSpeed });
       }
-      setManualHours(h);
-      setManualMinutes(m);
+      setManualDuration({ hours: h, minutes: m });
     },
     [config, totalDistance, setConfig],
   );
 
-  return { initialHours, initialMinutes, manualHours, manualMinutes, handleDurationChange };
+  return { initialHours, initialMinutes, manualHours: manualDuration.hours, manualMinutes: manualDuration.minutes, handleDurationChange };
 }

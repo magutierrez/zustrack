@@ -119,17 +119,17 @@ export function WaterSourcesSection({
 
       {/* Water gap summary */}
       {maxGap !== null && (
-        <div className="flex flex-wrap gap-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm dark:border-slate-800 dark:bg-slate-900/50">
+        <div className="flex flex-wrap gap-4 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm dark:border-zinc-800 dark:bg-zinc-900/50">
           <div>
-            <span className="text-slate-500 dark:text-slate-400">{labels.waterGapMax}: </span>
+            <span className="text-zinc-500 dark:text-zinc-400">{labels.waterGapMax}: </span>
             <strong className={cn('font-semibold', gapColor)}>{maxGap} km</strong>
           </div>
           {recommendedLiters > 0 && (
             <div>
-              <span className="text-slate-500 dark:text-slate-400">
+              <span className="text-zinc-500 dark:text-zinc-400">
                 {labels.waterCarryRecommendation}{' '}
               </span>
-              <strong className="font-semibold text-slate-900 dark:text-white">
+              <strong className="font-semibold text-zinc-900 dark:text-white">
                 {recommendedLiters} {labels.liters}
               </strong>
             </div>
@@ -137,7 +137,7 @@ export function WaterSourcesSection({
         </div>
       )}
 
-      <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-900">
+      <ul className="divide-y divide-zinc-100 overflow-hidden rounded-xl border border-zinc-200 bg-white dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-900">
         {waterSources.map((ws, i) => {
           const isActive =
             activePOI && Math.abs(activePOI.lat - ws.lat) < 0.00001 && Math.abs(activePOI.lng - ws.lng) < 0.00001;
@@ -148,12 +148,12 @@ export function WaterSourcesSection({
                 isActive ? 'bg-sky-50 dark:bg-sky-900/10' : ''
               }`}
             >
-              <Droplets className="h-4 w-4 shrink-0 text-sky-400" />
+              <Droplets className="size-4 shrink-0 text-sky-400" />
               <div className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-medium text-slate-900 dark:text-white">
+                <span className="block truncate text-sm font-medium text-zinc-900 dark:text-white">
                   {ws.name}
                 </span>
-                <span className="text-xs text-slate-500 dark:text-slate-400">
+                <span className="text-xs text-zinc-500 dark:text-zinc-400">
                   {ws.type === 'natural' ? labels.natural : labels.urban}
                 </span>
               </div>
@@ -162,15 +162,15 @@ export function WaterSourcesSection({
               >
                 {reliabilityLabel(ws.reliability)}
               </span>
-              <span className="shrink-0 text-xs text-slate-400 dark:text-slate-500">
+              <span className="shrink-0 text-xs text-zinc-400 dark:text-zinc-500">
                 {ws.distanceFromRoute} {labels.kmAway}
               </span>
               {onShowOnMap && (
                 <button
                   onClick={() => onShowOnMap(ws.lat, ws.lng)}
-                  className="ml-1 flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-[10px] font-semibold text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+                  className="ml-1 flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-[10px] font-semibold text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white"
                 >
-                  <Navigation className="h-3 w-3" />
+                  <Navigation className="size-3" />
                   {labels.showOnMap}
                 </button>
               )}

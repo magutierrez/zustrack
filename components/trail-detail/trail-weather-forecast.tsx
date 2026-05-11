@@ -99,7 +99,7 @@ export function TrailWeatherForecast({
           {Array.from({ length: 7 }).map((_, i) => (
             <div
               key={i}
-              className="h-28 w-20 shrink-0 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800"
+              className="h-28 w-20 shrink-0 animate-pulse rounded-xl bg-zinc-100 dark:bg-zinc-800"
             />
           ))}
         </div>
@@ -114,7 +114,7 @@ export function TrailWeatherForecast({
                   'relative flex w-20 shrink-0 flex-col items-center gap-1 rounded-xl border px-2 py-3 text-center transition-all',
                   isBest
                     ? 'border-emerald-400 bg-emerald-50 dark:border-emerald-600 dark:bg-emerald-900/20'
-                    : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900',
+                    : 'border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900',
                 )}
               >
                 {isBest && (
@@ -122,17 +122,17 @@ export function TrailWeatherForecast({
                     {labels.bestDay}
                   </span>
                 )}
-                <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
                   {formatShortDate(day.date, locale)}
                 </span>
                 <span className="text-2xl leading-none">{weatherEmoji(day.weathercode)}</span>
                 <div className="flex flex-col items-center">
-                  <span className="text-sm font-bold text-slate-900 dark:text-white">
+                  <span className="text-sm font-bold text-zinc-900 dark:text-white">
                     {day.tempMax}°
                   </span>
-                  <span className="text-xs text-slate-400">{day.tempMin}°</span>
+                  <span className="text-xs text-zinc-400">{day.tempMin}°</span>
                 </div>
-                <div className="mt-0.5 space-y-0.5 text-[10px] text-slate-500 dark:text-slate-400">
+                <div className="mt-0.5 space-y-0.5 text-[10px] text-zinc-500 dark:text-zinc-400">
                   <div className="flex items-center justify-center gap-0.5">
                     <span>💧</span>
                     <span>{day.precipitation}mm</span>

@@ -26,18 +26,18 @@ export function ViewToggle({ labels }: ViewToggleProps) {
   };
 
   return (
-    <div className="flex items-center rounded-lg border border-slate-200 bg-white p-0.5 dark:border-slate-700 dark:bg-slate-900">
+    <div className="flex items-center rounded-lg border border-zinc-200 bg-white p-0.5 dark:border-zinc-700 dark:bg-zinc-900">
       <button
         onClick={() => switchTo('list')}
         className={cn(
           'flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium transition-colors',
           currentView !== 'map'
-            ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
-            : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white',
+            ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900'
+            : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white',
         )}
         aria-label={labels.listView}
       >
-        <LayoutGrid className="h-3.5 w-3.5" />
+        <LayoutGrid className="size-3.5" />
         <span className="hidden sm:inline">{labels.listView}</span>
       </button>
       <button
@@ -45,12 +45,12 @@ export function ViewToggle({ labels }: ViewToggleProps) {
         className={cn(
           'flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium transition-colors',
           currentView === 'map'
-            ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
-            : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white',
+            ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900'
+            : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white',
         )}
         aria-label={labels.mapView}
       >
-        <Map className="h-3.5 w-3.5" />
+        <Map className="size-3.5" />
         <span className="hidden sm:inline">{labels.mapView}</span>
       </button>
     </div>

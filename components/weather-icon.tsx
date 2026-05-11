@@ -18,7 +18,7 @@ interface WeatherIconProps {
   className?: string;
 }
 
-export function WeatherIcon({ code, className = 'h-5 w-5' }: WeatherIconProps) {
+export function WeatherIcon({ code, className = 'size-5' }: WeatherIconProps) {
   const info = WEATHER_CODES[code];
   const iconName = info?.icon || 'cloud';
 
@@ -28,9 +28,9 @@ export function WeatherIcon({ code, className = 'h-5 w-5' }: WeatherIconProps) {
     case 'cloud-sun':
       return <CloudSun className={`${className} text-amber-500`} />;
     case 'cloud':
-      return <Cloud className={`${className} text-slate-400`} />;
+      return <Cloud className={`${className} text-zinc-400`} />;
     case 'cloud-fog':
-      return <CloudFog className={`${className} text-slate-400`} />;
+      return <CloudFog className={`${className} text-zinc-400`} />;
     case 'cloud-drizzle':
       return <CloudDrizzle className={`${className} text-blue-400`} />;
     case 'cloud-rain':
@@ -42,6 +42,6 @@ export function WeatherIcon({ code, className = 'h-5 w-5' }: WeatherIconProps) {
     case 'cloud-lightning':
       return <CloudLightning className={`${className} text-yellow-500`} />;
     default:
-      return <Cloud className={`${className} text-slate-400`} />;
+      return <Cloud className={`${className} text-zinc-400`} />;
   }
 }

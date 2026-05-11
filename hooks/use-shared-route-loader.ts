@@ -28,6 +28,7 @@ export function useSharedRouteLoader(
   const [hashPayload, setHashPayload] = useState<ReturnType<typeof parseHashPayload>>(null);
 
   // Parse the hash fragment on the client (fragments never reach the server)
+  // eslint-disable-next-line react-doctor/rendering-hydration-no-flicker
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setHashPayload(parseHashPayload());
@@ -95,11 +96,13 @@ export function useSharedRouteLoader(
             elevationLoss: route.elevation_loss,
           });
         } else {
+          // eslint-disable-next-line react-doctor/nextjs-no-client-side-redirect
           router.replace('/app/setup');
         }
       };
       fetchRoute();
     } else if (!routeId && !skipSetupRedirect) {
+      // eslint-disable-next-line react-doctor/nextjs-no-client-side-redirect
       router.replace('/app/setup');
     }
   }, [routeId, skipSetupRedirect, session?.user?.email, session?.user?.id, setSavedRouteId, setFetchedRoute, router]);

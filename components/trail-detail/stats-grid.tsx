@@ -20,20 +20,20 @@ interface StatCardProps {
 
 function StatCard({ icon, label, value, sub, onMapClick, showOnMapLabel }: StatCardProps) {
   return (
-    <div className="group relative flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-      <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+    <div className="group relative flex flex-col gap-2 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400">
         {icon}
         <span className="text-xs font-medium uppercase tracking-wide">{label}</span>
       </div>
-      <p className="text-2xl font-bold text-slate-900 dark:text-white">{value}</p>
-      {sub && <p className="text-xs text-slate-500 dark:text-slate-400">{sub}</p>}
+      <p className="text-2xl font-bold text-zinc-900 dark:text-white">{value}</p>
+      {sub && <p className="text-xs text-zinc-500 dark:text-zinc-400">{sub}</p>}
       {onMapClick && (
         <button
           onClick={onMapClick}
           aria-label={showOnMapLabel ?? label}
-          className="absolute top-3 right-3 flex items-center justify-center rounded-md p-1 text-slate-400 opacity-0 transition-opacity hover:bg-slate-100 hover:text-slate-700 group-hover:opacity-100 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-300"
+          className="absolute top-3 right-3 flex items-center justify-center rounded-md p-1 text-zinc-400 opacity-0 transition-opacity hover:bg-zinc-100 hover:text-zinc-700 group-hover:opacity-100 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
         >
-          <Eye className="h-3.5 w-3.5" />
+          <Eye className="size-3.5" />
         </button>
       )}
     </div>
@@ -92,28 +92,28 @@ export function StatsGrid({
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
       <StatCard
-        icon={<Ruler className="h-4 w-4" />}
+        icon={<Ruler className="size-4" />}
         label={labels.distance}
         value={`${distanceKm.toFixed(1)} ${labels.km}`}
       />
       <StatCard
-        icon={<Clock className="h-4 w-4" />}
+        icon={<Clock className="size-4" />}
         label={labels.duration}
         value={durationStr}
       />
       <StatCard
-        icon={<ArrowUp className="h-4 w-4 text-emerald-500" />}
+        icon={<ArrowUp className="size-4 text-emerald-500" />}
         label={labels.elevationGain}
         value={`+${elevationGainM.toLocaleString()} ${labels.meters}`}
       />
       <StatCard
-        icon={<ArrowDown className="h-4 w-4 text-rose-500" />}
+        icon={<ArrowDown className="size-4 text-rose-500" />}
         label={labels.elevationLoss}
         value={`-${elevationLossM.toLocaleString()} ${labels.meters}`}
       />
       {elevationMaxM !== null && (
         <StatCard
-          icon={<TrendingUp className="h-4 w-4 text-sky-500" />}
+          icon={<TrendingUp className="size-4 text-sky-500" />}
           label={labels.highPoint}
           value={`${elevationMaxM.toLocaleString()} ${labels.meters}`}
           onMapClick={
@@ -126,7 +126,7 @@ export function StatsGrid({
       )}
       {elevationMinM !== null && (
         <StatCard
-          icon={<TrendingDown className="h-4 w-4 text-amber-500" />}
+          icon={<TrendingDown className="size-4 text-amber-500" />}
           label={labels.lowPoint}
           value={`${elevationMinM.toLocaleString()} ${labels.meters}`}
           onMapClick={
@@ -139,7 +139,7 @@ export function StatsGrid({
       )}
       {avgElevationM !== null && (
         <StatCard
-          icon={<Mountain className="h-4 w-4" />}
+          icon={<Mountain className="size-4" />}
           label={labels.avgElevation}
           value={`${avgElevationM.toLocaleString()} ${labels.meters}`}
         />

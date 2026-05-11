@@ -253,7 +253,7 @@ export function TrailsMap({ searchParams, locale, country, labels }: TrailsMapPr
     setTrackLoading(false);
   }, []);
 
-  const handleClick = useCallback(
+  const handleMapClick = useCallback(
     async (e: MapLayerMouseEvent) => {
       const features = e.features;
       if (!features?.length) {
@@ -357,14 +357,14 @@ export function TrailsMap({ searchParams, locale, country, labels }: TrailsMapPr
   return (
     <div className="relative h-full w-full">
       {loading && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-50/80 dark:bg-slate-900/80">
-          <span className="text-sm text-slate-500 dark:text-slate-400">{labels.loading}</span>
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-zinc-50/80 dark:bg-zinc-900/80">
+          <span className="text-sm text-zinc-500 dark:text-zinc-400">{labels.loading}</span>
         </div>
       )}
 
       {!loading && geojson?.features?.length === 0 && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-50/80 dark:bg-slate-900/80">
-          <span className="text-sm text-slate-500 dark:text-slate-400">{labels.noTrails}</span>
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-zinc-50/80 dark:bg-zinc-900/80">
+          <span className="text-sm text-zinc-500 dark:text-zinc-400">{labels.noTrails}</span>
         </div>
       )}
 
@@ -376,7 +376,7 @@ export function TrailsMap({ searchParams, locale, country, labels }: TrailsMapPr
         style={{ width: '100%', height: '100%' }}
         interactiveLayerIds={['trail-clusters', 'trail-points']}
         cursor={cursor}
-        onClick={handleClick}
+        onClick={handleMapClick}
         onLoad={(e) => {
           const map = e.target as maplibregl.Map;
           addArrowImage(map);
@@ -529,14 +529,14 @@ export function TrailsMap({ searchParams, locale, country, labels }: TrailsMapPr
         )}
 
         {selectedTrail && (
-          <div className="absolute top-4 left-1/2 z-20 w-[90%] max-w-sm -translate-x-1/2 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900">
+          <div className="absolute top-4 left-1/2 z-20 w-[90%] max-w-sm -translate-x-1/2 overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xl dark:border-zinc-800 dark:bg-zinc-900">
             <div className="relative p-4">
               <button
                 onClick={clearTrailSelection}
-                className="absolute top-3 right-3 rounded-full p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
+                className="absolute top-3 right-3 rounded-full p-1 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
                 aria-label="Close"
               >
-                <X className="h-4 w-4" />
+                <X className="size-4" />
               </button>
 
               <div className="mb-2 flex flex-wrap items-center gap-2 pr-6">
@@ -561,16 +561,16 @@ export function TrailsMap({ searchParams, locale, country, labels }: TrailsMapPr
                 </span>
               </div>
 
-              <h3 className="mb-3 line-clamp-2 pr-6 text-sm leading-tight font-bold text-slate-900 dark:text-white">
+              <h3 className="mb-3 line-clamp-2 pr-6 text-sm leading-tight font-semibold text-zinc-900 dark:text-white">
                 {selectedTrail.name}
               </h3>
 
               <div className="mb-4 grid grid-cols-3 gap-2">
                 <div className="flex flex-col">
-                  <span className="text-[9px] font-bold tracking-wider text-slate-500 uppercase">
+                  <span className="text-[9px] font-bold tracking-wider text-zinc-500 uppercase">
                     {labels.km}
                   </span>
-                  <span className="text-xs font-semibold text-slate-900 tabular-nums dark:text-white">
+                  <span className="text-xs font-semibold text-zinc-900 tabular-nums dark:text-white">
                     {selectedTrail.distance_km.toFixed(1)}
                   </span>
                 </div>
@@ -578,7 +578,7 @@ export function TrailsMap({ searchParams, locale, country, labels }: TrailsMapPr
                   <span className="text-[9px] font-bold tracking-wider text-emerald-500 uppercase">
                     D+
                   </span>
-                  <span className="text-xs font-semibold text-slate-900 tabular-nums dark:text-white">
+                  <span className="text-xs font-semibold text-zinc-900 tabular-nums dark:text-white">
                     {selectedTrail.elevation_gain_m != null
                       ? `${selectedTrail.elevation_gain_m}m`
                       : '--'}
@@ -588,7 +588,7 @@ export function TrailsMap({ searchParams, locale, country, labels }: TrailsMapPr
                   <span className="text-[9px] font-bold tracking-wider text-red-500 uppercase">
                     D-
                   </span>
-                  <span className="text-xs font-semibold text-slate-900 tabular-nums dark:text-white">
+                  <span className="text-xs font-semibold text-zinc-900 tabular-nums dark:text-white">
                     {selectedTrail.elevation_loss_m != null
                       ? `${selectedTrail.elevation_loss_m}m`
                       : '--'}
@@ -596,12 +596,12 @@ export function TrailsMap({ searchParams, locale, country, labels }: TrailsMapPr
                 </div>
                 <div className="flex flex-col">
                   <span
-                    className="line-clamp-1 text-[9px] font-bold tracking-wider text-slate-500 uppercase"
+                    className="line-clamp-1 text-[9px] font-bold tracking-wider text-zinc-500 uppercase"
                     title={labels.lowPoint}
                   >
                     {labels.lowPoint}
                   </span>
-                  <span className="text-xs font-semibold text-slate-900 tabular-nums dark:text-white">
+                  <span className="text-xs font-semibold text-zinc-900 tabular-nums dark:text-white">
                     {selectedTrail.elevation_min_m != null
                       ? `${selectedTrail.elevation_min_m}m`
                       : '--'}
@@ -609,12 +609,12 @@ export function TrailsMap({ searchParams, locale, country, labels }: TrailsMapPr
                 </div>
                 <div className="flex flex-col">
                   <span
-                    className="line-clamp-1 text-[9px] font-bold tracking-wider text-slate-500 uppercase"
+                    className="line-clamp-1 text-[9px] font-bold tracking-wider text-zinc-500 uppercase"
                     title={labels.highPoint}
                   >
                     {labels.highPoint}
                   </span>
-                  <span className="text-xs font-semibold text-slate-900 tabular-nums dark:text-white">
+                  <span className="text-xs font-semibold text-zinc-900 tabular-nums dark:text-white">
                     {selectedTrail.elevation_max_m != null
                       ? `${selectedTrail.elevation_max_m}m`
                       : '--'}
@@ -623,9 +623,9 @@ export function TrailsMap({ searchParams, locale, country, labels }: TrailsMapPr
               </div>
 
               {trackLoading ? (
-                <div className="flex h-9 w-full items-center justify-center gap-2 rounded-lg bg-slate-100 dark:bg-slate-800">
+                <div className="flex h-9 w-full items-center justify-center gap-2 rounded-lg bg-zinc-100 dark:bg-zinc-800">
                   <svg
-                    className="h-3.5 w-3.5 animate-spin text-slate-400"
+                    className="size-3.5 animate-spin text-zinc-400"
                     viewBox="0 0 24 24"
                     fill="none"
                   >
@@ -639,12 +639,12 @@ export function TrailsMap({ searchParams, locale, country, labels }: TrailsMapPr
                     />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
                   </svg>
-                  <span className="text-xs font-medium text-slate-500">{labels.loading}</span>
+                  <span className="text-xs font-medium text-zinc-500">{labels.loading}</span>
                 </div>
               ) : (
                 <Link
                   href={`/${locale}/trail/${selectedTrail.country}/${selectedTrail.slug}`}
-                  className="flex h-9 w-full items-center justify-center rounded-lg bg-slate-900 text-xs font-bold text-white transition-colors hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
+                  className="flex h-9 w-full items-center justify-center rounded-lg bg-zinc-900 text-xs font-bold text-white transition-colors hover:bg-zinc-700 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
                 >
                   {labels.viewTrail}
                 </Link>

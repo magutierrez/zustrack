@@ -45,8 +45,8 @@ export function LoginPageClient({ providers }: LoginPageClientProps) {
       <Card className="border-border w-full max-w-md shadow-xl">
         <CardHeader className="space-y-4 text-center">
           <div className="flex justify-center">
-            <div className="bg-primary/10 flex h-12 w-12 items-center justify-center rounded-xl">
-              <LogoIcon className="text-primary h-6 w-6" />
+            <div className="bg-primary/10 flex size-12 items-center justify-center rounded-xl">
+              <LogoIcon className="text-primary size-6" />
             </div>
           </div>
           <div className="space-y-2">
@@ -62,7 +62,7 @@ export function LoginPageClient({ providers }: LoginPageClientProps) {
               onClick={() => signIn('google', { redirectTo })}
             >
               <svg
-                className="mr-2 h-5 w-5"
+                className="mr-2 size-5"
                 aria-hidden="true"
                 focusable="false"
                 role="img"
@@ -85,7 +85,7 @@ export function LoginPageClient({ providers }: LoginPageClientProps) {
               onClick={() => signIn('strava', { redirectTo })}
             >
               <svg
-                className="mr-2 h-5 w-5 fill-current text-[#FC6719]"
+                className="mr-2 size-5 fill-current text-[#FC6719]"
                 viewBox="0 0 24 24"
                 xmlns="http://www.w3.org/2000/svg"
               >
@@ -102,7 +102,7 @@ export function LoginPageClient({ providers }: LoginPageClientProps) {
               onClick={() => signIn('facebook', { redirectTo })}
             >
               <svg
-                className="mr-2 h-5 w-5"
+                className="mr-2 size-5"
                 viewBox="0 0 24 24"
                 fill="#1877F2"
                 aria-hidden="true"
@@ -120,7 +120,7 @@ export function LoginPageClient({ providers }: LoginPageClientProps) {
               className="border-border bg-card text-foreground hover:bg-muted h-12"
               onClick={() => signIn('twitter', { redirectTo })}
             >
-              <svg className="mr-2 h-4 w-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+              <svg className="mr-2 size-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M18.244 2.25h3.308l-7.227 7.717 8.502 11.25h-6.657l-5.214-6.817L4.99 21.25H1.68l7.73-8.235L1.25 2.25h6.826l4.717 6.176L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z" />
               </svg>
               {t('continueX')}

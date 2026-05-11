@@ -50,6 +50,7 @@ export async function GET(request: Request) {
 
   if (type === 'route') {
     const res = await fetch(`https://www.strava.com/api/v3/routes/${id}/export_gpx`, {
+      cache: 'no-store',
       headers: { Authorization: `Bearer ${session.accessToken}` },
     }).catch(() => null);
 
@@ -68,7 +69,7 @@ export async function GET(request: Request) {
   if (type === 'activity') {
     const res = await fetch(
       `https://www.strava.com/api/v3/activities/${id}/streams?keys=latlng,altitude&key_by_type=true`,
-      { headers: { Authorization: `Bearer ${session.accessToken}` } },
+      { cache: 'no-store', headers: { Authorization: `Bearer ${session.accessToken}` } },
     ).catch(() => null);
 
     if (!res?.ok) {

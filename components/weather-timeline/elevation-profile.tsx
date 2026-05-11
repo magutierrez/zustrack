@@ -345,10 +345,10 @@ export function AnalysisChart() {
       <div className="mb-4 flex items-center justify-between md:mb-6">
         <div className="flex items-center gap-2 md:gap-3">
           <div className="bg-primary/10 rounded-lg p-1.5 md:p-2">
-            <TrendingUp className="text-primary h-3.5 w-3.5 md:h-4 md:w-4" />
+            <TrendingUp className="text-primary size-3.5 md:h-4 md:w-4" />
           </div>
           <div>
-            <h3 className="text-foreground text-xs leading-none font-bold md:text-sm">
+            <h3 className="text-foreground text-xs leading-none font-semibold md:text-sm">
               {t('elevationTitle')}
             </h3>
             {!isMobile && (
@@ -364,14 +364,14 @@ export function AnalysisChart() {
               onClick={resetZoom}
               className="h-6 gap-1 px-1.5 text-[9px] font-bold tracking-tight uppercase md:h-7 md:gap-1.5 md:px-2 md:text-[10px]"
             >
-              <RefreshCcw className="h-2.5 w-2.5 md:h-3 md:w-3" />
+              <RefreshCcw className="size-2.5 md:h-3 md:w-3" />
               {t('chart.resetZoom')}
             </Button>
           )}
         </div>
         {selectedPoint && (
           <div className="bg-secondary/50 border-border/50 flex items-center gap-1.5 rounded-full border px-2 py-1 shadow-inner md:gap-2 md:px-3 md:py-1.5">
-            <div className="bg-primary h-1.5 w-1.5 animate-pulse rounded-full shadow-sm md:h-2 md:w-2" />
+            <div className="bg-primary size-1.5 animate-pulse rounded-full shadow-sm md:h-2 md:w-2" />
             <span className="text-foreground font-mono text-[10px] font-black md:text-xs">
               {formatElevation(selectedPoint.ele || 0, unitSystem)}
             </span>
@@ -406,7 +406,7 @@ export function AnalysisChart() {
                 </span>
                 <div className="flex items-center gap-1.5">
                   <div
-                    className="h-1.5 w-1.5 rounded-full shadow-sm md:h-2 md:w-2"
+                    className="size-1.5 rounded-full shadow-sm md:h-2 md:w-2"
                     style={{ backgroundColor: tooltip.color }}
                   />
                   <span className="text-foreground font-mono text-[10px] font-black md:text-xs">
@@ -432,7 +432,7 @@ export function AnalysisChart() {
               <span className="text-muted-foreground text-[8px]">·</span>
               <div className="flex items-center gap-0.5">
                 <div
-                  className="h-1.5 w-1.5 rounded-full"
+                  className="size-1.5 rounded-full"
                   style={{ backgroundColor: tooltip.color }}
                 />
                 <span className="text-foreground font-mono text-[9px] font-black">
@@ -755,7 +755,7 @@ export function AnalysisChart() {
       <div className="border-border/50 mt-2 grid grid-cols-2 gap-3 border-t pt-4 md:gap-4">
         <div className="bg-secondary/20 border-border/30 flex items-center gap-2 rounded-lg border px-1.5 py-1 md:gap-3 md:px-2 md:py-1.5">
           <div className="rounded-md bg-emerald-500/10 p-1 md:p-1.5">
-            <ArrowUp className="h-3 w-3 text-emerald-600 md:h-3.5 md:w-3.5" />
+            <ArrowUp className="size-3 text-emerald-600 md:h-3.5 md:w-3.5" />
           </div>
           <div>
             <p className="text-muted-foreground mb-0.5 text-[8px] leading-none font-black tracking-widest uppercase md:mb-1 md:text-[9px]">
@@ -772,7 +772,7 @@ export function AnalysisChart() {
         </div>
         <div className="bg-secondary/20 border-border/30 flex items-center gap-2 rounded-lg border px-1.5 py-1 md:gap-3 md:px-2 md:py-1.5">
           <div className="rounded-md bg-rose-500/10 p-1 md:p-1.5">
-            <ArrowDown className="h-3 w-3 text-rose-600 md:h-3.5 md:w-3.5" />
+            <ArrowDown className="size-3 text-rose-600 md:h-3.5 md:w-3.5" />
           </div>
           <div>
             <p className="text-muted-foreground mb-0.5 text-[8px] leading-none font-black tracking-widest uppercase md:mb-1 md:text-[9px]">

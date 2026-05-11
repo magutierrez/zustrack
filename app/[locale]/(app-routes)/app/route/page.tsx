@@ -1,5 +1,7 @@
 // Static: auth is handled by middleware. Session is read client-side via useSession().
 export const revalidate = false;
+import type { Metadata } from 'next';
+export const metadata: Metadata = { title: 'Route Analysis | zustrack' };
 
 import { Suspense } from 'react';
 import { setRequestLocale } from 'next-intl/server';

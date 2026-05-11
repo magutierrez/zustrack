@@ -49,7 +49,7 @@ export function ActivityConfigSection({ onAnalyze, onReverseRoute }: ActivityCon
     <section className="border-border bg-card rounded-lg border p-4">
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Zap className="text-primary h-4 w-4" />
+          <Zap className="text-primary size-4" />
           <h2 className="text-foreground text-sm font-semibold">{t('analyze')}</h2>
         </div>
         {onReverseRoute && (
@@ -60,7 +60,7 @@ export function ActivityConfigSection({ onAnalyze, onReverseRoute }: ActivityCon
             onClick={onReverseRoute}
           >
             <span className="rotate-90">
-              <RotateCcw className="h-3 w-3" />
+              <RotateCcw className="size-3" />
             </span>
             {t('reverseRoute')}
           </Button>
@@ -75,7 +75,7 @@ export function ActivityConfigSection({ onAnalyze, onReverseRoute }: ActivityCon
               htmlFor="speed"
               className="text-muted-foreground flex items-center gap-1 text-[10px] font-semibold tracking-wider uppercase"
             >
-              <Gauge className="h-3 w-3" />
+              <Gauge className="size-3" />
               {t('averageSpeed')}
             </Label>
             <Input
@@ -84,6 +84,7 @@ export function ActivityConfigSection({ onAnalyze, onReverseRoute }: ActivityCon
               min={1}
               max={60}
               value={config.speed}
+              // eslint-disable-next-line react-doctor/rerender-functional-setstate
               onChange={(e) => setConfig({ ...config, speed: parseFloat(e.target.value) || 1 })}
               className="h-9 font-mono"
             />
@@ -92,7 +93,7 @@ export function ActivityConfigSection({ onAnalyze, onReverseRoute }: ActivityCon
           {/* Duration */}
           <div className="flex flex-col gap-1.5">
             <Label className="text-muted-foreground flex items-center gap-1 text-[10px] font-semibold tracking-wider uppercase">
-              <Clock className="h-3 w-3" />
+              <Clock className="size-3" />
               {t('estimatedDuration')}
             </Label>
             <Popover>
@@ -104,14 +105,14 @@ export function ActivityConfigSection({ onAnalyze, onReverseRoute }: ActivityCon
                       minutes: initialMinutes.toString().padStart(2, '0'),
                     })}
                   </span>
-                  <Edit2 className="text-muted-foreground group-hover:text-primary h-3 w-3 opacity-60 transition-opacity group-hover:opacity-100" />
+                  <Edit2 className="text-muted-foreground group-hover:text-primary size-3 opacity-60 transition-opacity group-hover:opacity-100" />
                 </button>
               </PopoverTrigger>
               <PopoverContent className="bg-card border-border w-64 p-4 shadow-xl" align="end">
                 <div className="flex flex-col gap-4">
                   <div className="flex items-center gap-2">
-                    <Clock className="text-primary h-4 w-4" />
-                    <h4 className="text-foreground text-xs font-bold tracking-tight uppercase">
+                    <Clock className="text-primary size-4" />
+                    <h4 className="text-foreground text-xs font-semibold tracking-tight uppercase">
                       {t('estimatedDuration')}
                     </h4>
                   </div>
@@ -177,7 +178,7 @@ export function ActivityConfigSection({ onAnalyze, onReverseRoute }: ActivityCon
               htmlFor="date"
               className="text-muted-foreground flex items-center gap-1 text-[10px] font-semibold tracking-wider uppercase"
             >
-              <CalendarIcon className="h-3 w-3" />
+              <CalendarIcon className="size-3" />
               {t('date')}
             </Label>
             <Input
@@ -186,6 +187,7 @@ export function ActivityConfigSection({ onAnalyze, onReverseRoute }: ActivityCon
               value={config.date}
               min={minDate}
               max={maxDate}
+              // eslint-disable-next-line react-doctor/rerender-functional-setstate
               onChange={(e) => setConfig({ ...config, date: e.target.value })}
               className="h-9"
             />
@@ -196,13 +198,14 @@ export function ActivityConfigSection({ onAnalyze, onReverseRoute }: ActivityCon
               htmlFor="time"
               className="text-muted-foreground flex items-center gap-1 text-[10px] font-semibold tracking-wider uppercase"
             >
-              <Clock className="h-3 w-3" />
+              <Clock className="size-3" />
               {t('startTime')}
             </Label>
             <Input
               id="time"
               type="time"
               value={config.time}
+              // eslint-disable-next-line react-doctor/rerender-functional-setstate
               onChange={(e) => setConfig({ ...config, time: e.target.value })}
               className="h-9"
             />
@@ -219,12 +222,12 @@ export function ActivityConfigSection({ onAnalyze, onReverseRoute }: ActivityCon
           >
             {isLoading ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="size-4 animate-spin" />
                 {t('analyzing')}
               </>
             ) : (
               <>
-                <Zap className="h-4 w-4" />
+                <Zap className="size-4" />
                 {t('analyze')}
               </>
             )}

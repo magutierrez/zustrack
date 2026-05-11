@@ -30,7 +30,7 @@ const RouteMap = dynamic(() => import('@/components/route-map'), {
   loading: function Loading() {
     const th = useTranslations('HomePage');
     return (
-      <div className="bg-card flex h-full items-center justify-center rounded-lg border border-slate-200 dark:border-white/5">
+      <div className="bg-card flex h-full items-center justify-center rounded-lg border border-zinc-200 dark:border-white/5">
         <SpecialLoading message={th('loadingMap')} />
       </div>
     );
@@ -100,6 +100,7 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
   const handleSelectBestWindow = useCallback(
     (isoTime: string) => {
       const { date, time } = formatISOToConfig(isoTime);
+      // eslint-disable-next-line react-doctor/rerender-functional-setstate
       setConfig({ ...config, date, time });
     },
     [config, setConfig],

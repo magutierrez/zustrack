@@ -39,9 +39,9 @@ type Range = { start: number; end: number; color?: string };
 type POIPoint = { lat: number; lng: number };
 
 function SeasonIcon({ season }: { season: string }) {
-  if (season === 'avoid_summer') return <Sun className="h-4 w-4 text-amber-500" />;
-  if (season === 'avoid_winter') return <Snowflake className="h-4 w-4 text-sky-400" />;
-  return <Thermometer className="h-4 w-4 text-emerald-500" />;
+  if (season === 'avoid_summer') return <Sun className="size-4 text-amber-500" />;
+  if (season === 'avoid_winter') return <Snowflake className="size-4 text-sky-400" />;
+  return <Thermometer className="size-4 text-emerald-500" />;
 }
 
 function InfoRow({
@@ -54,9 +54,9 @@ function InfoRow({
   action?: React.ReactNode;
 }) {
   return (
-    <tr className="border-b border-slate-100 last:border-0 dark:border-slate-800">
-      <td className="w-1/3 px-4 py-3 font-medium text-slate-500 dark:text-slate-400">{label}</td>
-      <td className="px-4 py-3 text-slate-900 dark:text-white">
+    <tr className="border-b border-zinc-100 last:border-0 dark:border-zinc-800">
+      <td className="w-1/3 px-4 py-3 font-medium text-zinc-500 dark:text-zinc-400">{label}</td>
+      <td className="px-4 py-3 text-zinc-900 dark:text-white">
         <span>{value}</span>
         {action && <span className="ml-3">{action}</span>}
       </td>
@@ -64,10 +64,12 @@ function InfoRow({
   );
 }
 
+const EMPTY_SIMILAR_TRAILS: TrailSummary[] = [];
+
 export function TrailDetailPageClient({
   trail,
   locale,
-  similarTrails = [],
+  similarTrails = EMPTY_SIMILAR_TRAILS,
 }: {
   trail: Trail;
   locale: string;
@@ -301,7 +303,7 @@ export function TrailDetailPageClient({
 
       <div
         className={cn(
-          'flex flex-col bg-slate-50 text-slate-900 lg:h-screen lg:overflow-hidden dark:bg-[#08090f] dark:text-white',
+          'flex flex-col bg-zinc-50 text-zinc-900 lg:h-screen lg:overflow-hidden dark:bg-[#08090f] dark:text-white',
           mapExpanded && 'h-dvh overflow-hidden',
         )}
       >
@@ -330,8 +332,8 @@ export function TrailDetailPageClient({
                 className={cn(
                   'h-1 w-10 rounded-full transition-all duration-150',
                   nearFullscreen
-                    ? 'w-16 bg-slate-500 dark:bg-slate-300'
-                    : 'bg-slate-200 dark:bg-slate-600',
+                    ? 'w-16 bg-zinc-500 dark:bg-zinc-300'
+                    : 'bg-zinc-200 dark:bg-zinc-600',
                 )}
               />
             </div>
@@ -341,43 +343,43 @@ export function TrailDetailPageClient({
               {/* Back link — desktop only (mobile uses map overlay button) */}
               <Link
                 href={`/${locale}/trail/${trail.country}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`}
-                className="hidden items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 lg:inline-flex dark:text-slate-400 dark:hover:text-white"
+                className="hidden items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-900 lg:inline-flex dark:text-zinc-400 dark:hover:text-white"
               >
-                <ArrowLeft className="h-4 w-4" />
+                <ArrowLeft className="size-4" />
                 {t('backToTrails')}
               </Link>
               {/* Hero */}
               <div className="space-y-3">
                 <div className="flex flex-wrap items-center gap-2">
                   {trail.trail_code && (
-                    <span className="rounded-full bg-slate-900 px-3 py-1 text-xs font-bold text-white dark:bg-white dark:text-slate-900">
+                    <span className="rounded-full bg-zinc-900 px-3 py-1 text-xs font-bold text-white dark:bg-white dark:text-zinc-900">
                       {trail.trail_code}
                     </span>
                   )}
-                  <span className="hidden text-sm text-slate-500 lg:block dark:text-slate-400">
+                  <span className="hidden text-sm text-zinc-500 lg:block dark:text-zinc-400">
                     {routeTypeLabel}
                   </span>
-                  <span className="text-slate-300 dark:text-slate-600">·</span>
-                  <span className="inline-flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400">
+                  <span className="text-zinc-300 dark:text-zinc-600">·</span>
+                  <span className="inline-flex items-center gap-1 text-sm text-zinc-500 dark:text-zinc-400">
                     {trail.is_circular ? (
                       <>
-                        <RotateCcw className="h-3.5 w-3.5" />
+                        <RotateCcw className="size-3.5" />
                         {t('circular')}
                       </>
                     ) : (
                       <>
-                        <ArrowRight className="h-3.5 w-3.5" />
+                        <ArrowRight className="size-3.5" />
                         {t('linear')}
                       </>
                     )}
                   </span>
                 </div>
-                <h1 className="text-xl font-bold tracking-tight sm:text-2xl lg:text-4xl">
+                <h1 className="text-xl font-semibold tracking-tight sm:text-2xl lg:text-4xl">
                   {trail.name}
                 </h1>
                 {(trail.place || regionName) && (
-                  <p className="inline-flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400">
-                    <MapPin className="h-3.5 w-3.5 shrink-0" />
+                  <p className="inline-flex items-center gap-1.5 text-sm text-zinc-500 dark:text-zinc-400">
+                    <MapPin className="size-3.5 shrink-0" />
                     {[trail.place, regionName].filter(Boolean).join(', ')}
                   </p>
                 )}
@@ -387,7 +389,7 @@ export function TrailDetailPageClient({
                     label={effortLabel}
                     score={trail.difficulty_score}
                   />
-                  <span className="inline-flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400">
+                  <span className="inline-flex items-center gap-1 text-sm text-zinc-500 dark:text-zinc-400">
                     <SeasonIcon season={trail.season_best} />
                     {seasonLabel}
                   </span>
@@ -679,12 +681,12 @@ export function TrailDetailPageClient({
               {trail.description && (
                 <section className="space-y-2">
                   <h2 className="text-lg font-semibold">{t('description')}</h2>
-                  <p className="text-slate-600 dark:text-slate-300">{trail.description}</p>
+                  <p className="text-zinc-600 dark:text-zinc-300">{trail.description}</p>
                 </section>
               )}
 
               {/* Info table */}
-              <section className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+              <section className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
                 <table className="w-full text-sm">
                   <tbody>
                     {trail.place && <InfoRow label={t('place')} value={trail.place} />}
@@ -700,7 +702,7 @@ export function TrailDetailPageClient({
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1 text-sky-600 hover:underline dark:text-sky-400"
                         >
-                          <ExternalLink className="h-3.5 w-3.5" />
+                          <ExternalLink className="size-3.5" />
                           {t('openInMaps')}
                         </a>
                       }
@@ -725,9 +727,9 @@ export function TrailDetailPageClient({
               <div className="flex justify-center pb-4 lg:hidden">
                 <button
                   onClick={handleAnalyze}
-                  className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
+                  className="inline-flex items-center gap-2 rounded-full bg-zinc-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-zinc-700 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
                 >
-                  <MapPin className="h-4 w-4" />
+                  <MapPin className="size-4" />
                   {t('analyzeWithZustrack')}
                 </button>
               </div>
@@ -735,12 +737,12 @@ export function TrailDetailPageClient({
             {/* end inner content wrapper */}
 
             {/* Desktop sticky CTA footer */}
-            <div className="hidden shrink-0 border-t border-slate-200 bg-white px-6 py-4 lg:block dark:border-slate-700/60 dark:bg-[#0e0f18]">
+            <div className="hidden shrink-0 border-t border-zinc-200 bg-white px-6 py-4 lg:block dark:border-zinc-700/60 dark:bg-[#0e0f18]">
               <button
                 onClick={handleAnalyze}
-                className="font-headline inline-flex h-auto w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-6 py-4 text-base font-bold text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
+                className="font-headline inline-flex h-auto w-full items-center justify-center gap-2 rounded-xl bg-zinc-900 px-6 py-4 text-base font-bold text-white transition hover:bg-zinc-700 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100"
               >
-                <MapPin className="h-5 w-5" />
+                <MapPin className="size-5" />
                 {t('analyzeWithZustrack')}
               </button>
             </div>
@@ -749,7 +751,7 @@ export function TrailDetailPageClient({
           {/* RIGHT: map — 38vh on mobile (bottom sheet overlaps ~32px), fills full height on desktop */}
           <div
             className={cn(
-              'relative order-1 h-[50vh] shrink-0 border-slate-200 lg:order-2 lg:h-auto lg:flex-1 lg:border-l dark:border-slate-800',
+              'relative order-1 h-[50vh] shrink-0 border-zinc-200 lg:order-2 lg:h-auto lg:flex-1 lg:border-l dark:border-zinc-800',
               mapExpanded && 'h-full flex-1',
             )}
             style={mapHeightPx !== null && !mapExpanded ? { height: mapHeightPx } : undefined}
@@ -771,14 +773,14 @@ export function TrailDetailPageClient({
                 mapExpanded={mapExpanded}
               />
             ) : (
-              <div className="flex h-full items-center justify-center bg-slate-100 dark:bg-slate-900">
-                <span className="text-sm text-slate-400">No map data available</span>
+              <div className="flex h-full items-center justify-center bg-zinc-100 dark:bg-zinc-900">
+                <span className="text-sm text-zinc-400">No map data available</span>
               </div>
             )}
 
             {/* Compact elevation chart — overlaid at bottom of map, mobile only, not fullscreen */}
             {trackProfile.length > 1 && !mapExpanded && (
-              <div className="absolute inset-x-0 bottom-3 z-2 text-slate-500 lg:hidden dark:text-slate-300">
+              <div className="absolute inset-x-0 bottom-3 z-2 text-zinc-500 lg:hidden dark:text-zinc-300">
                 <TrailElevationChart
                   compact
                   singleColor="currentColor"
@@ -803,7 +805,7 @@ export function TrailDetailPageClient({
 
             {/* Elevation chart in fullscreen — card, no gradient, touch-navigable */}
             {trackProfile.length > 1 && mapExpanded && (
-              <div className="absolute inset-x-3 bottom-4 z-10 overflow-hidden rounded-xl bg-white/70 drop-shadow-[0_4px_16px_rgba(0,0,0,0.1)] backdrop-blur-[68px] lg:hidden dark:bg-slate-900/60 dark:drop-shadow-[0_4px_16px_rgba(0,0,0,0.35)]">
+              <div className="absolute inset-x-3 bottom-4 z-10 overflow-hidden rounded-xl bg-white/70 drop-shadow-[0_4px_16px_rgba(0,0,0,0.1)] backdrop-blur-[68px] lg:hidden dark:bg-zinc-900/60 dark:drop-shadow-[0_4px_16px_rgba(0,0,0,0.35)]">
                 <div className="pt-2">
                   <TrailElevationChart
                     compact
@@ -843,10 +845,10 @@ export function TrailDetailPageClient({
             {!mapExpanded && (
               <Link
                 href={`/${locale}/trail/${trail.country}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`}
-                className="absolute top-3 left-3 z-10 flex items-center justify-center rounded-full bg-white/90 p-2 shadow-md backdrop-blur-sm lg:hidden dark:bg-slate-900/90"
+                className="absolute top-3 left-3 z-10 flex items-center justify-center rounded-full bg-white/90 p-2 shadow-md backdrop-blur-sm lg:hidden dark:bg-zinc-900/90"
                 aria-label={t('backToTrails')}
               >
-                <ArrowLeft className="text-secondary-foreground h-6 w-6" />
+                <ArrowLeft className="text-secondary-foreground size-6" />
               </Link>
             )}
 
@@ -856,7 +858,7 @@ export function TrailDetailPageClient({
                 variant="secondary"
                 size="icon"
                 onClick={() => setMapExpanded(true)}
-                className="absolute top-3 right-3 z-10 h-10 w-10 shadow-md lg:hidden"
+                className="absolute top-3 right-3 z-10 size-10 shadow-md lg:hidden"
                 aria-label="Expand map"
               >
                 <Maximize2 />
@@ -869,10 +871,10 @@ export function TrailDetailPageClient({
                 variant="secondary"
                 size="icon"
                 onClick={() => setMapExpanded(false)}
-                className="absolute top-3 right-3 z-10 h-10 w-10 shadow-md"
+                className="absolute top-3 right-3 z-10 size-10 shadow-md"
                 aria-label="Close map"
               >
-                <X className="h-4 w-4" />
+                <X className="size-4" />
               </Button>
             )}
           </div>
@@ -881,13 +883,13 @@ export function TrailDetailPageClient({
         {/* Sticky CTA — mobile only, hidden in fullscreen map */}
         <div
           className={cn(
-            'fixed right-0 bottom-0 left-0 z-20 border-t border-slate-200 bg-white/95 px-4 py-4 backdrop-blur-sm lg:hidden dark:border-slate-800 dark:bg-[#08090f]/95',
+            'fixed right-0 bottom-0 left-0 z-20 border-t border-zinc-200 bg-white/95 px-4 py-4 backdrop-blur-sm lg:hidden dark:border-zinc-800 dark:bg-[#08090f]/95',
             mapExpanded && 'hidden',
           )}
         >
           <Button
             onClick={handleAnalyze}
-            className="font-headline h-auto w-full rounded-xl bg-slate-900 px-6 py-4 text-base font-bold text-white dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
+            className="font-headline h-auto w-full rounded-xl bg-zinc-900 px-6 py-4 text-base font-bold text-white dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
           >
             <MapPin />
             {t('analyzeWithZustrack')}

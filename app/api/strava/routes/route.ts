@@ -10,7 +10,7 @@ export async function GET() {
   const athleteId = session.user.id;
   const res = await fetch(
     `https://www.strava.com/api/v3/athletes/${athleteId}/routes?per_page=15&page=1`,
-    { headers: { Authorization: `Bearer ${session.accessToken}` } },
+    { cache: 'no-store', headers: { Authorization: `Bearer ${session.accessToken}` } },
   ).catch(() => null);
 
   if (!res?.ok) {

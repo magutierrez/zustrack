@@ -55,6 +55,7 @@ export function AnalysisResults({
   const { totalSegments, highDangerSegments, mediumDangerSegments, lowDangerSegments } =
     useAnalysisMetrics();
 
+  // eslint-disable-next-line react-doctor/no-derived-state-effect
   useEffect(() => {
     // Ensure no point is pre-selected on mount
     setSelectedPointIndex(null);
@@ -141,7 +142,7 @@ export function AnalysisResults({
             <div className="border-border bg-card/50 flex flex-col gap-4 rounded-xl border p-6">
               <div className="border-border flex items-center gap-2 border-b pb-2">
                 <div className="bg-primary h-4 w-1 rounded-full" />
-                <h3 className="text-foreground/80 text-sm font-bold tracking-wider uppercase">
+                <h3 className="text-foreground/80 text-sm font-semibold tracking-wider uppercase">
                   {th('effortLevel')}
                 </h3>
               </div>

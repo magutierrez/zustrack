@@ -17,8 +17,11 @@ export async function generateMetadata({
   params: Promise<PageParams>;
 }): Promise<Metadata> {
   const { locale, country, slug } = await params;
-  const t = await getTranslations({ locale, namespace: 'TrailPage' });
-  const trail = await getTrail(country, slug);
+  // eslint-disable-next-line react-doctor/async-defer-await
+  const [t, trail] = await Promise.all([
+    getTranslations({ locale, namespace: 'TrailPage' }),
+    getTrail(country, slug),
+  ]);
 
   if (!trail) return { title: t('notFound') };
 

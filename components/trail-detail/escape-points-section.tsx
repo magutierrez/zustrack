@@ -39,7 +39,7 @@ export function EscapePointsSection({
   return (
     <section className="space-y-3">
       <h2 className="text-lg font-semibold">{labels.escapePoints}</h2>
-      <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-900">
+      <ul className="divide-y divide-zinc-100 overflow-hidden rounded-xl border border-zinc-200 bg-white dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-900">
         {escapePoints.map((ep, i) => {
           const Icon = TYPE_ICONS[ep.type];
           const typeLabel = labels[ep.type];
@@ -52,22 +52,22 @@ export function EscapePointsSection({
                 isActive ? 'bg-orange-50 dark:bg-orange-900/10' : ''
               }`}
             >
-              <Icon className="h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500" />
+              <Icon className="size-4 shrink-0 text-zinc-400 dark:text-zinc-500" />
               <div className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-medium text-slate-900 dark:text-white">
+                <span className="block truncate text-sm font-medium text-zinc-900 dark:text-white">
                   {ep.name}
                 </span>
-                <span className="text-xs text-slate-500 dark:text-slate-400">{typeLabel}</span>
+                <span className="text-xs text-zinc-500 dark:text-zinc-400">{typeLabel}</span>
               </div>
-              <span className="shrink-0 text-xs text-slate-400 dark:text-slate-500">
+              <span className="shrink-0 text-xs text-zinc-400 dark:text-zinc-500">
                 {ep.distanceFromRoute} {labels.kmAway}
               </span>
               {onShowOnMap && (
                 <button
                   onClick={() => onShowOnMap(ep.lat, ep.lng)}
-                  className="ml-1 flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-[10px] font-semibold text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+                  className="ml-1 flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-[10px] font-semibold text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white"
                 >
-                  <Navigation className="h-3 w-3" />
+                  <Navigation className="size-3" />
                   {labels.showOnMap}
                 </button>
               )}

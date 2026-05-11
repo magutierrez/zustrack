@@ -34,8 +34,8 @@ export function UserMenu({ userName, userEmail, userImage }: UserMenuProps) {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-            <Avatar className="h-9 w-9">
+          <Button variant="ghost" className="relative size-9 rounded-full">
+            <Avatar className="size-9">
               <AvatarImage src={userImage || undefined} alt={userName || 'User'} />
               <AvatarFallback>{userInitial}</AvatarFallback>
             </Avatar>
@@ -43,12 +43,12 @@ export function UserMenu({ userName, userEmail, userImage }: UserMenuProps) {
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56" align="end" forceMount>
           <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
-            <Settings className="mr-2 h-4 w-4" />
+            <Settings className="mr-2 size-4" />
             <span>{t('settings')}</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => signOut({ redirectTo: '/app/login' })}>
-            <LogOut className="mr-2 h-4 w-4" />
+            <LogOut className="mr-2 size-4" />
             <span>{t('logout')}</span>
           </DropdownMenuItem>
         </DropdownMenuContent>

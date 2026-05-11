@@ -67,9 +67,11 @@ export function useAdviceMetrics(
           weatherPoints.forEach((wp) => {
             if (wp.surface) surfaceCounts[wp.surface] = (surfaceCounts[wp.surface] ?? 0) + 1;
           });
-          const dominantSurface = Object.entries(surfaceCounts).sort(
-            (a, b) => b[1] - a[1],
-          )[0]?.[0];
+          const surfaceEntries = Object.entries(surfaceCounts);
+          const dominantSurface =
+            surfaceEntries.length > 0
+              ? surfaceEntries.reduce((max, cur) => (cur[1] > max[1] ? cur : max))[0]
+              : undefined;
           const avgTemp =
             Math.round(
               (weatherPoints.reduce((s, wp) => s + wp.weather.temperature, 0) /

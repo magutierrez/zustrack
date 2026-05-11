@@ -55,15 +55,15 @@ export function GPXUpload({ onFileLoaded, fileName, onClear }: GPXUploadProps) {
   if (fileName) {
     return (
       <div className="border-primary/30 bg-primary/5 flex items-center gap-3 rounded-lg border p-3">
-        <FileText className="text-primary h-5 w-5 shrink-0" />
+        <FileText className="text-primary size-5 shrink-0" />
         <span className="text-foreground flex-1 truncate text-sm font-medium">{fileName}</span>
         <Button
           variant="ghost"
           size="icon"
-          className="text-muted-foreground hover:text-destructive h-7 w-7"
+          className="text-muted-foreground hover:text-destructive size-7"
           onClick={onClear}
         >
-          <X className="h-4 w-4" />
+          <X className="size-4" />
           <span className="sr-only">{t('removeFile')}</span>
         </Button>
       </div>
@@ -86,8 +86,8 @@ export function GPXUpload({ onFileLoaded, fileName, onClear }: GPXUploadProps) {
         }
       }}
     >
-      <div className="bg-secondary text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary flex h-12 w-12 items-center justify-center rounded-full transition-colors">
-        <Upload className="h-5 w-5" />
+      <div className="bg-secondary text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary flex size-12 items-center justify-center rounded-full transition-colors">
+        <Upload className="size-5" />
       </div>
       <div className="text-center">
         <p className="text-foreground text-sm font-medium">{t('dragDrop')}</p>
