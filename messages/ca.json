@@ -787,6 +787,7 @@
     },
     "backToTrails": "Tots els senders",
     "analyzeWithZustrack": "Analitzar ruta",
+    "expandMap": "Ampliar mapa",
     "metaDescription": "Sender de {distance} km amb {elevationGain}m de desnivell. Nivell: {effort}.",
     "km": "km",
     "meters": "m",

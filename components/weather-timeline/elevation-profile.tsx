@@ -186,31 +186,37 @@ export function AnalysisChart() {
             className="h-full cursor-crosshair"
             style={{ width: chartWidth > 0 ? `${chartWidth}px` : '100%', minWidth: '100%' }}
           >
-            <ElevationSvg
-              svgRef={svgRef}
-              innerW={innerW}
-              innerH={innerH}
-              margin={margin}
-              isMobile={isMobile}
-              gradientStops={gradientStops}
-              yTicks={yTicks}
-              xTicks={xTicks}
-              colorSegmentPaths={colorSegmentPaths}
-              linePath={linePath}
-              refLineX={refLineX}
-              dragPxStart={dragPxStart}
-              dragPxWidth={dragPxWidth}
-              selLeft={selLeft}
-              selRight={selRight}
-              tooltip={tooltip}
-              onMouseMove={onMouseMove}
-              onMouseDown={onMouseDown}
-              onMouseLeave={onMouseLeave}
-              onChartClick={onChartClick}
-              resetZoom={resetZoom}
-              setDragPreview={setDragPreview}
-              setIsResizing={(type) => (isResizing.current = type)}
-            />
+            {innerW > 0 && innerH > 0 ? (
+              <ElevationSvg
+                svgRef={svgRef}
+                innerW={innerW}
+                innerH={innerH}
+                margin={margin}
+                isMobile={isMobile}
+                gradientStops={gradientStops}
+                yTicks={yTicks}
+                xTicks={xTicks}
+                colorSegmentPaths={colorSegmentPaths}
+                linePath={linePath}
+                refLineX={refLineX}
+                dragPxStart={dragPxStart}
+                dragPxWidth={dragPxWidth}
+                selLeft={selLeft}
+                selRight={selRight}
+                tooltip={tooltip}
+                onMouseMove={onMouseMove}
+                onMouseDown={onMouseDown}
+                onMouseLeave={onMouseLeave}
+                onChartClick={onChartClick}
+                resetZoom={resetZoom}
+                setDragPreview={setDragPreview}
+                setIsResizing={(type) => (isResizing.current = type)}
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center">
+                <div className="size-4 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-600 dark:border-zinc-700 dark:border-t-zinc-400" />
+              </div>
+            )}
           </div>
         </div>
       </div>

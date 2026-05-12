@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { TrailElevationChart } from './trail-elevation-chart';
 import { TrailHazards } from './trail-hazards';
+import { useState } from 'react';
 
 type Range = { start: number; end: number; color?: string };
 
@@ -25,6 +26,7 @@ export function TrailElevationHazardsTabs({
   setSelectedRange,
 }: TrailElevationHazardsTabsProps) {
   const t = useTranslations('TrailPage');
+  const [activeTab, setActiveTab] = useState('elevation');
 
   if (trackProfile.length <= 1) return null;
 
@@ -57,20 +59,22 @@ export function TrailElevationHazardsTabs({
 
   return (
     <div className="hidden lg:block">
-      <Tabs defaultValue="elevation">
+      <Tabs defaultValue="elevation" onValueChange={setActiveTab}>
         <TabsList className="mb-3">
           <TabsTrigger value="elevation">{t('elevationProfileTab')}</TabsTrigger>
           <TabsTrigger value="hazards">{t('criticalSections')}</TabsTrigger>
         </TabsList>
         <TabsContent value="elevation">
-          <TrailElevationChart
-            trackProfile={trackProfile}
-            labels={chartLabels}
-            externalHoverDist={hoverDist}
-            onHoverDist={setHoverDist}
-            onRangeSelect={(s, e) => setSelectedRange({ start: s, end: e })}
-            onRangeReset={() => setSelectedRange(null)}
-          />
+          {activeTab === 'elevation' && (
+            <TrailElevationChart
+              trackProfile={trackProfile}
+              labels={chartLabels}
+              externalHoverDist={hoverDist}
+              onHoverDist={setHoverDist}
+              onRangeSelect={(s, e) => setSelectedRange({ start: s, end: e })}
+              onRangeReset={() => setSelectedRange(null)}
+            />
+          )}
         </TabsContent>
         <TabsContent value="hazards">
           <TrailHazards
@@ -78,6 +82,7 @@ export function TrailElevationHazardsTabs({
             selectedRange={selectedRange}
             onSegmentSelect={(start, end, color) => setSelectedRange({ start, end, color })}
             onReset={() => setSelectedRange(null)}
+            hidden={activeTab !== 'hazards'}
           />
         </TabsContent>
       </Tabs>

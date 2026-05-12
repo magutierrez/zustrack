@@ -12,8 +12,7 @@ interface ViewToggleProps {
 function ViewToggleInner({ labels }: ViewToggleProps) {
   const { push } = useRouter();
   const searchParams = useSearchParams();
-  const { get } = searchParams;
-  const currentView = get('view') ?? 'list';
+  const currentView = searchParams.get('view') ?? 'list';
 
   const switchTo = (view: 'list' | 'map') => {
     const params = new URLSearchParams(searchParams.toString());

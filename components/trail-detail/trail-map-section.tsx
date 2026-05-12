@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, Maximize2, X, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { TrailMapWrapper } from './trail-map-wrapper';
 import { TrailElevationChart } from './trail-elevation-chart';
 import type { Trail } from '@/lib/trails';
@@ -46,6 +47,7 @@ export function TrailMapSection({
   activePOI,
 }: TrailMapSectionProps) {
   const t = useTranslations('TrailPage');
+  const isMobile = useIsMobile();
 
   return (
     <div
@@ -78,7 +80,7 @@ export function TrailMapSection({
       )}
 
       {/* Compact elevation chart — overlaid at bottom of map, mobile only, not fullscreen */}
-      {trackProfile.length > 1 && !mapExpanded && (
+      {isMobile && trackProfile.length > 1 && !mapExpanded && (
         <div className="absolute inset-x-0 bottom-3 z-2 text-zinc-500 lg:hidden dark:text-zinc-300">
           <TrailElevationChart
             compact
@@ -103,7 +105,7 @@ export function TrailMapSection({
       )}
 
       {/* Elevation chart in fullscreen — card, no gradient, touch-navigable */}
-      {trackProfile.length > 1 && mapExpanded && (
+      {isMobile && trackProfile.length > 1 && mapExpanded && (
         <div className="absolute inset-x-3 bottom-4 z-10 overflow-hidden rounded-xl bg-white/70 drop-shadow-[0_4px_16px_rgba(0,0,0,0.1)] backdrop-blur-[68px] lg:hidden dark:bg-zinc-900/60 dark:drop-shadow-[0_4px_16px_rgba(0,0,0,0.35)]">
           <div className="pt-2">
             <TrailElevationChart
@@ -138,7 +140,7 @@ export function TrailMapSection({
           type="button"
           className="absolute inset-0 z-10 lg:hidden"
           onClick={() => setMapExpanded(true)}
-          aria-label={t('expandMap')}
+          aria-label={t.raw('expandMap') ? t('expandMap') : 'Expand map'}
         />
       )}
 
@@ -147,7 +149,7 @@ export function TrailMapSection({
         <Link
           href={`/${locale}/trail/${trail.country}${searchParams ? `?${searchParams}` : ''}`}
           className="absolute top-3 left-3 z-10 flex items-center justify-center rounded-full bg-white/90 p-2 shadow-md backdrop-blur-sm lg:hidden dark:bg-zinc-900/90"
-          aria-label={t('backToTrails')}
+          aria-label={t.raw('backToTrails') ? t('backToTrails') : 'Back'}
         >
           <ArrowLeft className="text-secondary-foreground size-6" />
         </Link>
@@ -160,7 +162,7 @@ export function TrailMapSection({
           size="icon"
           onClick={() => setMapExpanded(true)}
           className="absolute top-3 right-3 z-10 size-10 shadow-md lg:hidden"
-          aria-label="Expand map"
+          aria-label={t.raw('expandMap') ? t('expandMap') : 'Expand map'}
         >
           <Maximize2 />
         </Button>

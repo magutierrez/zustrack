@@ -788,6 +788,7 @@
     },
     "backToTrails": "Tutti i sentieri",
     "analyzeWithZustrack": "Analizza il percorso",
+    "expandMap": "Ingrandisci mappa",
     "metaDescription": "Sentiero di {distance} km con {elevationGain}m di dislivello. Livello: {effort}.",
     "km": "km",
     "meters": "m",

@@ -787,6 +787,7 @@
     },
     "backToTrails": "Alle Trails",
     "analyzeWithZustrack": "Route analysieren",
+    "expandMap": "Karte vergrößern",
     "metaDescription": "{distance} km Trail mit {elevationGain} m Höhengewinn. Anstrengung: {effort}.",
     "km": "km",
     "meters": "m",

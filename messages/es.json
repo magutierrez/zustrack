@@ -788,6 +788,7 @@
     },
     "backToTrails": "Todos los senderos",
     "analyzeWithZustrack": "Analizar ruta",
+    "expandMap": "Ampliar mapa",
     "metaDescription": "Sendero de {distance} km con {elevationGain}m de desnivel. Nivel: {effort}.",
     "km": "km",
     "meters": "m",

@@ -24,6 +24,7 @@ import { TrailElevationHazardsTabs } from './trail-elevation-hazards-tabs';
 import { TrailDetailsStyles } from './trail-details-styles';
 import { TrailActionFooter } from './trail-action-footer';
 import { TrailDetailsSkeleton } from './trail-details-skeleton';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 type Range = { start: number; end: number; color?: string };
 type POIPoint = { lat: number; lng: number };
@@ -47,6 +48,7 @@ function TrailDetailPageInner({
   const regionName = trail.region_i18n?.[locale] ?? trail.region;
   const { push } = useRouter();
   const searchParams = useSearchParams();
+  const isMobile = useIsMobile();
 
   const [mapExpanded, setMapExpanded] = useState(false);
 
@@ -262,11 +264,9 @@ function TrailDetailPageInner({
                   <TrailHazards
                     trackProfile={trackProfile}
                     selectedRange={selectedRange}
-                    onSegmentSelect={(start, end, color) =>
-                      setSelectedRange({ start, end, color })
-                    }
+                    onSegmentSelect={(start, end, color) => setSelectedRange({ start, end, color })}
                     onReset={() => setSelectedRange(null)}
-                    hidden={mapExpanded}
+                    hidden={mapExpanded || !isMobile}
                   />
                 </div>
               )}

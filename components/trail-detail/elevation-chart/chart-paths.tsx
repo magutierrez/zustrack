@@ -142,9 +142,9 @@ export function ChartPaths({
         </>
       ) : (
         <>
-          {colorSegmentPaths.map((seg) => (
+          {colorSegmentPaths.map((seg, i) => (
             <path
-              key={seg.startDist}
+              key={`${seg.startDist}-${seg.color}-${i}`}
               d={seg.path}
               fill={seg.color}
               fillOpacity={compact ? 0.85 : isMobile ? 0.55 : 0.25}

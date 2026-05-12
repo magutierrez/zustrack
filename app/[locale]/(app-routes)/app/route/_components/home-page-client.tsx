@@ -45,10 +45,9 @@ function HomePageInner({ session: serverSession }: HomePageClientProps) {
   const { data: clientSession } = useSession();
   const session = clientSession || serverSession;
   const searchParams = useSearchParams();
-  const { get } = searchParams;
-  const routeId = get('routeId');
-  const trailId = get('trailId');
-  const initialActivityType = (get('activity') as 'cycling' | 'walking') || 'cycling';
+  const routeId = searchParams.get('routeId');
+  const trailId = searchParams.get('trailId');
+  const initialActivityType = (searchParams.get('activity') as 'cycling' | 'walking') || 'cycling';
 
   const tHomePage = useTranslations('HomePage');
 

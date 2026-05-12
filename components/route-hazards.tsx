@@ -169,12 +169,11 @@ export function RouteHazards({
                           {chartData.length > 1 &&
                             chartData.map((d, i) => (
                               <stop
-                                key={d.dist}
+                                key={`${d.dist}-${i}`}
                                 offset={`${(i / (chartData.length - 1)) * 100}%`}
                                 stopColor={d.color}
                               />
-                            ))}
-                        </linearGradient>
+                            ))}                        </linearGradient>
                         <linearGradient id={`fill-${idx}`} x1="0" y1="0" x2="0" y2="1">
                           <stop
                             offset="5%"

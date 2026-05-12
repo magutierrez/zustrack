@@ -208,7 +208,7 @@ function SliderCard({
       </div>
 
       {hasHistogram && (
-        <div className="flex h-10 w-full items-end gap-[1px] px-1">
+        <div className="flex h-10 w-full items-end gap-px px-1">
           {histogram.map((count, i) => {
             // Determine if this bin falls within the currently selected range
             const binStart = min + i * histStep;
@@ -281,12 +281,12 @@ function RegionCombobox({
               : 'border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400',
           )}
         >
-          <span className="max-w-[140px] truncate">{value ? selectedLabel : allLabel}</span>
+          <span className="max-w-35 truncate">{value ? selectedLabel : allLabel}</span>
           <ChevronsUpDown className="size-3 shrink-0 opacity-50" />
         </button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-[220px] p-0"
+        className="w-55 p-0"
         align="start"
         onWheel={(e) => e.stopPropagation()}
         onTouchStart={(e) => e.stopPropagation()}
@@ -347,7 +347,6 @@ function TrailFiltersInner({
   const { push } = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { get } = searchParams;
   const [isPending, startTransition] = useTransition();
   // eslint-disable-next-line react-doctor/no-derived-useState
   const [q, setQ] = useState(initial.q);
@@ -399,13 +398,13 @@ function TrailFiltersInner({
 
   // ── Derived state ────────────────────────────────────────────────────────
 
-  const effort = get('effort') ?? '';
-  const type = get('type') ?? '';
-  const shape = get('shape') ?? '';
-  const child = get('child') ?? '';
-  const pet = get('pet') ?? '';
-  const season = get('season') ?? '';
-  const region = get('region') ?? '';
+  const effort = searchParams.get('effort') ?? '';
+  const type = searchParams.get('type') ?? '';
+  const shape = searchParams.get('shape') ?? '';
+  const child = searchParams.get('child') ?? '';
+  const pet = searchParams.get('pet') ?? '';
+  const season = searchParams.get('season') ?? '';
+  const region = searchParams.get('region') ?? '';
 
   const activeCount = [
     initial.effort,
@@ -676,7 +675,7 @@ function TrailFiltersInner({
 
       {/* ── Row 2 mobile: effort chips + "Filters" button ───────────────── */}
       <div className="flex items-center gap-2 md:hidden">
-        <div className="flex gap-1.5 overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex [scrollbar-width:none] gap-1.5 overflow-x-auto pb-0.5 [&::-webkit-scrollbar]:hidden">
           {effortChips}
         </div>
         <Sheet>

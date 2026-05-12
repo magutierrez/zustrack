@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AnalysisChart } from '@/components/weather-timeline/elevation-profile';
@@ -7,9 +8,10 @@ import { RouteSegments } from '@/components/weather-timeline/route-segments';
 
 export function ElevationTerrainTabs() {
   const twt = useTranslations('WeatherTimeline');
+  const [activeTab, setActiveTab] = useState('elevation');
 
   return (
-    <Tabs defaultValue="elevation" className="w-full">
+    <Tabs defaultValue="elevation" className="w-full" onValueChange={setActiveTab}>
       <TabsList className="custom-scrollbar bg-secondary/50 mb-4 flex h-auto w-full flex-col items-center justify-start overflow-x-auto overflow-y-hidden md:grid md:grid-cols-2 md:justify-center lg:flex-row">
         <TabsTrigger value="elevation" className="h-8 w-full min-w-fit lg:h-auto">
           {twt('elevationTitle')}
@@ -19,10 +21,10 @@ export function ElevationTerrainTabs() {
         </TabsTrigger>
       </TabsList>
       <TabsContent value="elevation" className="mt-0">
-        <AnalysisChart />
+        {activeTab === 'elevation' && <AnalysisChart />}
       </TabsContent>
       <TabsContent value="terrain" className="mt-0">
-        <RouteSegments />
+        {activeTab === 'terrain' && <RouteSegments />}
       </TabsContent>
     </Tabs>
   );

@@ -100,9 +100,9 @@ export function ElevationSvg({
           ))}
 
         {/* Slope-coloured area fill */}
-        {colorSegmentPaths.map((seg) => (
+        {colorSegmentPaths.map((seg, i) => (
           <path
-            key={seg.startDist}
+            key={`${seg.startDist}-${seg.color}-${i}`}
             d={seg.path}
             fill={seg.color}
             fillOpacity={0.25}

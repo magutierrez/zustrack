@@ -127,16 +127,18 @@ export function AnalysisResults({
         </TabsContent>
 
         <TabsContent value="hazards" className="mt-6 flex flex-col gap-6">
-          <RouteHazards
-            weatherPoints={weatherPoints}
-            allPoints={allPoints}
-            onSelectSegment={(segment) =>
-              segment && setSelectedRange({ start: segment?.start, end: segment?.end })
-            }
-            onSelectPoint={setChartHoverPoint}
-            setActiveFilter={setActiveFilter}
-            onClearSelection={clearSelection}
-          />
+          {tab === 'hazards' && (
+            <RouteHazards
+              weatherPoints={weatherPoints}
+              allPoints={allPoints}
+              onSelectSegment={(segment) =>
+                segment && setSelectedRange({ start: segment?.start, end: segment?.end })
+              }
+              onSelectPoint={setChartHoverPoint}
+              setActiveFilter={setActiveFilter}
+              onClearSelection={clearSelection}
+            />
+          )}
 
           {totalSegments > 0 && (
             <div className="border-border bg-card/50 flex flex-col gap-4 rounded-xl border p-6">

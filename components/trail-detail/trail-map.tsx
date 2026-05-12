@@ -373,6 +373,9 @@ export default function TrailMap({
           const map = e.target as maplibregl.Map;
           addArrowImage(map);
           map.on('style.load', () => addArrowImage(map));
+          map.on('styleimagemissing', (ev) => {
+            if (ev.id === 'route-arrow') addArrowImage(map);
+          });
           map.fitBounds(
             [
               [minLng, minLat],

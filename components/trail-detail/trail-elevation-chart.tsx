@@ -121,7 +121,7 @@ export function TrailElevationChart({
       {/* Chart area */}
       <div ref={outerRef} className={`relative w-full select-none ${compact ? 'h-20' : 'h-44'}`}>
         {/* Tooltip — only in non-compact mode (compact uses the info bar above) */}
-        {!compact && activeTooltip && !dragPreview && (
+        {!compact && activeTooltip && !dragPreview && innerW > 0 && (
           <ChartTooltip
             activeTooltip={activeTooltip}
             labels={labels}
@@ -130,85 +130,91 @@ export function TrailElevationChart({
           />
         )}
 
-        <svg
-          ref={svgRef}
-          width="100%"
-          height="100%"
-          onMouseMove={handleMouseMove}
-          onMouseDown={handleMouseDown}
-          onMouseLeave={handleMouseLeave}
-          onDoubleClick={resetZoom}
-          className={zoomRange ? 'cursor-zoom-out' : 'cursor-crosshair'}
-        >
-          <ChartPaths
-            chartData={chartData}
-            xScale={xScale}
-            yScale={yScale}
-            innerW={innerW}
-            innerH={innerH}
-            zoomRange={zoomRange}
-            isMobile={isMobile}
-            compact={compact}
-            singleColor={singleColor}
-            strokeGradientId={strokeGradientId}
-            clipPathId={clipPathId}
-          />
-
-          <g transform={`translate(${margin.left},${margin.top})`}>
-            <ChartAxes
+        {innerW > 0 && innerH > 0 ? (
+          <svg
+            ref={svgRef}
+            width="100%"
+            height="100%"
+            onMouseMove={handleMouseMove}
+            onMouseDown={handleMouseDown}
+            onMouseLeave={handleMouseLeave}
+            onDoubleClick={resetZoom}
+            className={zoomRange ? 'cursor-zoom-out' : 'cursor-crosshair'}
+          >
+            <ChartPaths
+              chartData={chartData}
               xScale={xScale}
               yScale={yScale}
               innerW={innerW}
               innerH={innerH}
+              zoomRange={zoomRange}
               isMobile={isMobile}
               compact={compact}
-              labels={labels}
-              showTooltip={showTooltip}
-              zoomRange={zoomRange}
-              chartData={chartData}
+              singleColor={singleColor}
+              strokeGradientId={strokeGradientId}
+              clipPathId={clipPathId}
             />
 
-            {/* Drag preview rect */}
-            {dragPreviewPx && dragPreviewPx.width > 0 && (
-              <rect
-                x={dragPreviewPx.left}
-                y={0}
-                width={dragPreviewPx.width}
-                height={innerH}
-                fill="hsl(var(--primary))"
-                fillOpacity={0.2}
-                stroke="hsl(var(--primary))"
-                strokeOpacity={0.5}
-                strokeWidth={1}
-                clipPath={`url(#${clipPathId})`}
+            <g transform={`translate(${margin.left},${margin.top})`}>
+              <ChartAxes
+                xScale={xScale}
+                yScale={yScale}
+                innerW={innerW}
+                innerH={innerH}
+                isMobile={isMobile}
+                compact={compact}
+                labels={labels}
+                showTooltip={showTooltip}
+                zoomRange={zoomRange}
+                chartData={chartData}
               />
-            )}
 
-            {/* Hover crosshair + dot */}
-            {activeTooltip && !dragPreview && (
-              <>
-                <line
-                  x1={activeTooltip.x}
-                  x2={activeTooltip.x}
-                  y1={0}
-                  y2={innerH}
-                  stroke="currentColor"
-                  strokeOpacity={0.2}
+              {/* Drag preview rect */}
+              {dragPreviewPx && dragPreviewPx.width > 0 && (
+                <rect
+                  x={dragPreviewPx.left}
+                  y={0}
+                  width={dragPreviewPx.width}
+                  height={innerH}
+                  fill="hsl(var(--primary))"
+                  fillOpacity={0.2}
+                  stroke="hsl(var(--primary))"
+                  strokeOpacity={0.5}
                   strokeWidth={1}
-                  strokeDasharray="3 3"
+                  clipPath={`url(#${clipPathId})`}
                 />
-                <circle
-                  cx={activeTooltip.x}
-                  cy={activeTooltip.y}
-                  r={compact ? 3 : 4}
-                  fill={activeTooltip.color}
-                  stroke="white"
-                  strokeWidth={1.5}
-                />
-              </>
-            )}
-          </g>
-        </svg>
+              )}
+
+              {/* Hover crosshair + dot */}
+              {activeTooltip && !dragPreview && (
+                <>
+                  <line
+                    x1={activeTooltip.x}
+                    x2={activeTooltip.x}
+                    y1={0}
+                    y2={innerH}
+                    stroke="currentColor"
+                    strokeOpacity={0.2}
+                    strokeWidth={1}
+                    strokeDasharray="3 3"
+                  />
+                  <circle
+                    cx={activeTooltip.x}
+                    cy={activeTooltip.y}
+                    r={compact ? 3 : 4}
+                    fill={activeTooltip.color}
+                    stroke="white"
+                    strokeWidth={1.5}
+                  />
+                </>
+              )}
+            </g>
+          </svg>
+        ) : (
+          <div className="flex h-full w-full items-center justify-center">
+            <div className="size-4 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-600 dark:border-zinc-700 dark:border-t-zinc-400" />
+          </div>
+        )}
       </div>
 
       {/* Color legend — hidden in compact mode */}
