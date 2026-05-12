@@ -87,8 +87,8 @@ export function MapMarkers({
   return (
     <>
       {/* Water Sources */}
-      {waterSources.map((ws, i) => (
-        <Marker key={`water-${i}`} longitude={ws.lon} latitude={ws.lat} anchor="bottom">
+      {waterSources.map((ws) => (
+        <Marker key={`water-${ws.lat}-${ws.lon}`} longitude={ws.lon} latitude={ws.lat} anchor="bottom">
           <div className="group flex flex-col items-center">
             <div className="border-border bg-card invisible absolute -top-8 z-50 rounded-lg border px-2 py-1 text-[9px] font-bold whitespace-nowrap shadow-sm group-hover:visible">
               {ws.name} ({t(`reliability.${ws.reliability}` as any)})
@@ -110,9 +110,9 @@ export function MapMarkers({
 
       {/* Escape Points */}
       {escapePoints.map(
-        (ep, i) =>
+        (ep) =>
           ep && (
-            <Marker key={`escape-${i}`} longitude={ep.lon} latitude={ep.lat} anchor="bottom">
+            <Marker key={`escape-${ep.lat}-${ep.lon}`} longitude={ep.lon} latitude={ep.lat} anchor="bottom">
               <div className="flex flex-col items-center">
                 <div className="border-border bg-card rounded-lg border px-2 py-1 text-[9px] font-bold whitespace-nowrap shadow-sm">
                   {ep.name}
@@ -172,7 +172,7 @@ export function MapMarkers({
 
         return (
           <Marker
-            key={idx}
+            key={`wp-${wp.point.distanceFromStart}`}
             longitude={wp.point.lon}
             latitude={wp.point.lat}
             anchor="center"
@@ -182,6 +182,8 @@ export function MapMarkers({
             }}
           >
             <button
+              type="button"
+              onClick={() => onPointSelect?.(idx)}
               className={`group relative flex items-center justify-center transition-all hover:scale-125 ${isSelected ? 'z-10 scale-125' : 'z-0'}`}
             >
               <WindArrow
@@ -216,6 +218,7 @@ export function MapMarkers({
             >
               <div
                 className="animate-in fade-in slide-in-from-bottom-1 flex flex-col items-center"
+                role="presentation"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="rounded-lg bg-zinc-900/95 px-2 py-1 text-[10px] font-bold whitespace-nowrap text-violet-200 shadow-xl ring-1 ring-violet-500/50">
@@ -260,7 +263,8 @@ export function MapMarkers({
             latitude={peak.lat}
             anchor="bottom"
           >
-            <div
+            <button
+              type="button"
               className="flex cursor-pointer flex-col items-center gap-0.5"
               onClick={(e) => {
                 e.stopPropagation();
@@ -274,7 +278,7 @@ export function MapMarkers({
                 {peak.elevation ? ` ${peak.elevation}m` : ''}
               </div>
               <Mountain className="size-4 text-zinc-600 drop-shadow" />
-            </div>
+            </button>
           </Marker>
         ))}
 
@@ -287,7 +291,8 @@ export function MapMarkers({
           anchor="bottom"
           style={{ zIndex: 20 }}
         >
-          <div
+          <button
+            type="button"
             className="flex cursor-pointer flex-col items-center gap-0.5"
             onClick={(e) => {
               e.stopPropagation();
@@ -301,7 +306,7 @@ export function MapMarkers({
             <div className="rounded-full border-2 border-white bg-amber-500 p-1.5 shadow-md">
               <MessageSquare className="size-3 text-white" />
             </div>
-          </div>
+          </button>
         </Marker>
       ))}
 

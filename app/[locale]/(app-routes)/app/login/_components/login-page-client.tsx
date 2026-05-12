@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { signIn } from 'next-auth/react';
 import { Link } from '@/i18n/navigation';
 import { Button } from '@/components/ui/button';
@@ -27,11 +28,11 @@ interface LoginPageClientProps {
   providers: Providers;
 }
 
-export function LoginPageClient({ providers }: LoginPageClientProps) {
+function LoginPageInner({ providers }: LoginPageClientProps) {
   const t = useTranslations('Auth');
   const locale = useLocale();
-  const searchParams = useSearchParams();
-  const rawCallback = searchParams.get('callbackUrl');
+  const { get } = useSearchParams();
+  const rawCallback = get('callbackUrl');
   // Only allow relative URLs to prevent open redirect
   const redirectTo = rawCallback?.startsWith('/') ? rawCallback : `/${locale}/app/setup`;
 
@@ -145,5 +146,13 @@ export function LoginPageClient({ providers }: LoginPageClientProps) {
         </CardFooter>
       </Card>
     </div>
+  );
+}
+
+export function LoginPageClient(props: LoginPageClientProps) {
+  return (
+    <Suspense fallback={null}>
+      <LoginPageInner {...props} />
+    </Suspense>
   );
 }

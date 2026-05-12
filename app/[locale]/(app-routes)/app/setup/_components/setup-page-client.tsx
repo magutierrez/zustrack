@@ -32,7 +32,7 @@ export function SetupPageClient({ session: serverSession }: SetupPageClientProps
   const session = clientSession || serverSession;
   const t = useTranslations('SetupPage');
   const tRouteConfig = useTranslations('RouteConfigPanel');
-  const router = useRouter();
+  const { push } = useRouter();
 
   const [selectedGpxData, setSelectedGpxData] = useState<GPXData | null>(null);
   const [selectedSavedRouteId, setSelectedSavedRouteId] = useState<string | null>(null);
@@ -130,7 +130,7 @@ export function SetupPageClient({ session: serverSession }: SetupPageClientProps
         params.set('routeId', routeId);
         params.set('name', selectedGpxFileName || 'Unnamed Route');
         params.set('activity', activityType);
-        router.push(`/app/route?${params.toString()}`);
+        push(`/app/route?${params.toString()}`);
       } else {
         setError(t('errors.saveError'));
       }

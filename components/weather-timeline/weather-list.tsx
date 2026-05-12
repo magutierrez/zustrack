@@ -76,7 +76,7 @@ export function WeatherList({ weatherPoints, selectedIndex, onSelect }: WeatherL
 
             return (
               <button
-                key={idx}
+                key={wp.point.distanceFromStart}
                 onClick={() => {
                   // Calculate bearing (heading) for Street View if needed
                   // For now we just pass 0, but ideally we'd calculate it like in RouteMap

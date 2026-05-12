@@ -37,14 +37,14 @@ const SegmentBar = ({
     ) : (
       <>
         <div className="bg-secondary ring-border flex h-3 w-full overflow-hidden rounded-full ring-1">
-          {data.map((item, idx) => {
+          {data.map((item) => {
             const isActive = activeFilter?.key === typeKey && activeFilter.value === item.name;
             const isFilteringOther =
               activeFilter && (activeFilter.key !== typeKey || activeFilter.value !== item.name);
 
             return (
               <button
-                key={idx}
+                key={item.name}
                 onClick={() => handleSegmentClick(typeKey, item.name)}
                 style={{
                   width: `${item.percent}%`,
@@ -58,11 +58,11 @@ const SegmentBar = ({
           })}
         </div>
         <div className="flex flex-wrap gap-x-4 gap-y-1">
-          {data.map((item, idx) => {
+          {data.map((item) => {
             const isActive = activeFilter?.key === typeKey && activeFilter.value === item.name;
             return (
               <button
-                key={idx}
+                key={item.name}
                 onClick={() => handleSegmentClick(typeKey, item.name)}
                 className={`flex items-center gap-1.5 rounded border px-1.5 py-0.5 transition-all ${
                   isActive

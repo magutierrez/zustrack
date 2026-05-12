@@ -93,7 +93,7 @@ export function WeatherSummary({ weatherPoints }: WeatherSummaryProps) {
                   : t(`solarIntensity.${wp.solarIntensity}` as any);
 
               return (
-                <Tooltip key={i}>
+                <Tooltip key={wp.point.distanceFromStart}>
                   <TooltipTrigger asChild>
                     <div
                       className={`${colors[wp.solarIntensity || 'shade']} cursor-help transition-opacity hover:opacity-80`}

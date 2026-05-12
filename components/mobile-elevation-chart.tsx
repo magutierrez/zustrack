@@ -99,7 +99,7 @@ export function MobileElevationChart() {
                   {activeData.length > 1 &&
                     activeData.map((d, i) => (
                       <stop
-                        key={i}
+                        key={d.distance}
                         offset={`${(i / (activeData.length - 1)) * 100}%`}
                         stopColor={d.color}
                       />

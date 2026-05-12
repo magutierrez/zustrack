@@ -20,13 +20,9 @@ import { getSlopeColorHex } from '@/lib/slope-colors';
 import type { TrailMapLayerType } from '@/lib/types';
 import { useTrailMapStyle } from './use-trail-map-style';
 import { TrailLayerControl } from './trail-layer-control';
-
-const EFFORT_COLORS: Record<string, string> = {
-  easy: '#10b981',
-  moderate: '#0ea5e9',
-  hard: '#f59e0b',
-  very_hard: '#f43f5e',
-};
+import { EFFORT_COLORS } from './trails-map-constants';
+import { TrailPopup, type SelectedTrailInfo } from './trail-popup';
+import { TrailsMapLayers } from './trails-map-layers';
 
 interface TrackPoint {
   lat: number;
@@ -95,21 +91,6 @@ function buildGradientStops(points: TrackPoint[]): (string | number)[] {
   if ((stops[stops.length - 2] as number) < 1) stops.push(1, stops[stops.length - 1]);
 
   return stops;
-}
-
-interface SelectedTrailInfo {
-  lng: number;
-  lat: number;
-  name: string;
-  trail_code: string | null;
-  distance_km: number;
-  effort_level: string;
-  slug: string;
-  country: string;
-  elevation_gain_m?: number;
-  elevation_loss_m?: number;
-  elevation_min_m?: number;
-  elevation_max_m?: number;
 }
 
 interface TrailsMapProps {
@@ -389,268 +370,22 @@ export function TrailsMap({ searchParams, locale, country, labels }: TrailsMapPr
         <NavigationControl position="bottom-right" />
         <TrailLayerControl mapType={mapType} setMapType={setMapType} />
 
-        {geojson && (
-          <Source
-            id="trails"
-            type="geojson"
-            data={geojson}
-            cluster
-            clusterMaxZoom={11}
-            clusterRadius={45}
-          >
-            {/* Cluster circles */}
-            <Layer
-              id="trail-clusters"
-              type="circle"
-              filter={['has', 'point_count']}
-              paint={{
-                'circle-color': [
-                  'step',
-                  ['get', 'point_count'],
-                  '#60a5fa',
-                  20,
-                  '#818cf8',
-                  100,
-                  '#f472b6',
-                ],
-                'circle-radius': ['step', ['get', 'point_count'], 16, 20, 24, 100, 32],
-                'circle-stroke-width': 2,
-                'circle-stroke-color': '#ffffff',
-                'circle-opacity': selectedTrail ? 0.3 : 1,
-                'circle-stroke-opacity': selectedTrail ? 0.3 : 1,
-              }}
-            />
-
-            {/* Cluster count label */}
-            <Layer
-              id="trail-cluster-count"
-              type="symbol"
-              filter={['has', 'point_count']}
-              layout={{
-                'text-field': '{point_count_abbreviated}',
-                'text-font': ['Noto Sans Bold'],
-                'text-size': 12,
-              }}
-              paint={{
-                'text-color': '#ffffff',
-                'text-opacity': selectedTrail ? 0.3 : 1,
-              }}
-            />
-
-            {/* Individual trail points colored by effort */}
-            <Layer
-              id="trail-points"
-              type="circle"
-              filter={['!', ['has', 'point_count']]}
-              paint={{
-                'circle-color': [
-                  'match',
-                  ['get', 'effort_level'],
-                  'easy',
-                  EFFORT_COLORS.easy,
-                  'moderate',
-                  EFFORT_COLORS.moderate,
-                  'hard',
-                  EFFORT_COLORS.hard,
-                  'very_hard',
-                  EFFORT_COLORS.very_hard,
-                  '#94a3b8',
-                ],
-                'circle-radius': 7,
-                'circle-stroke-width': 1.5,
-                'circle-stroke-color': '#ffffff',
-                'circle-opacity': selectedTrail ? 0.3 : 1,
-                'circle-stroke-opacity': selectedTrail ? 0.3 : 1,
-              }}
-            />
-          </Source>
-        )}
-
-        {/* Trail track preview — shown on click */}
-        {trackPreview && (
-          <Source id="track-preview" type="geojson" data={trackPreview.geojson} lineMetrics>
-            {/* Outer Glow / Shadow */}
-            <Layer
-              id="track-preview-shadow"
-              type="line"
-              layout={{ 'line-cap': 'round', 'line-join': 'round' }}
-              paint={{
-                'line-color': '#000000',
-                'line-width': 10,
-                'line-opacity': 0.25,
-                'line-blur': 3,
-              }}
-            />
-            {/* High-contrast casing */}
-            <Layer
-              id="track-preview-casing"
-              type="line"
-              layout={{ 'line-cap': 'round', 'line-join': 'round' }}
-              paint={{
-                'line-color': '#ffffff',
-                'line-width': 7,
-                'line-opacity': 1,
-              }}
-            />
-            {/* Main colored line with slope gradient */}
-            <Layer
-              id="track-preview-line"
-              type="line"
-              layout={{ 'line-cap': 'round', 'line-join': 'round' }}
-              paint={{
-                'line-width': 4.5,
-                'line-opacity': 1,
-                'line-gradient': [
-                  'interpolate',
-                  ['linear'],
-                  ['line-progress'],
-                  ...trackPreview.gradientStops,
-                ],
-              }}
-            />
-            <Layer
-              id="track-preview-direction-arrows"
-              type="symbol"
-              layout={{
-                'symbol-placement': 'line',
-                'symbol-spacing': 120,
-                'icon-image': 'route-arrow',
-                'icon-size': ['interpolate', ['linear'], ['zoom'], 10, 0.45, 18, 0.85],
-                'icon-allow-overlap': true,
-                'icon-keep-upright': false,
-                'icon-rotation-alignment': 'map',
-              }}
-              paint={{
-                'icon-color': mapType === 'osm' ? '#1368CE' : '#000000',
-                'icon-opacity': 0.6,
-              }}
-            />
-          </Source>
-        )}
+        <TrailsMapLayers
+          geojson={geojson}
+          selectedTrail={selectedTrail}
+          trackPreview={trackPreview}
+          mapType={mapType}
+        />
 
         {selectedTrail && (
-          <div className="absolute top-4 left-1/2 z-20 w-[90%] max-w-sm -translate-x-1/2 overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xl dark:border-zinc-800 dark:bg-zinc-900">
-            <div className="relative p-4">
-              <button
-                onClick={clearTrailSelection}
-                className="absolute top-3 right-3 rounded-full p-1 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
-                aria-label="Close"
-              >
-                <X className="size-4" />
-              </button>
-
-              <div className="mb-2 flex flex-wrap items-center gap-2 pr-6">
-                {selectedTrail.trail_code && (
-                  <span
-                    className="rounded-full px-2.5 py-0.5 text-[10px] font-bold text-white shadow-sm"
-                    style={{
-                      backgroundColor: EFFORT_COLORS[selectedTrail.effort_level] ?? '#94a3b8',
-                    }}
-                  >
-                    {selectedTrail.trail_code}
-                  </span>
-                )}
-                <span
-                  className="rounded-full px-2 py-0.5 text-[10px] font-bold shadow-sm"
-                  style={{
-                    backgroundColor: `${EFFORT_COLORS[selectedTrail.effort_level] ?? '#94a3b8'}20`,
-                    color: EFFORT_COLORS[selectedTrail.effort_level] ?? '#94a3b8',
-                  }}
-                >
-                  {getEffortLabel(selectedTrail.effort_level, labels)}
-                </span>
-              </div>
-
-              <h3 className="mb-3 line-clamp-2 pr-6 text-sm leading-tight font-semibold text-zinc-900 dark:text-white">
-                {selectedTrail.name}
-              </h3>
-
-              <div className="mb-4 grid grid-cols-3 gap-2">
-                <div className="flex flex-col">
-                  <span className="text-[9px] font-bold tracking-wider text-zinc-500 uppercase">
-                    {labels.km}
-                  </span>
-                  <span className="text-xs font-semibold text-zinc-900 tabular-nums dark:text-white">
-                    {selectedTrail.distance_km.toFixed(1)}
-                  </span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[9px] font-bold tracking-wider text-emerald-500 uppercase">
-                    D+
-                  </span>
-                  <span className="text-xs font-semibold text-zinc-900 tabular-nums dark:text-white">
-                    {selectedTrail.elevation_gain_m != null
-                      ? `${selectedTrail.elevation_gain_m}m`
-                      : '--'}
-                  </span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[9px] font-bold tracking-wider text-red-500 uppercase">
-                    D-
-                  </span>
-                  <span className="text-xs font-semibold text-zinc-900 tabular-nums dark:text-white">
-                    {selectedTrail.elevation_loss_m != null
-                      ? `${selectedTrail.elevation_loss_m}m`
-                      : '--'}
-                  </span>
-                </div>
-                <div className="flex flex-col">
-                  <span
-                    className="line-clamp-1 text-[9px] font-bold tracking-wider text-zinc-500 uppercase"
-                    title={labels.lowPoint}
-                  >
-                    {labels.lowPoint}
-                  </span>
-                  <span className="text-xs font-semibold text-zinc-900 tabular-nums dark:text-white">
-                    {selectedTrail.elevation_min_m != null
-                      ? `${selectedTrail.elevation_min_m}m`
-                      : '--'}
-                  </span>
-                </div>
-                <div className="flex flex-col">
-                  <span
-                    className="line-clamp-1 text-[9px] font-bold tracking-wider text-zinc-500 uppercase"
-                    title={labels.highPoint}
-                  >
-                    {labels.highPoint}
-                  </span>
-                  <span className="text-xs font-semibold text-zinc-900 tabular-nums dark:text-white">
-                    {selectedTrail.elevation_max_m != null
-                      ? `${selectedTrail.elevation_max_m}m`
-                      : '--'}
-                  </span>
-                </div>
-              </div>
-
-              {trackLoading ? (
-                <div className="flex h-9 w-full items-center justify-center gap-2 rounded-lg bg-zinc-100 dark:bg-zinc-800">
-                  <svg
-                    className="size-3.5 animate-spin text-zinc-400"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                  </svg>
-                  <span className="text-xs font-medium text-zinc-500">{labels.loading}</span>
-                </div>
-              ) : (
-                <Link
-                  href={`/${locale}/trail/${selectedTrail.country}/${selectedTrail.slug}`}
-                  className="flex h-9 w-full items-center justify-center rounded-lg bg-zinc-900 text-xs font-bold text-white transition-colors hover:bg-zinc-700 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
-                >
-                  {labels.viewTrail}
-                </Link>
-              )}
-            </div>
-          </div>
+          <TrailPopup
+            selectedTrail={selectedTrail}
+            clearTrailSelection={clearTrailSelection}
+            getEffortLabel={(effort) => getEffortLabel(effort, labels)}
+            labels={labels}
+            locale={locale}
+            trackLoading={trackLoading}
+          />
         )}
       </Map>
     </div>

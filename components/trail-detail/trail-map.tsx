@@ -490,11 +490,11 @@ export default function TrailMap({
         )}
 
         {/* Escape point marker — only shown when selected via "Show on map" */}
-        {escapePoints?.map((ep, i) => {
+        {escapePoints?.map((ep) => {
           if (!isActivePOI(activePOI, ep.lat, ep.lng)) return null;
           const color = ESCAPE_COLORS[ep.type];
           return (
-            <Marker key={`ep-${i}`} latitude={ep.lat} longitude={ep.lng} anchor="bottom">
+            <Marker key={`ep-${ep.lat}-${ep.lng}`} latitude={ep.lat} longitude={ep.lng} anchor="bottom">
               <div className="flex flex-col items-center">
                 <div
                   style={{ backgroundColor: color }}
@@ -512,10 +512,10 @@ export default function TrailMap({
         })}
 
         {/* Water source marker — only shown when selected via "Show on map" */}
-        {waterSources?.map((ws, i) => {
+        {waterSources?.map((ws) => {
           if (!isActivePOI(activePOI, ws.lat, ws.lng)) return null;
           return (
-            <Marker key={`ws-${i}`} latitude={ws.lat} longitude={ws.lng} anchor="bottom">
+            <Marker key={`ws-${ws.lat}-${ws.lng}`} latitude={ws.lat} longitude={ws.lng} anchor="bottom">
               <div className="flex flex-col items-center">
                 <div className="flex size-7 items-center justify-center rounded-full bg-sky-500 text-[9px] font-black text-white shadow-lg ring-2 ring-white ring-offset-1">
                   💧

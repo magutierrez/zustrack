@@ -11,7 +11,7 @@ export function WeatherVisual() {
     <div className="flex h-32 items-end justify-between gap-2 p-2">
       {icons.map((icon, i) => (
         <div
-          key={i}
+          key={kms[i]}
           className="group relative flex flex-1 flex-col items-center gap-1.5"
         >
           <span className="text-xl drop-shadow-md">

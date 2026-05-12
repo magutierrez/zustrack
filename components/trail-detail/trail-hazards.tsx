@@ -360,7 +360,7 @@ export function TrailHazards({
 
           return (
             <div
-              key={idx}
+              key={`${seg.type}-${seg.startDist}`}
               className={`overflow-hidden rounded-xl border bg-white transition-all dark:bg-zinc-900 ${
                 isSelected
                   ? 'border-amber-400 ring-2 ring-amber-400/50 dark:border-amber-400'
@@ -409,10 +409,10 @@ export function TrailHazards({
                   >
                     <defs>
                       <linearGradient id={`trail-grad-${idx}`} x1="0" y1="0" x2="1" y2="0">
-                        {chartData.map((d, i) => (
+                        {chartData.map((d) => (
                           <stop
-                            key={i}
-                            offset={`${(i / (chartData.length - 1)) * 100}%`}
+                            key={d.distance}
+                            offset={`${((d.distance - seg.startDist) / seg.lengthKm) * 100}%`}
                             stopColor={d.color}
                           />
                         ))}

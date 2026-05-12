@@ -162,8 +162,8 @@ export function TrailEquipmentCard({
 
       {open && (
         <ul className="divide-y divide-zinc-100 overflow-hidden rounded-xl border border-zinc-200 bg-white dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-900">
-          {items.map((item, i) => (
-            <li key={i} className="flex items-center gap-3 px-4 py-3">
+          {items.map((item) => (
+            <li key={item.text} className="flex items-center gap-3 px-4 py-3">
               <span className="text-xl leading-none">{item.icon}</span>
               <div className="min-w-0 flex-1">
                 <span className="block text-sm font-medium text-zinc-900 dark:text-white">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, Suspense } from 'react';
 import { trailToGpx } from '@/lib/trail-to-gpx';
 import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
@@ -41,13 +41,14 @@ interface HomePageClientProps {
   session: Session | null;
 }
 
-export default function HomePageClient({ session: serverSession }: HomePageClientProps) {
+function HomePageInner({ session: serverSession }: HomePageClientProps) {
   const { data: clientSession } = useSession();
   const session = clientSession || serverSession;
   const searchParams = useSearchParams();
-  const routeId = searchParams.get('routeId');
-  const trailId = searchParams.get('trailId');
-  const initialActivityType = (searchParams.get('activity') as 'cycling' | 'walking') || 'cycling';
+  const { get } = searchParams;
+  const routeId = get('routeId');
+  const trailId = get('trailId');
+  const initialActivityType = (get('activity') as 'cycling' | 'walking') || 'cycling';
 
   const tHomePage = useTranslations('HomePage');
 
@@ -212,5 +213,13 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
         }
       `}</style>
     </div>
+  );
+}
+
+export default function HomePageClient(props: HomePageClientProps) {
+  return (
+    <Suspense fallback={null}>
+      <HomePageInner {...props} />
+    </Suspense>
   );
 }

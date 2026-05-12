@@ -31,6 +31,10 @@ import { transformRequest } from '@/lib/map-transform';
 import { addArrowImage } from '@/lib/map-utils';
 import { useMountainPeaks } from './route-map/use-mountain-peaks';
 import { useMapInteractions } from './route-map/use-map-interactions';
+import { TerrainLoadingOverlay } from './route-map/terrain-loading-overlay';
+import { MobileFullscreenToggle } from './route-map/mobile-fullscreen-toggle';
+import { TerrainAndPeakControls } from './route-map/terrain-and-peak-controls';
+import { useNoCoverageData } from './route-map/use-no-coverage-data';
 
 interface RouteMapProps {
   onResetToFullRouteView?: (func: () => void) => void;
@@ -114,56 +118,7 @@ export default function RouteMap({
     [weatherPoints],
   );
 
-  const noCoverageData = useMemo((): FeatureCollection | null => {
-    if (!showNoCoverageZones || weatherPoints.length === 0 || points.length === 0) return null;
-
-    // Build distance ranges from the sparse weather points.
-    // Each weather point "owns" from the midpoint with its predecessor to the midpoint with its successor.
-    const ranges: { start: number; end: number; weight: number }[] = [];
-    for (let i = 0; i < weatherPoints.length; i++) {
-      const wp = weatherPoints[i];
-      if (wp.mobileCoverage !== 'none' && wp.mobileCoverage !== 'low') continue;
-      const d = wp.point.distanceFromStart;
-      const prev = i > 0 ? weatherPoints[i - 1].point.distanceFromStart : d;
-      const next = i < weatherPoints.length - 1 ? weatherPoints[i + 1].point.distanceFromStart : d;
-      ranges.push({
-        start: (d + prev) / 2,
-        end: (d + next) / 2,
-        weight: wp.mobileCoverage === 'none' ? 1.0 : 0.5,
-      });
-    }
-    if (ranges.length === 0) return null;
-
-    // Merge overlapping / adjacent ranges
-    ranges.sort((a, b) => a.start - b.start);
-    const merged: typeof ranges = [];
-    for (const r of ranges) {
-      const last = merged[merged.length - 1];
-      if (last && r.start <= last.end) {
-        last.end = Math.max(last.end, r.end);
-        last.weight = Math.max(last.weight, r.weight);
-      } else {
-        merged.push({ ...r });
-      }
-    }
-
-    // Use the dense GPX points so the heatmap flows continuously along the route shape.
-    const features: Feature[] = [];
-    for (const p of points) {
-      // eslint-disable-next-line react-doctor/js-index-maps
-      const range = merged.find(
-        (r) => p.distanceFromStart >= r.start && p.distanceFromStart <= r.end,
-      );
-      if (!range) continue;
-      features.push({
-        type: 'Feature',
-        properties: { weight: range.weight },
-        geometry: { type: 'Point', coordinates: [p.lon, p.lat] },
-      });
-    }
-
-    return features.length > 0 ? { type: 'FeatureCollection', features } : null;
-  }, [showNoCoverageZones, weatherPoints, points]);
+  const noCoverageData = useNoCoverageData({ showNoCoverageZones, weatherPoints, points });
 
   const [mounted, setMounted] = useState(false);
   const [isPlayerActive, setIsPlayerActive] = useState(false);
@@ -311,25 +266,7 @@ export default function RouteMap({
       )}
     >
       {/* Terrain loading overlay — scan effect from bottom while DEM tiles load */}
-      {terrainLoading && (
-        <div className="pointer-events-none absolute inset-0 z-[5] overflow-hidden">
-          <div
-            className="absolute inset-x-0 bottom-0 h-3/4 animate-[terrain-pulse_2s_ease-in-out_infinite]"
-            style={{
-              background:
-                'linear-gradient(to top, rgba(34,197,94,0.18) 0%, rgba(234,179,8,0.08) 45%, transparent 100%)',
-            }}
-          />
-          <div
-            className="absolute inset-x-0 h-[3px] animate-[terrain-scanline_2.2s_ease-in_infinite]"
-            style={{
-              background:
-                'linear-gradient(to right, transparent 0%, rgba(34,197,94,0.7) 30%, rgba(234,179,8,0.9) 50%, rgba(34,197,94,0.7) 70%, transparent 100%)',
-              boxShadow: '0 0 12px 3px rgba(34,197,94,0.4)',
-            }}
-          />
-        </div>
-      )}
+      <TerrainLoadingOverlay terrainLoading={terrainLoading} />
       <Map
         ref={mapRef}
         mapLib={maplibregl}
@@ -437,14 +374,12 @@ export default function RouteMap({
       )}
 
       {/* Fullscreen toggle button — mobile only, hidden when popup active */}
-      {onToggleMobileFullscreen && !(isMobile && activePopupData) && (
-        <button
-          onClick={onToggleMobileFullscreen}
-          className="border-border bg-background/80 absolute top-3 right-3 z-20 rounded-lg border p-2 shadow-md backdrop-blur-sm lg:hidden"
-          aria-label={isMobileFullscreen ? tMap('collapseMap') : tMap('expandMap')}
-        >
-          {isMobileFullscreen ? <X className="size-4" /> : <Maximize2 className="size-4" />}
-        </button>
+      {!(isMobile && activePopupData) && (
+        <MobileFullscreenToggle
+          isMobileFullscreen={isMobileFullscreen}
+          onToggleMobileFullscreen={onToggleMobileFullscreen}
+          tMap={tMap}
+        />
       )}
 
       {/* Layer selector — shifted below fullscreen button on mobile, hidden when popup active */}
@@ -452,50 +387,18 @@ export default function RouteMap({
 
       {/* 3D terrain + mountain peaks toggles */}
       {!(isMobile && activePopupData) && points.length > 0 && (
-        <div className="absolute top-[calc(3.5rem+2.75rem+0.25rem)] right-3 z-10 flex flex-col gap-1 lg:top-[calc(3rem+2.75rem+0.25rem)]">
-          <Button
-            variant={show3DTerrain ? 'default' : 'secondary'}
-            size="icon"
-            className="size-10 shadow-md"
-            disabled={terrainLoading}
-            onClick={() => {
-              const next = !show3DTerrain;
-              setShow3DTerrain(next);
-              mapRef.current?.getMap()?.easeTo({ pitch: next ? 60 : 0, duration: 800 });
-            }}
-            aria-label={tMap(show3DTerrain ? 'terrain3DHide' : 'terrain3DShow')}
-            title={tMap(show3DTerrain ? 'terrain3DHide' : 'terrain3DShow')}
-          >
-            {terrainLoading ? (
-              <Loader2 className="size-5 animate-spin" />
-            ) : (
-              <MountainSnow
-                className={cn(
-                  'size-5',
-                  terrainJustLoaded && 'animate-[pop-in_0.4s_cubic-bezier(0.16,1,0.3,1)_both]',
-                )}
-              />
-            )}
-          </Button>
-
-          {activityType === 'walking' && (
-            <Button
-              variant={showMountainPeaks && !mountainPeaksLoading ? 'default' : 'secondary'}
-              size="icon"
-              className="size-10 shadow-md"
-              onClick={() => setShowMountainPeaks(!showMountainPeaks)}
-              disabled={mountainPeaksLoading}
-              aria-label={tMap(showMountainPeaks ? 'mountainPeaksHide' : 'mountainPeaksShow')}
-              title={tMap(showMountainPeaks ? 'mountainPeaksHide' : 'mountainPeaksShow')}
-            >
-              {mountainPeaksLoading ? (
-                <Loader2 className="size-5 animate-spin" />
-              ) : (
-                <Mountain className="size-5" />
-              )}
-            </Button>
-          )}
-        </div>
+        <TerrainAndPeakControls
+          show3DTerrain={show3DTerrain}
+          setShow3DTerrain={setShow3DTerrain}
+          terrainLoading={terrainLoading}
+          terrainJustLoaded={terrainJustLoaded}
+          activityType={activityType ?? undefined}
+          showMountainPeaks={showMountainPeaks}
+          setShowMountainPeaks={setShowMountainPeaks}
+          mountainPeaksLoading={mountainPeaksLoading}
+          mapRef={mapRef}
+          tMap={tMap}
+        />
       )}
 
       {/* eslint-disable-next-line react/no-unknown-property */}

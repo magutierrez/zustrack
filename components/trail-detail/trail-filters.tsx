@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useCallback, useState, useTransition } from 'react';
 import { Search, X, SlidersHorizontal, ChevronsUpDown, Check } from 'lucide-react';
@@ -72,6 +73,15 @@ interface Filters {
   maxGain: string;
   season: string;
   region: string;
+}
+
+interface TrailFiltersProps {
+  initial: Filters;
+  labels: FilterLabels;
+  ranges: TrailRanges;
+  regions: RegionOption[];
+  routeTypes: string[];
+  sidebar?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -210,7 +220,7 @@ function SliderCard({
 
             return (
               <div
-                key={i}
+                key={binStart}
                 className={cn(
                   'flex-1 rounded-t-sm transition-colors',
                   inRange ? 'bg-blue-500/80 dark:bg-blue-500/60' : 'bg-zinc-200 dark:bg-zinc-700',
@@ -326,24 +336,18 @@ function RegionCombobox({
 // Main component
 // ---------------------------------------------------------------------------
 
-export function TrailFilters({
+function TrailFiltersInner({
   initial,
   labels,
   ranges,
   regions,
   routeTypes,
   sidebar = false,
-}: {
-  initial: Filters;
-  labels: FilterLabels;
-  ranges: TrailRanges;
-  regions: RegionOption[];
-  routeTypes: string[];
-  sidebar?: boolean;
-}) {
-  const router = useRouter();
+}: TrailFiltersProps) {
+  const { push } = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { get } = searchParams;
   const [isPending, startTransition] = useTransition();
   // eslint-disable-next-line react-doctor/no-derived-useState
   const [q, setQ] = useState(initial.q);
@@ -365,9 +369,9 @@ export function TrailFilters({
       if (value) params.set(key, value);
       else params.delete(key);
       params.delete('page');
-      startTransition(() => router.push(`${pathname}?${params.toString()}`));
+      startTransition(() => push(`${pathname}?${params.toString()}`));
     },
-    [router, pathname, searchParams],
+    [push, pathname, searchParams],
   );
 
   const updateTwoParams = useCallback(
@@ -381,27 +385,27 @@ export function TrailFilters({
         params.set(k2, v2);
       }
       params.delete('page');
-      startTransition(() => router.push(`${pathname}?${params.toString()}`));
+      startTransition(() => push(`${pathname}?${params.toString()}`));
     },
-    [router, pathname, searchParams],
+    [push, pathname, searchParams],
   );
 
   const clearAll = useCallback(() => {
     setQ('');
     setDistRange([ranges.minDistance, ranges.maxDistance]);
     setGainRange([ranges.minElevation, ranges.maxElevation]);
-    startTransition(() => router.push(pathname));
-  }, [router, pathname, ranges]); // region is cleared by router.push(pathname) which removes all params
+    startTransition(() => push(pathname));
+  }, [push, pathname, ranges]); // region is cleared by push(pathname) which removes all params
 
   // ── Derived state ────────────────────────────────────────────────────────
 
-  const effort = searchParams.get('effort') ?? '';
-  const type = searchParams.get('type') ?? '';
-  const shape = searchParams.get('shape') ?? '';
-  const child = searchParams.get('child') ?? '';
-  const pet = searchParams.get('pet') ?? '';
-  const season = searchParams.get('season') ?? '';
-  const region = searchParams.get('region') ?? '';
+  const effort = get('effort') ?? '';
+  const type = get('type') ?? '';
+  const shape = get('shape') ?? '';
+  const child = get('child') ?? '';
+  const pet = get('pet') ?? '';
+  const season = get('season') ?? '';
+  const region = get('region') ?? '';
 
   const activeCount = [
     initial.effort,
@@ -751,5 +755,13 @@ export function TrailFilters({
       {/* ── Row 3 desktop: sliders ──────────────────────────────────────── */}
       <div className="hidden md:block">{sliders}</div>
     </div>
+  );
+}
+
+export function TrailFilters(props: TrailFiltersProps) {
+  return (
+    <Suspense fallback={null}>
+      <TrailFiltersInner {...props} />
+    </Suspense>
   );
 }

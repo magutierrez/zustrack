@@ -512,9 +512,9 @@ export function AppMockup() {
                 val: '0 mm',
                 sub: t('rainLabel'),
               },
-            ].map((s, i) => (
+            ].map((s) => (
               <div
-                key={i}
+                key={s.sub}
                 className="border-border bg-background/90 flex min-w-[110px] items-center gap-3 rounded-lg border px-3 py-2 shadow-sm backdrop-blur-md sm:min-w-fit sm:px-4"
               >
                 <div className="bg-muted shrink-0 rounded-full p-1.5">{s.icon}</div>

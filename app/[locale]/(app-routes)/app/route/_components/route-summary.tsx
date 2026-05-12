@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, Suspense } from 'react';
 import { useTranslations } from 'next-intl';
 import { ExternalLink, Pencil, Check, X } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
@@ -18,7 +18,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-export function RouteSummary() {
+function RouteSummaryInner() {
   const t = useTranslations('RouteConfigPanel');
   const tibp = useTranslations('IBP');
   const { unitSystem } = useSettings();
@@ -239,5 +239,13 @@ export function RouteSummary() {
         </div>
       )}
     </div>
+  );
+}
+
+export function RouteSummary() {
+  return (
+    <Suspense fallback={null}>
+      <RouteSummaryInner />
+    </Suspense>
   );
 }

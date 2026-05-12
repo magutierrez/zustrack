@@ -166,8 +166,8 @@ export function MudRiskCard({ overallRisk, segments, activityType, inputs }: Mud
 
           {riskySegments.length > 0 && (
             <ul className="mt-0.5 flex flex-col gap-1">
-              {riskySegments.map((seg, i) => (
-                <li key={i} className="text-muted-foreground flex items-center gap-1.5 text-xs">
+              {riskySegments.map((seg) => (
+                <li key={`${seg.startKm}-${seg.endKm}`} className="text-muted-foreground flex items-center gap-1.5 text-xs">
                   <span
                     className={cn(
                       'inline-block size-2 flex-shrink-0 rounded-full',

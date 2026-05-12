@@ -40,14 +40,14 @@ export function EscapePointsSection({
     <section className="space-y-3">
       <h2 className="text-lg font-semibold">{labels.escapePoints}</h2>
       <ul className="divide-y divide-zinc-100 overflow-hidden rounded-xl border border-zinc-200 bg-white dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-900">
-        {escapePoints.map((ep, i) => {
+        {escapePoints.map((ep) => {
           const Icon = TYPE_ICONS[ep.type];
           const typeLabel = labels[ep.type];
           const isActive =
             activePOI && Math.abs(activePOI.lat - ep.lat) < 0.00001 && Math.abs(activePOI.lng - ep.lng) < 0.00001;
           return (
             <li
-              key={i}
+              key={`${ep.name}-${ep.lat}-${ep.lng}`}
               className={`flex items-center gap-3 px-4 py-3 transition-colors ${
                 isActive ? 'bg-orange-50 dark:bg-orange-900/10' : ''
               }`}

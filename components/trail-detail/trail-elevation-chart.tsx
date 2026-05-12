@@ -1,55 +1,20 @@
 'use client';
 
-import { useRef, useState, useEffect, useMemo, useId } from 'react';
-import * as d3 from 'd3';
+import { useRef, useState, useId } from 'react';
 import { cn } from '@/lib/utils';
-import { TrendingUp, RefreshCcw } from 'lucide-react';
-import {
-  getSlopeColorHex,
-  SLOPE_COLOR_FLAT,
-  SLOPE_COLOR_GENTLE,
-  SLOPE_COLOR_STEEP,
-  SLOPE_COLOR_EXTREME,
-} from '@/lib/slope-colors';
 
-interface TrackPoint {
-  lat: number;
-  lng: number;
-  d: number;
-  e: number | null;
-}
+import { TrackPoint, Labels } from './elevation-chart/types';
+import { useChartDimensions } from './elevation-chart/use-chart-dimensions';
+import { useChartData } from './elevation-chart/use-chart-data';
+import { useChartScales } from './elevation-chart/use-chart-scales';
+import { useChartInteractions } from './elevation-chart/use-chart-interactions';
 
-interface ChartPoint {
-  distance: number;
-  elevation: number;
-  slope: number;
-  color: string;
-}
-
-interface Labels {
-  elevationProfile: string;
-  slope: string;
-  flat: string;
-  gentle: string;
-  steep: string;
-  extreme: string;
-  km: string;
-  meters: string;
-  resetZoom: string;
-}
-
-interface TooltipState {
-  x: number;
-  y: number;
-  dist: number;
-  ele: number;
-  slope: number;
-  color: string;
-}
-
-const MARGIN_DESKTOP = { top: 8, right: 16, bottom: 28, left: 50 };
-const MARGIN_MOBILE = { top: 8, right: 8, bottom: 24, left: 6 };
-const MARGIN_COMPACT = { top: 0, right: 0, bottom: 0, left: 0 };
+import { ChartHeader } from './elevation-chart/chart-header';
+import { CompactInfoBar } from './elevation-chart/compact-info-bar';
+import { ChartTooltip } from './elevation-chart/chart-tooltip';
+import { ChartAxes } from './elevation-chart/chart-axes';
+import { ChartPaths } from './elevation-chart/chart-paths';
+import { ChartLegend } from './elevation-chart/chart-legend';
 
 export function TrailElevationChart({
   trackProfile,
@@ -71,414 +36,48 @@ export function TrailElevationChart({
   onRangeSelect?: (start: number, end: number) => void;
   onRangeReset?: () => void;
   compact?: boolean;
-  /** When set, renders the chart in a single flat color instead of slope colours */
   singleColor?: string;
-  /** Whether the user can drag to select a range. Default true. */
   selectable?: boolean;
-  /** Suppress the compact gradient overlay. */
   noGradient?: boolean;
-  /** Show tooltip popup even in compact mode. */
   showTooltip?: boolean;
 }) {
   const rawId = useId();
   const uid = rawId.replace(/:/g, '');
   const outerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
-  const [size, setSize] = useState({ w: 0, h: 0 });
-  const [tooltip, setTooltip] = useState<TooltipState | null>(null);
 
-  // Zoom/drag state
   const [zoomRange, setZoomRange] = useState<{ start: number; end: number } | null>(null);
-  const [dragPreview, setDragPreview] = useState<{ start: number; end: number } | null>(null);
-  const isDragging = useRef(false);
-  const dragStartRef = useRef<number | null>(null);
-  const dragStartPxRef = useRef<number | null>(null);
-  const dragEndRef = useRef<number | null>(null);
 
-  // Measure container
-  useEffect(() => {
-    const el = outerRef.current;
-    if (!el) return;
-    const obs = new ResizeObserver(([entry]) => {
-      setSize({ w: entry.contentRect.width, h: entry.contentRect.height });
-    });
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
+  const { size, margin, innerW, innerH, isMobile } = useChartDimensions(outerRef, compact);
+  const chartData = useChartData(trackProfile, isMobile);
+  const { xScale, yScale } = useChartScales(chartData, innerW, innerH, zoomRange);
 
-  const isMobile = compact || (size.w > 0 && size.w < 520);
-
-  // Build chart data from track profile — downsampled on mobile for clarity
-  const chartData = useMemo<ChartPoint[]>(() => {
-    const pts = trackProfile.filter((p) => p.e !== null);
-    if (pts.length < 2) return [];
-
-    // On mobile keep at most 60 evenly-spaced points
-    const sampled =
-      isMobile && pts.length > 60
-        ? pts.filter((_, i) => i % Math.ceil(pts.length / 60) === 0 || i === pts.length - 1)
-        : pts;
-
-    return sampled.map((p, i) => {
-      let slope = 0;
-      if (i > 0) {
-        const prev = sampled[i - 1];
-        const distDiffKm = p.d - prev.d;
-        const eleDiff = (p.e ?? 0) - (prev.e ?? 0);
-        if (distDiffKm > 0.001) slope = (eleDiff / (distDiffKm * 1000)) * 100;
-      }
-      return {
-        distance: p.d,
-        elevation: p.e ?? 0,
-        slope: Math.round(slope * 10) / 10,
-        color: getSlopeColorHex(slope),
-      };
-    });
-  }, [trackProfile, isMobile]);
-  const margin = compact ? MARGIN_COMPACT : isMobile ? MARGIN_MOBILE : MARGIN_DESKTOP;
-
-  const innerW = Math.max(0, size.w - margin.left - margin.right);
-  const innerH = Math.max(0, size.h - margin.top - margin.bottom);
-
-  const xScale = useMemo(() => {
-    if (!chartData.length || innerW === 0) return null;
-    const domain = zoomRange
-      ? [zoomRange.start, zoomRange.end]
-      : [chartData[0].distance, chartData[chartData.length - 1].distance];
-    return d3.scaleLinear().domain(domain).range([0, innerW]);
-  }, [chartData, innerW, zoomRange]);
-
-  const yScale = useMemo(() => {
-    if (!chartData.length || innerH === 0) return null;
-    // When zoomed, compute y range from visible points only
-    const visible = zoomRange
-      ? chartData.filter((d) => d.distance >= zoomRange.start && d.distance <= zoomRange.end)
-      : chartData;
-    const elevs = (visible.length > 0 ? visible : chartData).map((d) => d.elevation);
-    const pad = Math.max((Math.max(...elevs) - Math.min(...elevs)) * 0.15, 15);
-    return d3
-      .scaleLinear()
-      .domain([Math.min(...elevs) - pad, Math.max(...elevs) + pad])
-      .range([innerH, 0])
-      .nice();
-  }, [chartData, innerH, zoomRange]);
-
-  // Colored area segments
-  const colorSegmentPaths = useMemo(() => {
-    if (!xScale || !yScale || !chartData.length) return [];
-
-    // When zoomed, only draw segments within range
-    const pts = zoomRange
-      ? chartData.filter((d) => d.distance >= zoomRange.start && d.distance <= zoomRange.end)
-      : chartData;
-
-    const curve = isMobile ? d3.curveMonotoneX : d3.curveLinear;
-    const areaGen = d3
-      .area<ChartPoint>()
-      .x((d) => xScale(d.distance))
-      .y0(innerH)
-      .y1((d) => yScale(d.elevation))
-      .curve(curve);
-
-    const result: { color: string; path: string }[] = [];
-    let i = 0;
-    while (i < pts.length) {
-      const color = pts[i].color;
-      const group: ChartPoint[] = [];
-      while (i < pts.length && pts[i].color === color) group.push(pts[i++]);
-      if (i < pts.length) group.push(pts[i]);
-      const path = areaGen(group);
-      if (path) result.push({ color, path });
-    }
-    return result;
-  }, [chartData, xScale, yScale, innerH, zoomRange]);
-
-  // Single-color area path (used when singleColor is set)
-  const singleAreaPath = useMemo(() => {
-    if (!singleColor || !xScale || !yScale || !chartData.length) return '';
-    const pts = zoomRange
-      ? chartData.filter((d) => d.distance >= zoomRange.start && d.distance <= zoomRange.end)
-      : chartData;
-    return (
-      d3
-        .area<ChartPoint>()
-        .x((d) => xScale(d.distance))
-        .y0(innerH)
-        .y1((d) => yScale(d.elevation))
-        .curve(d3.curveMonotoneX)(pts) ?? ''
-    );
-  }, [singleColor, chartData, xScale, yScale, innerH, zoomRange]);
-
-  // Gradient stroke line
-  const linePath = useMemo(() => {
-    if (!xScale || !yScale || !chartData.length) return '';
-    const pts = zoomRange
-      ? chartData.filter((d) => d.distance >= zoomRange.start && d.distance <= zoomRange.end)
-      : chartData;
-    return (
-      d3
-        .line<ChartPoint>()
-        .x((d) => xScale(d.distance))
-        .y((d) => yScale(d.elevation))
-        .curve(isMobile ? d3.curveMonotoneX : d3.curveLinear)(pts) ?? ''
-    );
-  }, [chartData, xScale, yScale, zoomRange]);
-
-  const gradientStops = useMemo(() => {
-    if (!chartData.length) return [{ offset: 0, color: SLOPE_COLOR_FLAT }];
-    const pts = zoomRange
-      ? chartData.filter((d) => d.distance >= zoomRange.start && d.distance <= zoomRange.end)
-      : chartData;
-    const min = pts[0]?.distance ?? 0;
-    const range = (pts[pts.length - 1]?.distance ?? 0) - min;
-    return pts.map((d) => ({
-      offset: range > 0 ? ((d.distance - min) / range) * 100 : 0,
-      color: d.color,
-    }));
-  }, [chartData, zoomRange]);
-
-  // X/Y ticks — fewer on mobile, no Y labels on mobile
-  const xTicks = useMemo(
-    () => (xScale ? xScale.ticks(isMobile ? 3 : 5).map((v) => ({ v, x: xScale(v) })) : []),
-    [xScale, isMobile],
-  );
-  const yTicks = useMemo(
-    () => (!isMobile && yScale ? yScale.ticks(4).map((v) => ({ v, y: yScale(v) })) : []),
-    [yScale, isMobile],
-  );
-
-  // Zoom helpers
-  const confirmSelection = (start: number, end: number) => {
-    const [s, e] = start <= end ? [start, end] : [end, start];
-    setZoomRange({ start: s, end: e });
-    setDragPreview(null);
-    onRangeSelect?.(s, e);
-  };
+  const {
+    activeTooltip,
+    dragPreview,
+    dragPreviewPx,
+    handleMouseMove,
+    handleMouseDown,
+    handleMouseLeave,
+  } = useChartInteractions({
+    svgRef,
+    xScale,
+    yScale,
+    chartData,
+    innerW,
+    margin,
+    selectable,
+    zoomRange,
+    setZoomRange,
+    onRangeSelect,
+    onHoverDist,
+    externalHoverDist,
+  });
 
   const resetZoom = () => {
     setZoomRange(null);
-    setDragPreview(null);
     onRangeReset?.();
   };
-
-  // Window mouseup handler to finalize drag
-  useEffect(() => {
-    const onMouseUp = () => {
-      if (!isDragging.current) return;
-      isDragging.current = false;
-      const start = dragStartRef.current;
-      const end = dragEndRef.current;
-      if (start !== null && end !== null && Math.abs(end - start) > 0.01) {
-        confirmSelection(start, end);
-      } else {
-        setDragPreview(null);
-      }
-      dragStartRef.current = null;
-      dragStartPxRef.current = null;
-      dragEndRef.current = null;
-    };
-    window.addEventListener('mouseup', onMouseUp);
-    return () => window.removeEventListener('mouseup', onMouseUp);
-    // confirmSelection is stable (no deps change it); we accept the lint rule here
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [onRangeSelect]);
-
-  // Live-ref and touchZoomRangeRef — declarations here (hooks must be before early returns)
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const liveRef = useRef<any>({});
-  const touchZoomRangeRef = useRef(zoomRange);
-  useEffect(() => {
-    touchZoomRangeRef.current = zoomRange;
-  }, [zoomRange]);
-
-  // Non-passive touch handlers on the SVG (prevents map panning while scrubbing)
-  useEffect(() => {
-    const svg = svgRef.current;
-    if (!svg) return;
-
-    const getDistFromTouch = (clientX: number): number | null => {
-      const { xScale: xs, margin: m, innerW: iw } = liveRef.current;
-      if (!xs) return null;
-      const rect = svg.getBoundingClientRect();
-      const x = clientX - rect.left - m.left;
-      return xs.invert(Math.max(0, Math.min(iw, x)));
-    };
-
-    const onTouchStart = (e: TouchEvent) => {
-      e.preventDefault();
-      const dist = getDistFromTouch(e.touches[0].clientX);
-      if (dist == null) return;
-      if (liveRef.current.selectable && !touchZoomRangeRef.current) {
-        isDragging.current = true;
-        dragStartRef.current = dist;
-        dragEndRef.current = dist;
-        setTooltip(null);
-      } else {
-        // Scrub-only mode: show tooltip immediately on touch
-        const t = liveRef.current.tooltipFromDist(dist);
-        if (t) { setTooltip(t); liveRef.current.onHoverDist?.(t.dist); }
-      }
-    };
-
-    const onTouchMove = (e: TouchEvent) => {
-      e.preventDefault();
-      const dist = getDistFromTouch(e.touches[0].clientX);
-      if (dist == null) return;
-      if (isDragging.current && dragStartRef.current !== null) {
-        dragEndRef.current = dist;
-        setDragPreview({ start: dragStartRef.current, end: dist });
-        return;
-      }
-      const t = liveRef.current.tooltipFromDist(dist);
-      if (t) {
-        setTooltip(t);
-        liveRef.current.onHoverDist?.(t.dist);
-      }
-    };
-
-    const onTouchEnd = () => {
-      if (isDragging.current) {
-        isDragging.current = false;
-        const start = dragStartRef.current;
-        const end = dragEndRef.current;
-        if (start !== null && end !== null && Math.abs(end - start) > 0.01) {
-          liveRef.current.confirmSelection(start, end);
-        } else {
-          setDragPreview(null);
-        }
-        dragStartRef.current = null;
-        dragEndRef.current = null;
-      } else {
-        setTooltip(null);
-        liveRef.current.onHoverDist?.(null);
-      }
-    };
-
-    svg.addEventListener('touchstart', onTouchStart, { passive: false });
-    svg.addEventListener('touchmove', onTouchMove, { passive: false });
-    svg.addEventListener('touchend', onTouchEnd);
-    return () => {
-      svg.removeEventListener('touchstart', onTouchStart);
-      svg.removeEventListener('touchmove', onTouchMove);
-      svg.removeEventListener('touchend', onTouchEnd);
-    };
-  }, []);
-
-  // Compute tooltip state for a given distance value
-  const tooltipFromDist = (dist: number): TooltipState | null => {
-    if (!xScale || !yScale || !chartData.length) return null;
-    let best = chartData[0];
-    let bestDiff = Math.abs(best.distance - dist);
-    for (const d of chartData) {
-      const diff = Math.abs(d.distance - dist);
-      if (diff < bestDiff) {
-        best = d;
-        bestDiff = diff;
-      }
-    }
-    return {
-      x: xScale(best.distance),
-      y: yScale(best.elevation),
-      dist: best.distance,
-      ele: best.elevation,
-      slope: best.slope,
-      color: best.color,
-    };
-  };
-
-  // External hover indicator (from map) — only shown when chart is not being hovered and dist is in view
-  const externalTooltip = useMemo<TooltipState | null>(() => {
-    if (externalHoverDist == null || !xScale || !yScale || !chartData.length) return null;
-    // Skip if outside zoomed range
-    if (zoomRange && (externalHoverDist < zoomRange.start || externalHoverDist > zoomRange.end)) {
-      return null;
-    }
-    let best = chartData[0];
-    let bestDiff = Math.abs(best.distance - externalHoverDist);
-    for (const d of chartData) {
-      const diff = Math.abs(d.distance - externalHoverDist);
-      if (diff < bestDiff) {
-        best = d;
-        bestDiff = diff;
-      }
-    }
-    return {
-      x: xScale(best.distance),
-      y: yScale(best.elevation),
-      dist: best.distance,
-      ele: best.elevation,
-      slope: best.slope,
-      color: best.color,
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [externalHoverDist, chartData, xScale, yScale, innerW, innerH, zoomRange]);
-
-  // Keep liveRef up-to-date with values needed by the touch effect (always after tooltipFromDist)
-  useEffect(() => {
-    liveRef.current = {
-      xScale,
-      margin,
-      innerW,
-      chartData,
-      selectable,
-      tooltipFromDist,
-      onHoverDist,
-      confirmSelection,
-    };
-  });
-
-  // Active tooltip: local (chart hover) takes priority over external (map hover)
-  const activeTooltip = tooltip ?? externalTooltip;
-
-  // Mouse interaction
-  const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
-    if (!svgRef.current || !xScale || !yScale || !chartData.length) return;
-    const rect = svgRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left - margin.left;
-    const dist = xScale.invert(Math.max(0, Math.min(innerW, x)));
-
-    if (isDragging.current && dragStartRef.current !== null) {
-      dragEndRef.current = dist;
-      setDragPreview({ start: dragStartRef.current, end: dist });
-      return; // don't show tooltip while dragging
-    }
-
-    const t = tooltipFromDist(dist);
-    if (t) {
-      setTooltip(t);
-      onHoverDist?.(t.dist);
-    }
-  };
-
-  const handleMouseDown = (e: React.MouseEvent<SVGSVGElement>) => {
-    if (!selectable) return;
-    if (zoomRange) return; // already zoomed — reset via button/dblclick
-    if (!svgRef.current || !xScale) return;
-    const rect = svgRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left - margin.left;
-    const dist = xScale.invert(Math.max(0, Math.min(innerW, x)));
-    isDragging.current = true;
-    dragStartRef.current = dist;
-    dragStartPxRef.current = x;
-    dragEndRef.current = dist;
-    setTooltip(null);
-  };
-
-  const handleMouseLeave = () => {
-    if (!isDragging.current) {
-      setTooltip(null);
-      onHoverDist?.(null);
-    }
-  };
-
-  // Drag preview pixel bounds (relative to inner g transform)
-  const dragPreviewPx = useMemo(() => {
-    if (!dragPreview || !xScale) return null;
-    const x0 = xScale(dragPreview.start);
-    const x1 = xScale(dragPreview.end);
-    return { left: Math.min(x0, x1), width: Math.abs(x1 - x0) };
-  }, [dragPreview, xScale]);
 
   const strokeGradientId = `elev-stroke-${uid}`;
   const clipPathId = `elev-clip-${uid}`;
@@ -502,98 +101,33 @@ export function TrailElevationChart({
           )}
         />
       )}
+
       {/* Title + reset — hidden in compact mode */}
       {!compact && (
-        <div className="mb-3 flex items-center gap-2">
-          <div className="rounded-lg bg-zinc-100 p-1.5 dark:bg-zinc-800">
-            <TrendingUp className="size-4 text-zinc-600 dark:text-zinc-300" />
-          </div>
-          <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">
-            {labels.elevationProfile}
-          </h2>
-          {zoomRange && (
-            <button
-              onClick={resetZoom}
-              className="ml-auto flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-bold tracking-tight text-zinc-500 uppercase hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
-            >
-              <RefreshCcw className="size-3" />
-              {labels.resetZoom}
-            </button>
-          )}
-        </div>
+        <ChartHeader labels={labels} zoomRange={zoomRange} onResetZoom={resetZoom} />
       )}
 
       {/* Info bar — compact+showTooltip mode: touch point data + reset zoom button */}
       {compact && showTooltip && (
-        <div className="flex min-h-5 items-center justify-between px-3 pb-1">
-          <div className="flex items-center gap-2">
-            {activeTooltip && !dragPreview ? (
-              <>
-                <span className="font-mono text-[11px] font-bold text-zinc-800 dark:text-zinc-100">
-                  {Math.round(activeTooltip.ele)} {labels.meters}
-                </span>
-                <span className="text-zinc-300 dark:text-zinc-600">·</span>
-                <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                  {activeTooltip.dist.toFixed(1)} {labels.km}
-                </span>
-                <span className="text-zinc-300 dark:text-zinc-600">·</span>
-                <div className="flex items-center gap-1">
-                  <div
-                    className="size-2 rounded-full"
-                    style={{ backgroundColor: activeTooltip.color }}
-                  />
-                  <span className="font-mono text-[11px] font-bold text-zinc-800 dark:text-zinc-100">
-                    {activeTooltip.slope > 0 ? '+' : ''}
-                    {activeTooltip.slope}%
-                  </span>
-                </div>
-              </>
-            ) : null}
-          </div>
-          {zoomRange && (
-            <button
-              onClick={resetZoom}
-              className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-bold tracking-tight text-zinc-400 uppercase hover:bg-zinc-100 dark:text-zinc-500 dark:hover:bg-zinc-800"
-            >
-              <RefreshCcw className="size-2.5" />
-              {labels.resetZoom}
-            </button>
-          )}
-        </div>
+        <CompactInfoBar
+          activeTooltip={activeTooltip}
+          dragPreview={dragPreview}
+          labels={labels}
+          zoomRange={zoomRange}
+          onResetZoom={resetZoom}
+        />
       )}
 
       {/* Chart area */}
       <div ref={outerRef} className={`relative w-full select-none ${compact ? 'h-20' : 'h-44'}`}>
         {/* Tooltip — only in non-compact mode (compact uses the info bar above) */}
         {!compact && activeTooltip && !dragPreview && (
-          <div
-            className="pointer-events-none absolute top-1 z-10"
-            style={
-              activeTooltip.x + margin.left < size.w / 2
-                ? { left: activeTooltip.x + margin.left + 10 }
-                : { right: size.w - activeTooltip.x - margin.left + 10 }
-            }
-          >
-            <div className="flex items-center gap-2 rounded-lg border border-zinc-200 bg-white/95 px-2.5 py-1.5 shadow-lg backdrop-blur-sm dark:border-zinc-700 dark:bg-zinc-900/95">
-              <span className="font-mono text-xs font-bold text-zinc-900 dark:text-white">
-                {Math.round(activeTooltip.ele)} {labels.meters}
-              </span>
-              <span className="text-zinc-300 dark:text-zinc-600">·</span>
-              <span className="text-xs text-zinc-500">
-                {activeTooltip.dist.toFixed(1)} {labels.km}
-              </span>
-              <span className="text-zinc-300 dark:text-zinc-600">·</span>
-              <div className="flex items-center gap-1">
-                <div
-                  className="size-2 rounded-full"
-                  style={{ backgroundColor: activeTooltip.color }}
-                />
-                <span className="font-mono text-xs font-bold text-zinc-900 dark:text-white">
-                  {activeTooltip.slope}%
-                </span>
-              </div>
-            </div>
-          </div>
+          <ChartTooltip
+            activeTooltip={activeTooltip}
+            labels={labels}
+            margin={margin}
+            size={size}
+          />
         )}
 
         <svg
@@ -606,155 +140,33 @@ export function TrailElevationChart({
           onDoubleClick={resetZoom}
           className={zoomRange ? 'cursor-zoom-out' : 'cursor-crosshair'}
         >
-          <defs>
-            <linearGradient id={strokeGradientId} x1="0" y1="0" x2="1" y2="0">
-              {gradientStops.map((s, i) => (
-                <stop key={i} offset={`${s.offset}%`} stopColor={s.color} />
-              ))}
-            </linearGradient>
-            {/* Vertical gradient for single-colour compact mode (zustrack primary, top→bottom) */}
-            {singleColor && (
-              <linearGradient id={`${strokeGradientId}-area`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="var(--color-primary)" stopOpacity="0.75" />
-                <stop offset="100%" stopColor="var(--color-primary)" stopOpacity="0" />
-              </linearGradient>
-            )}
-            <clipPath id={clipPathId}>
-              <rect x={0} y={0} width={innerW} height={innerH} />
-            </clipPath>
-          </defs>
+          <ChartPaths
+            chartData={chartData}
+            xScale={xScale}
+            yScale={yScale}
+            innerW={innerW}
+            innerH={innerH}
+            zoomRange={zoomRange}
+            isMobile={isMobile}
+            compact={compact}
+            singleColor={singleColor}
+            strokeGradientId={strokeGradientId}
+            clipPathId={clipPathId}
+          />
 
           <g transform={`translate(${margin.left},${margin.top})`}>
-            {/* Y gridlines — hidden in compact mode */}
-            {!compact &&
-              (isMobile
-                ? yScale &&
-                  [0.25, 0.5, 0.75].map((frac) => {
-                    const y = innerH * frac;
-                    return (
-                      <line
-                        key={frac}
-                        x1={0}
-                        x2={innerW}
-                        y1={y}
-                        y2={y}
-                        stroke="currentColor"
-                        strokeOpacity={0.06}
-                        strokeWidth={1}
-                      />
-                    );
-                  })
-                : yTicks.map((t) => (
-                    <line
-                      key={t.v}
-                      x1={0}
-                      x2={innerW}
-                      y1={t.y}
-                      y2={t.y}
-                      stroke="currentColor"
-                      strokeOpacity={0.07}
-                      strokeWidth={1}
-                    />
-                  )))}
-
-            {/* Min/max elevation markers — compact showTooltip mode */}
-            {compact &&
-              showTooltip &&
-              yScale &&
-              (() => {
-                const visiblePts = zoomRange
-                  ? chartData.filter(
-                      (d) => d.distance >= zoomRange.start && d.distance <= zoomRange.end,
-                    )
-                  : chartData;
-                const maxElev = Math.max(...visiblePts.map((d) => d.elevation));
-                const minElev = Math.min(...visiblePts.map((d) => d.elevation));
-                const yMax = yScale(maxElev);
-                const yMin = yScale(minElev);
-                return (
-                  <>
-                    <line
-                      x1={0}
-                      x2={innerW}
-                      y1={yMax}
-                      y2={yMax}
-                      stroke="currentColor"
-                      strokeWidth={0.75}
-                      strokeOpacity={0.2}
-                      strokeDasharray="3,4"
-                    />
-                    <text
-                      x={12}
-                      y={yMax - 2}
-                      fill="currentColor"
-                      fontSize={8}
-                      opacity={0.5}
-                      dominantBaseline="text-after-edge"
-                    >
-                      {Math.round(maxElev)}m
-                    </text>
-                    <line
-                      x1={0}
-                      x2={innerW}
-                      y1={yMin}
-                      y2={yMin}
-                      stroke="currentColor"
-                      strokeWidth={0.75}
-                      strokeOpacity={0.2}
-                      strokeDasharray="3,4"
-                    />
-                    <text
-                      x={12}
-                      y={yMin + 2}
-                      fill="currentColor"
-                      fontSize={8}
-                      opacity={0.5}
-                      dominantBaseline="text-before-edge"
-                    >
-                      {Math.round(minElev)}m
-                    </text>
-                  </>
-                );
-              })()}
-
-            {/* Area fills + stroke — single colour or slope-coloured */}
-            {singleColor ? (
-              <>
-                <path
-                  d={singleAreaPath}
-                  fill={`url(#${strokeGradientId}-area)`}
-                  fillOpacity={1}
-                  clipPath={`url(#${clipPathId})`}
-                />
-                <path
-                  d={linePath}
-                  fill="none"
-                  stroke="var(--color-primary)"
-                  strokeWidth={2}
-                  strokeOpacity={0.9}
-                  clipPath={`url(#${clipPathId})`}
-                />
-              </>
-            ) : (
-              <>
-                {colorSegmentPaths.map((seg, i) => (
-                  <path
-                    key={i}
-                    d={seg.path}
-                    fill={seg.color}
-                    fillOpacity={compact ? 0.85 : isMobile ? 0.55 : 0.25}
-                    clipPath={`url(#${clipPathId})`}
-                  />
-                ))}
-                <path
-                  d={linePath}
-                  fill="none"
-                  stroke={`url(#${strokeGradientId})`}
-                  strokeWidth={compact ? 3 : 2.5}
-                  clipPath={`url(#${clipPathId})`}
-                />
-              </>
-            )}
+            <ChartAxes
+              xScale={xScale}
+              yScale={yScale}
+              innerW={innerW}
+              innerH={innerH}
+              isMobile={isMobile}
+              compact={compact}
+              labels={labels}
+              showTooltip={showTooltip}
+              zoomRange={zoomRange}
+              chartData={chartData}
+            />
 
             {/* Drag preview rect */}
             {dragPreviewPx && dragPreviewPx.width > 0 && (
@@ -795,97 +207,12 @@ export function TrailElevationChart({
                 />
               </>
             )}
-
-            {/* X axis + ticks — hidden in compact mode */}
-            {!compact && (
-              <g transform={`translate(0,${innerH})`}>
-                <line x1={0} x2={innerW} stroke="currentColor" strokeOpacity={0.1} />
-                {xTicks.map((t) => (
-                  <text
-                    key={t.v}
-                    x={t.x}
-                    dy="1.4em"
-                    textAnchor="middle"
-                    fontSize={10}
-                    fill="currentColor"
-                    fillOpacity={0.55}
-                    fontWeight={500}
-                  >
-                    {t.v.toFixed(1)} {labels.km}
-                  </text>
-                ))}
-              </g>
-            )}
-
-            {/* Y axis labels — hidden in compact mode */}
-            {!compact &&
-              yTicks.map((t) => (
-                <text
-                  key={t.v}
-                  x={-6}
-                  y={t.y}
-                  dy="0.32em"
-                  textAnchor="end"
-                  fontSize={10}
-                  fill="currentColor"
-                  fillOpacity={0.55}
-                  fontWeight={500}
-                >
-                  {Math.round(t.v)}
-                </text>
-              ))}
           </g>
         </svg>
       </div>
 
       {/* Color legend — hidden in compact mode */}
-      {!compact && (
-        <div className="mt-3 border-t border-zinc-100 pt-3 dark:border-zinc-800">
-          {/* Mobile: gradient bar with labels */}
-          <div className="lg:hidden">
-            <div className="flex h-3 overflow-hidden rounded-full">
-              {[SLOPE_COLOR_FLAT, SLOPE_COLOR_GENTLE, SLOPE_COLOR_STEEP, SLOPE_COLOR_EXTREME].map(
-                (color) => (
-                  <div key={color} className="flex-1" style={{ backgroundColor: color }} />
-                ),
-              )}
-            </div>
-            <div className="mt-1.5 flex text-[11px] font-medium">
-              {[
-                { color: SLOPE_COLOR_FLAT, label: labels.flat },
-                { color: SLOPE_COLOR_GENTLE, label: labels.gentle },
-                { color: SLOPE_COLOR_STEEP, label: labels.steep },
-                { color: SLOPE_COLOR_EXTREME, label: labels.extreme },
-              ].map(({ color, label }, i) => (
-                <span
-                  key={color}
-                  className={
-                    i === 0 ? 'flex-1' : i === 3 ? 'flex-1 text-right' : 'flex-1 text-center'
-                  }
-                  style={{ color }}
-                >
-                  {label}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* Desktop: dots */}
-          <div className="hidden flex-wrap gap-3 lg:flex">
-            {[
-              { color: SLOPE_COLOR_FLAT, label: labels.flat },
-              { color: SLOPE_COLOR_GENTLE, label: labels.gentle },
-              { color: SLOPE_COLOR_STEEP, label: labels.steep },
-              { color: SLOPE_COLOR_EXTREME, label: labels.extreme },
-            ].map(({ color, label }) => (
-              <div key={color} className="flex items-center gap-1.5">
-                <div className="size-2.5 rounded-full" style={{ backgroundColor: color }} />
-                <span className="text-xs text-zinc-500 dark:text-zinc-400">{label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {!compact && <ChartLegend labels={labels} />}
     </div>
   );
 }

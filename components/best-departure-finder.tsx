@@ -73,7 +73,7 @@ export function BestDepartureFinder({
               minute: '2-digit',
             });
             return (
-              <Card key={idx} className={cn('overflow-hidden transition-all')}>
+              <Card key={window.startTime} className={cn('overflow-hidden transition-all')}>
                 <CardContent className="flex h-full flex-col justify-between p-3">
                   <div>
                     <div className="mb-2 flex items-center justify-between">

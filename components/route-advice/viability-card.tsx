@@ -99,10 +99,10 @@ export function ViabilityCard({ viability }: { viability: ViabilityResult }) {
         {/* Threat list */}
         {threats.length > 0 && rating !== 'go' && (
           <ul className="mt-3 space-y-1.5 border-t border-current/10 pt-3">
-            {threats.map((threat, i) => {
+            {threats.map((threat) => {
               const terrain = terrainLabel(threat.terrainFactor);
               return (
-                <li key={i} className="flex items-center gap-2">
+                <li key={`${threat.type}-${threat.deduction}`} className="flex items-center gap-2">
                   <span className={cn('shrink-0', colors.text)}>{THREAT_ICONS[threat.type]}</span>
                   <span className="text-foreground min-w-0 flex-1 text-[11px]">
                     {formatThreat(threat)}

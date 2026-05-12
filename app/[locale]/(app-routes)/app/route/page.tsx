@@ -13,7 +13,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
   // Suspense is required because HomePageClient uses useSearchParams()
   return (
-    <Suspense>
+    <Suspense fallback={<div className="flex h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-950" />}>
       <HomePageClient session={null} />
     </Suspense>
   );

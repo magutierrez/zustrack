@@ -138,12 +138,12 @@ export function WaterSourcesSection({
       )}
 
       <ul className="divide-y divide-zinc-100 overflow-hidden rounded-xl border border-zinc-200 bg-white dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-900">
-        {waterSources.map((ws, i) => {
+        {waterSources.map((ws) => {
           const isActive =
             activePOI && Math.abs(activePOI.lat - ws.lat) < 0.00001 && Math.abs(activePOI.lng - ws.lng) < 0.00001;
           return (
             <li
-              key={i}
+              key={`${ws.lat}-${ws.lng}`}
               className={`flex items-center gap-3 px-4 py-3 transition-colors ${
                 isActive ? 'bg-sky-50 dark:bg-sky-900/10' : ''
               }`}

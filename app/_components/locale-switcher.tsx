@@ -19,7 +19,7 @@ type Locale = (typeof routing.locales)[number];
 
 function LocaleSwitcherContent() {
   const locale = useLocale();
-  const router = useRouter();
+  const { replace, refresh } = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
@@ -39,12 +39,12 @@ function LocaleSwitcherContent() {
     const params = new URLSearchParams(searchParams.toString());
 
     startTransition(() => {
-      router.replace(
+      replace(
         { pathname, query: Object.fromEntries(params.entries()) },
         { locale: nextLocale },
       );
 
-      router.refresh();
+      refresh();
     });
   };
 

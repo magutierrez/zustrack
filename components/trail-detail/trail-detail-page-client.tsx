@@ -1,85 +1,51 @@
 'use client';
 
-import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect, Suspense } from 'react';
 import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
-import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Header } from '@/app/_components/header';
 import { cn } from '@/lib/utils';
-import {
-  ArrowLeft,
-  MapPin,
-  RotateCcw,
-  ArrowRight,
-  Sun,
-  Snowflake,
-  Thermometer,
-  ExternalLink,
-  Maximize2,
-  X,
-} from 'lucide-react';
 import type { Trail, TrailSummary } from '@/lib/trails';
-import { StatsGrid } from './stats-grid';
-import { EffortBadge } from './effort-badge';
 import { SuitabilityChips } from './suitability-chips';
 import { SlopeBreakdownBar } from './slope-breakdown-bar';
 import { SurfaceSection } from './surface-section';
-import { TrailHazards, analyzeTrackSegments } from './trail-hazards';
-import { TrailElevationChart } from './trail-elevation-chart';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { TrailMapWrapper } from './trail-map-wrapper';
-import { TrailGpxDownload } from './trail-gpx-download';
+import { analyzeTrackSegments, TrailHazards } from './trail-hazards';
 import { TrailWeatherForecast } from './trail-weather-forecast';
-import { TrailCard } from './trail-card';
 import { TrailInfoTabs } from './trail-info-tabs';
-import { Button } from '@/components/ui/button';
+
+// Subcomponents
+import { TrailHeader } from './trail-header';
+import { TrailStatsSection } from './trail-stats-section';
+import { TrailMapSection } from './trail-map-section';
+import { TrailInfoTable } from './trail-info-table';
+import { TrailSimilarTrails } from './trail-similar-trails';
+import { TrailElevationHazardsTabs } from './trail-elevation-hazards-tabs';
+import { TrailDetailsStyles } from './trail-details-styles';
+import { TrailActionFooter } from './trail-action-footer';
+import { TrailDetailsSkeleton } from './trail-details-skeleton';
 
 type Range = { start: number; end: number; color?: string };
 type POIPoint = { lat: number; lng: number };
 
-function SeasonIcon({ season }: { season: string }) {
-  if (season === 'avoid_summer') return <Sun className="size-4 text-amber-500" />;
-  if (season === 'avoid_winter') return <Snowflake className="size-4 text-sky-400" />;
-  return <Thermometer className="size-4 text-emerald-500" />;
-}
-
-function InfoRow({
-  label,
-  value,
-  action,
-}: {
-  label: string;
-  value: string;
-  action?: React.ReactNode;
-}) {
-  return (
-    <tr className="border-b border-zinc-100 last:border-0 dark:border-zinc-800">
-      <td className="w-1/3 px-4 py-3 font-medium text-zinc-500 dark:text-zinc-400">{label}</td>
-      <td className="px-4 py-3 text-zinc-900 dark:text-white">
-        <span>{value}</span>
-        {action && <span className="ml-3">{action}</span>}
-      </td>
-    </tr>
-  );
+interface TrailDetailPageClientProps {
+  trail: Trail;
+  locale: string;
+  similarTrails?: TrailSummary[];
 }
 
 const EMPTY_SIMILAR_TRAILS: TrailSummary[] = [];
 
-export function TrailDetailPageClient({
+function TrailDetailPageInner({
   trail,
   locale,
   similarTrails = EMPTY_SIMILAR_TRAILS,
-}: {
-  trail: Trail;
-  locale: string;
-  similarTrails?: TrailSummary[];
-}) {
+}: TrailDetailPageClientProps) {
   const { data: session } = useSession();
   const isAuthenticated = !!session?.user;
   const t = useTranslations('TrailPage');
   const regionName = trail.region_i18n?.[locale] ?? trail.region;
-  const router = useRouter();
+  const { push } = useRouter();
   const searchParams = useSearchParams();
 
   const [mapExpanded, setMapExpanded] = useState(false);
@@ -93,12 +59,13 @@ export function TrailDetailPageClient({
 
   useEffect(() => {
     const onPopState = (e: PopStateEvent) => {
-      if (e.state?.mapExpanded) return; // navigating within fullscreen states, ignore
+      if (e.state?.mapExpanded) return;
       setMapExpanded(false);
     };
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
   }, []);
+
   const [selectedRange, setSelectedRange] = useState<Range | null>(null);
   const [hoverDist, setHoverDist] = useState<number | null>(null);
   const [focusPoint, setFocusPoint] = useState<POIPoint | null>(null);
@@ -110,6 +77,7 @@ export function TrailDetailPageClient({
   const [mapHeightPx, setMapHeightPx] = useState<number | null>(null);
   const [nearFullscreen, setNearFullscreen] = useState(false);
   const mapHeightPxRef = useRef<number | null>(null);
+
   useEffect(() => {
     mapHeightPxRef.current = mapHeightPx;
   }, [mapHeightPx]);
@@ -119,14 +87,14 @@ export function TrailDetailPageClient({
     if (!el) return;
 
     const onTouchStart = (e: TouchEvent) => {
-      const t = e.touches[0];
+      const touch = e.touches[0];
       dragStateRef.current = {
-        startY: t.clientY,
+        startY: touch.clientY,
         startH: mapHeightPxRef.current ?? window.innerHeight * 0.38,
       };
     };
 
-    const FULLSCREEN_THRESHOLD = 0.62; // fraction of screen height
+    const FULLSCREEN_THRESHOLD = 0.62;
 
     const onTouchMove = (e: TouchEvent) => {
       if (!dragStateRef.current) return;
@@ -169,11 +137,11 @@ export function TrailDetailPageClient({
   const handleAnalyze = useCallback(() => {
     if (!isAuthenticated) {
       const callbackUrl = encodeURIComponent(`/${locale}/app/route?trailId=${trail.id}`);
-      router.push(`/${locale}/app/login?callbackUrl=${callbackUrl}`);
+      push(`/${locale}/app/login?callbackUrl=${callbackUrl}`);
       return;
     }
-    router.push(`/${locale}/app/route?trailId=${trail.id}`);
-  }, [isAuthenticated, trail, locale, router]);
+    push(`/${locale}/app/route?trailId=${trail.id}`);
+  }, [isAuthenticated, trail.id, locale, push]);
 
   // Pre-compute display labels
   const effortLabel =
@@ -193,13 +161,9 @@ export function TrailDetailPageClient({
         ? t('avoidWinter')
         : t('yearRound');
 
-  const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${trail.start_lat},${trail.start_lng}`;
-
   const trackProfile = trail.track_profile ?? [];
-
   const hasHazards = useMemo(() => analyzeTrackSegments(trackProfile).length > 0, [trackProfile]);
 
-  // Find the lat/lng of the highest and lowest elevation points in the track profile
   const highPointCoords = useMemo(() => {
     if (!trail.elevation_max_m || !trackProfile.length) return null;
     const best = trackProfile.reduce((prev, curr) =>
@@ -226,80 +190,7 @@ export function TrailDetailPageClient({
 
   return (
     <>
-      <style>{`
-        .trail-scrollbar::-webkit-scrollbar { width: 4px; }
-        .trail-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .trail-scrollbar::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 10px; }
-        .trail-scrollbar::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground)); }
-
-        /* MapLibre navigation control — match secondary icon buttons */
-        .maplibregl-ctrl-group {
-          background: transparent !important;
-          box-shadow: none !important;
-          border-radius: 0 !important;
-          border: none !important;
-          display: flex !important;
-          flex-direction: column !important;
-          gap: 0 !important;
-        }
-        /* All buttons: base size, secondary bg, no individual shadow by default */
-        .maplibregl-ctrl-group button {
-          width: 40px !important;
-          height: 40px !important;
-          background-color: var(--secondary) !important;
-          border: none !important;
-          box-shadow: none !important;
-        }
-        /* Zoom-in: top of the unified card */
-        .maplibregl-ctrl-group button.maplibregl-ctrl-zoom-in {
-          border-radius: calc(var(--radius) - 2px) calc(var(--radius) - 2px) 0 0 !important;
-          border-bottom: 1px solid color-mix(in oklch, var(--border) 60%, transparent) !important;
-        }
-        /* Zoom-out: bottom of the unified card — carries the shadow for the whole pair */
-        .maplibregl-ctrl-group button.maplibregl-ctrl-zoom-out {
-          border-radius: 0 0 calc(var(--radius) - 2px) calc(var(--radius) - 2px) !important;
-          box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1) !important;
-        }
-        /* Compass: separate card with gap */
-        .maplibregl-ctrl-group button.maplibregl-ctrl-compass {
-          border-radius: calc(var(--radius) - 2px) !important;
-          box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1) !important;
-          margin-top: 6px !important;
-        }
-        .maplibregl-ctrl-group button:hover {
-          background-color: color-mix(in oklch, var(--secondary) 80%, transparent) !important;
-        }
-        .dark .maplibregl-ctrl-group button .maplibregl-ctrl-icon {
-          filter: invert(1) brightness(0.85) !important;
-        }
-
-        /* MapLibre popup — adapt to dark/light via CSS tokens */
-        .maplibregl-popup-content {
-          background: var(--card) !important;
-          border: 1px solid var(--border) !important;
-          color: var(--foreground) !important;
-          border-radius: 8px !important;
-          padding: 0 !important;
-          box-shadow: 0 4px 16px rgb(0 0 0 / 0.12) !important;
-        }
-        /* Tip arrow (anchor=bottom → tip points down, uses border-top-color) */
-        .maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
-          border-top-color: var(--card) !important;
-        }
-        .maplibregl-popup-anchor-top .maplibregl-popup-tip {
-          border-bottom-color: var(--card) !important;
-        }
-        .maplibregl-popup-anchor-left .maplibregl-popup-tip {
-          border-right-color: var(--card) !important;
-        }
-        .maplibregl-popup-anchor-right .maplibregl-popup-tip {
-          border-left-color: var(--card) !important;
-        }
-        /* Hide default close button (component renders its own) */
-        .maplibregl-popup-close-button {
-          display: none !important;
-        }
-      `}</style>
+      <TrailDetailsStyles />
 
       <div
         className={cn(
@@ -316,14 +207,14 @@ export function TrailDetailPageClient({
             mapExpanded && 'overflow-hidden',
           )}
         >
-          {/* LEFT: scrollable content — bottom sheet on mobile */}
+          {/* LEFT: scrollable content */}
           <div
             className={cn(
               'trail-scrollbar z-3 order-2 -mt-8 flex flex-col overflow-y-auto rounded-t-3xl bg-white shadow-[0_-8px_24px_rgba(0,0,0,0.08)] lg:order-1 lg:mt-0 lg:w-[55%] lg:overflow-hidden lg:rounded-none lg:bg-transparent lg:shadow-none dark:bg-[#0e0f18] dark:shadow-[0_-8px_24px_rgba(0,0,0,0.35)] dark:lg:bg-transparent',
               mapExpanded && 'hidden lg:flex',
             )}
           >
-            {/* Drag handle — mobile only, touch-active */}
+            {/* Drag handle — mobile only */}
             <div
               ref={dragHandleRef}
               className="flex shrink-0 touch-none justify-center py-4 lg:hidden"
@@ -340,159 +231,30 @@ export function TrailDetailPageClient({
 
             {/* Inner content wrapper */}
             <div className="trail-scrollbar flex flex-col gap-6 px-4 pb-24 lg:flex-1 lg:gap-8 lg:overflow-y-auto lg:p-8 lg:pb-4">
-              {/* Back link — desktop only (mobile uses map overlay button) */}
-              <Link
-                href={`/${locale}/trail/${trail.country}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`}
-                className="hidden items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-900 lg:inline-flex dark:text-zinc-400 dark:hover:text-white"
-              >
-                <ArrowLeft className="size-4" />
-                {t('backToTrails')}
-              </Link>
-              {/* Hero */}
-              <div className="space-y-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  {trail.trail_code && (
-                    <span className="rounded-full bg-zinc-900 px-3 py-1 text-xs font-bold text-white dark:bg-white dark:text-zinc-900">
-                      {trail.trail_code}
-                    </span>
-                  )}
-                  <span className="hidden text-sm text-zinc-500 lg:block dark:text-zinc-400">
-                    {routeTypeLabel}
-                  </span>
-                  <span className="text-zinc-300 dark:text-zinc-600">·</span>
-                  <span className="inline-flex items-center gap-1 text-sm text-zinc-500 dark:text-zinc-400">
-                    {trail.is_circular ? (
-                      <>
-                        <RotateCcw className="size-3.5" />
-                        {t('circular')}
-                      </>
-                    ) : (
-                      <>
-                        <ArrowRight className="size-3.5" />
-                        {t('linear')}
-                      </>
-                    )}
-                  </span>
-                </div>
-                <h1 className="text-xl font-semibold tracking-tight sm:text-2xl lg:text-4xl">
-                  {trail.name}
-                </h1>
-                {(trail.place || regionName) && (
-                  <p className="inline-flex items-center gap-1.5 text-sm text-zinc-500 dark:text-zinc-400">
-                    <MapPin className="size-3.5 shrink-0" />
-                    {[trail.place, regionName].filter(Boolean).join(', ')}
-                  </p>
-                )}
-                <div className="flex flex-wrap items-center gap-3">
-                  <EffortBadge
-                    level={trail.effort_level}
-                    label={effortLabel}
-                    score={trail.difficulty_score}
-                  />
-                  <span className="inline-flex items-center gap-1 text-sm text-zinc-500 dark:text-zinc-400">
-                    <SeasonIcon season={trail.season_best} />
-                    {seasonLabel}
-                  </span>
-                </div>
-                {trackProfile.length > 0 && (
-                  <div className="pt-1">
-                    <TrailGpxDownload
-                      name={trail.name}
-                      trackProfile={trackProfile}
-                      label={t('downloadGpx')}
-                    />
-                  </div>
-                )}
-                <StatsGrid
-                  distanceKm={trail.distance_km}
-                  elevationGainM={trail.elevation_gain_m}
-                  elevationLossM={trail.elevation_loss_m}
-                  elevationMaxM={trail.elevation_max_m}
-                  elevationMinM={trail.elevation_min_m}
-                  avgElevationM={trail.avg_elevation_m}
-                  estimatedDurationMin={trail.estimated_duration_min}
-                  highPointCoords={highPointCoords}
-                  lowPointCoords={lowPointCoords}
-                  onShowOnMap={handleShowOnMap}
-                  labels={{
-                    distance: t('distance'),
-                    elevationGain: t('elevationGain'),
-                    elevationLoss: t('elevationLoss'),
-                    highPoint: t('highPoint'),
-                    lowPoint: t('lowPoint'),
-                    avgElevation: t('avgElevation'),
-                    duration: t('duration'),
-                    km: t('km'),
-                    meters: t('meters'),
-                    showOnMap: t('showOnMap'),
-                    durationH: t('durationH'),
-                    durationMin: t('durationMin'),
-                  }}
-                />
-              </div>
+              <TrailHeader
+                trail={trail}
+                locale={locale}
+                searchParams={searchParams.toString()}
+                effortLabel={effortLabel}
+                routeTypeLabel={routeTypeLabel}
+                seasonLabel={seasonLabel}
+              />
 
-              {/* Elevation chart + hazards — desktop only */}
-              {trackProfile.length > 1 && (
-                <div className="hidden lg:block">
-                  {hasHazards ? (
-                    <Tabs defaultValue="elevation">
-                      <TabsList className="mb-3">
-                        <TabsTrigger value="elevation">{t('elevationProfileTab')}</TabsTrigger>
-                        <TabsTrigger value="hazards">{t('criticalSections')}</TabsTrigger>
-                      </TabsList>
-                      <TabsContent value="elevation">
-                        <TrailElevationChart
-                          trackProfile={trackProfile}
-                          labels={{
-                            elevationProfile: t('elevationProfile'),
-                            slope: t('slope'),
-                            flat: t('flat'),
-                            gentle: t('gentle'),
-                            steep: t('steep'),
-                            extreme: t('extreme'),
-                            km: t('km'),
-                            meters: t('meters'),
-                            resetZoom: t('resetZoom'),
-                          }}
-                          externalHoverDist={hoverDist}
-                          onHoverDist={setHoverDist}
-                          onRangeSelect={(s, e) => setSelectedRange({ start: s, end: e })}
-                          onRangeReset={() => setSelectedRange(null)}
-                        />
-                      </TabsContent>
-                      <TabsContent value="hazards">
-                        <TrailHazards
-                          trackProfile={trackProfile}
-                          selectedRange={selectedRange}
-                          onSegmentSelect={(start, end, color) =>
-                            setSelectedRange({ start, end, color })
-                          }
-                          onReset={() => setSelectedRange(null)}
-                        />
-                      </TabsContent>
-                    </Tabs>
-                  ) : (
-                    <TrailElevationChart
-                      trackProfile={trackProfile}
-                      labels={{
-                        elevationProfile: t('elevationProfile'),
-                        slope: t('slope'),
-                        flat: t('flat'),
-                        gentle: t('gentle'),
-                        steep: t('steep'),
-                        extreme: t('extreme'),
-                        km: t('km'),
-                        meters: t('meters'),
-                        resetZoom: t('resetZoom'),
-                      }}
-                      externalHoverDist={hoverDist}
-                      onHoverDist={setHoverDist}
-                      onRangeSelect={(s, e) => setSelectedRange({ start: s, end: e })}
-                      onRangeReset={() => setSelectedRange(null)}
-                    />
-                  )}
-                </div>
-              )}
+              <TrailStatsSection
+                trail={trail}
+                highPointCoords={highPointCoords}
+                lowPointCoords={lowPointCoords}
+                onShowOnMap={handleShowOnMap}
+              />
+
+              <TrailElevationHazardsTabs
+                trackProfile={trackProfile}
+                hasHazards={hasHazards}
+                hoverDist={hoverDist}
+                setHoverDist={setHoverDist}
+                selectedRange={selectedRange}
+                setSelectedRange={setSelectedRange}
+              />
 
               {/* Hazards — mobile only */}
               {trackProfile.length > 0 && (
@@ -509,7 +271,6 @@ export function TrailDetailPageClient({
                 </div>
               )}
 
-              {/* Weather forecast */}
               <TrailWeatherForecast
                 lat={trail.start_lat}
                 lng={trail.start_lng}
@@ -523,7 +284,6 @@ export function TrailDetailPageClient({
                 }}
               />
 
-              {/* Slope breakdown */}
               {trail.slope_breakdown && (
                 <SlopeBreakdownBar
                   breakdown={trail.slope_breakdown}
@@ -537,7 +297,6 @@ export function TrailDetailPageClient({
                 />
               )}
 
-              {/* Suitability */}
               <SuitabilityChips
                 childFriendly={trail.child_friendly}
                 petFriendly={trail.pet_friendly}
@@ -549,7 +308,6 @@ export function TrailDetailPageClient({
                 }}
               />
 
-              {/* Surface types + path types */}
               {(trail.dominant_surface || trail.dominant_path_type) && (
                 <SurfaceSection
                   dominantSurface={trail.dominant_surface}
@@ -596,7 +354,6 @@ export function TrailDetailPageClient({
                 />
               )}
 
-              {/* Escape points + Water sources + Equipment — tabbed */}
               <TrailInfoTabs
                 trail={trail}
                 trackProfile={trackProfile}
@@ -649,35 +406,8 @@ export function TrailDetailPageClient({
                 }}
               />
 
-              {/* Similar trails */}
-              {similarTrails.length > 0 && (
-                <section className="space-y-3">
-                  <h2 className="text-lg font-semibold">{t('similarTrails')}</h2>
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                    {similarTrails.map((s) => (
-                      <TrailCard
-                        key={s.id}
-                        trail={s as Parameters<typeof TrailCard>[0]['trail']}
-                        locale={locale}
-                        labels={{
-                          easy: t('easy'),
-                          moderate: t('moderate'),
-                          hard: t('hard'),
-                          veryHard: t('veryHard'),
-                          circular: t('circular'),
-                          linear: t('linear'),
-                          km: t('km'),
-                          meters: t('meters'),
-                          durationH: t('durationH'),
-                          durationMin: t('durationMin'),
-                        }}
-                      />
-                    ))}
-                  </div>
-                </section>
-              )}
+              <TrailSimilarTrails similarTrails={similarTrails} locale={locale} />
 
-              {/* Description */}
               {trail.description && (
                 <section className="space-y-2">
                   <h2 className="text-lg font-semibold">{t('description')}</h2>
@@ -685,217 +415,38 @@ export function TrailDetailPageClient({
                 </section>
               )}
 
-              {/* Info table */}
-              <section className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-                <table className="w-full text-sm">
-                  <tbody>
-                    {trail.place && <InfoRow label={t('place')} value={trail.place} />}
-                    {regionName && <InfoRow label={t('region')} value={regionName} />}
-                    {trail.source && <InfoRow label={t('source')} value={trail.source} />}
-                    <InfoRow
-                      label={t('startPoint')}
-                      value={`${trail.start_lat.toFixed(5)}, ${trail.start_lng.toFixed(5)}`}
-                      action={
-                        <a
-                          href={mapsUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-sky-600 hover:underline dark:text-sky-400"
-                        >
-                          <ExternalLink className="size-3.5" />
-                          {t('openInMaps')}
-                        </a>
-                      }
-                    />
-                    {!trail.is_circular && (
-                      <InfoRow
-                        label={t('endPoint')}
-                        value={`${trail.end_lat.toFixed(5)}, ${trail.end_lng.toFixed(5)}`}
-                      />
-                    )}
-                    {trail.waypoint_count != null && trail.waypoint_count > 0 && (
-                      <InfoRow label={t('waypointCount')} value={String(trail.waypoint_count)} />
-                    )}
-                    {trail.point_count != null && (
-                      <InfoRow label={t('pointCount')} value={trail.point_count.toLocaleString()} />
-                    )}
-                  </tbody>
-                </table>
-              </section>
-
-              {/* CTA — mobile only (desktop has the sticky footer below) */}
-              <div className="flex justify-center pb-4 lg:hidden">
-                <button
-                  onClick={handleAnalyze}
-                  className="inline-flex items-center gap-2 rounded-full bg-zinc-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-zinc-700 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
-                >
-                  <MapPin className="size-4" />
-                  {t('analyzeWithZustrack')}
-                </button>
-              </div>
+              <TrailInfoTable trail={trail} locale={locale} regionName={regionName} />
             </div>
-            {/* end inner content wrapper */}
 
-            {/* Desktop sticky CTA footer */}
-            <div className="hidden shrink-0 border-t border-zinc-200 bg-white px-6 py-4 lg:block dark:border-zinc-700/60 dark:bg-[#0e0f18]">
-              <button
-                onClick={handleAnalyze}
-                className="font-headline inline-flex h-auto w-full items-center justify-center gap-2 rounded-xl bg-zinc-900 px-6 py-4 text-base font-bold text-white transition hover:bg-zinc-700 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100"
-              >
-                <MapPin className="size-5" />
-                {t('analyzeWithZustrack')}
-              </button>
-            </div>
+            <TrailActionFooter onAnalyze={handleAnalyze} mapExpanded={mapExpanded} />
           </div>
 
-          {/* RIGHT: map — 38vh on mobile (bottom sheet overlaps ~32px), fills full height on desktop */}
-          <div
-            className={cn(
-              'relative order-1 h-[50vh] shrink-0 border-zinc-200 lg:order-2 lg:h-auto lg:flex-1 lg:border-l dark:border-zinc-800',
-              mapExpanded && 'h-full flex-1',
-            )}
-            style={mapHeightPx !== null && !mapExpanded ? { height: mapHeightPx } : undefined}
-          >
-            {trackProfile.length > 0 ? (
-              <TrailMapWrapper
-                trackProfile={trackProfile}
-                name={trail.name}
-                isCircular={trail.is_circular}
-                selectedRange={selectedRange}
-                onReset={() => setSelectedRange(null)}
-                hoverDist={hoverDist}
-                onHoverDist={setHoverDist}
-                escapePoints={trail.escape_points ?? undefined}
-                waterSources={trail.water_sources ?? undefined}
-                focusPoint={focusPoint}
-                onFocusPointConsumed={() => setFocusPoint(null)}
-                activePOI={activePOI}
-                mapExpanded={mapExpanded}
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center bg-zinc-100 dark:bg-zinc-900">
-                <span className="text-sm text-zinc-400">No map data available</span>
-              </div>
-            )}
-
-            {/* Compact elevation chart — overlaid at bottom of map, mobile only, not fullscreen */}
-            {trackProfile.length > 1 && !mapExpanded && (
-              <div className="absolute inset-x-0 bottom-3 z-2 text-zinc-500 lg:hidden dark:text-zinc-300">
-                <TrailElevationChart
-                  compact
-                  singleColor="currentColor"
-                  selectable={false}
-                  trackProfile={trackProfile}
-                  labels={{
-                    elevationProfile: t('elevationProfile'),
-                    slope: t('slope'),
-                    flat: t('flat'),
-                    gentle: t('gentle'),
-                    steep: t('steep'),
-                    extreme: t('extreme'),
-                    km: t('km'),
-                    meters: t('meters'),
-                    resetZoom: t('resetZoom'),
-                  }}
-                  externalHoverDist={hoverDist}
-                  onHoverDist={setHoverDist}
-                />
-              </div>
-            )}
-
-            {/* Elevation chart in fullscreen — card, no gradient, touch-navigable */}
-            {trackProfile.length > 1 && mapExpanded && (
-              <div className="absolute inset-x-3 bottom-4 z-10 overflow-hidden rounded-xl bg-white/70 drop-shadow-[0_4px_16px_rgba(0,0,0,0.1)] backdrop-blur-[68px] lg:hidden dark:bg-zinc-900/60 dark:drop-shadow-[0_4px_16px_rgba(0,0,0,0.35)]">
-                <div className="pt-2">
-                  <TrailElevationChart
-                    compact
-                    noGradient
-                    showTooltip
-                    selectable={false}
-                    trackProfile={trackProfile}
-                    labels={{
-                      elevationProfile: t('elevationProfile'),
-                      slope: t('slope'),
-                      flat: t('flat'),
-                      gentle: t('gentle'),
-                      steep: t('steep'),
-                      extreme: t('extreme'),
-                      km: t('km'),
-                      meters: t('meters'),
-                      resetZoom: t('resetZoom'),
-                    }}
-                    externalHoverDist={hoverDist}
-                    onHoverDist={setHoverDist}
-                    onRangeSelect={(s, e) => setSelectedRange({ start: s, end: e })}
-                    onRangeReset={() => setSelectedRange(null)}
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Tap-to-expand overlay — mobile only, not fullscreen */}
-            {!mapExpanded && (
-              <div
-                className="absolute inset-0 z-10 lg:hidden"
-                onClick={() => setMapExpanded(true)}
-              />
-            )}
-
-            {/* Back button overlay — mobile only */}
-            {!mapExpanded && (
-              <Link
-                href={`/${locale}/trail/${trail.country}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`}
-                className="absolute top-3 left-3 z-10 flex items-center justify-center rounded-full bg-white/90 p-2 shadow-md backdrop-blur-sm lg:hidden dark:bg-zinc-900/90"
-                aria-label={t('backToTrails')}
-              >
-                <ArrowLeft className="text-secondary-foreground size-6" />
-              </Link>
-            )}
-
-            {/* Expand button — mobile only, top-right */}
-            {!mapExpanded && (
-              <Button
-                variant="secondary"
-                size="icon"
-                onClick={() => setMapExpanded(true)}
-                className="absolute top-3 right-3 z-10 size-10 shadow-md lg:hidden"
-                aria-label="Expand map"
-              >
-                <Maximize2 />
-              </Button>
-            )}
-
-            {/* Close button — shown when map is expanded */}
-            {mapExpanded && (
-              <Button
-                variant="secondary"
-                size="icon"
-                onClick={() => setMapExpanded(false)}
-                className="absolute top-3 right-3 z-10 size-10 shadow-md"
-                aria-label="Close map"
-              >
-                <X className="size-4" />
-              </Button>
-            )}
-          </div>
+          <TrailMapSection
+            trail={trail}
+            trackProfile={trackProfile}
+            locale={locale}
+            searchParams={searchParams.toString()}
+            mapExpanded={mapExpanded}
+            setMapExpanded={setMapExpanded}
+            mapHeightPx={mapHeightPx}
+            selectedRange={selectedRange}
+            setSelectedRange={setSelectedRange}
+            hoverDist={hoverDist}
+            setHoverDist={setHoverDist}
+            focusPoint={focusPoint}
+            setFocusPoint={setFocusPoint}
+            activePOI={activePOI}
+          />
         </main>
-
-        {/* Sticky CTA — mobile only, hidden in fullscreen map */}
-        <div
-          className={cn(
-            'fixed right-0 bottom-0 left-0 z-20 border-t border-zinc-200 bg-white/95 px-4 py-4 backdrop-blur-sm lg:hidden dark:border-zinc-800 dark:bg-[#08090f]/95',
-            mapExpanded && 'hidden',
-          )}
-        >
-          <Button
-            onClick={handleAnalyze}
-            className="font-headline h-auto w-full rounded-xl bg-zinc-900 px-6 py-4 text-base font-bold text-white dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
-          >
-            <MapPin />
-            {t('analyzeWithZustrack')}
-          </Button>
-        </div>
       </div>
     </>
+  );
+}
+
+export function TrailDetailPageClient(props: TrailDetailPageClientProps) {
+  return (
+    <Suspense fallback={<TrailDetailsSkeleton />}>
+      <TrailDetailPageInner {...props} />
+    </Suspense>
   );
 }

@@ -112,9 +112,9 @@ export function SnowshoeCard({
 
           {segments.length > 0 && (
             <ul className="mt-0.5 flex flex-col gap-1">
-              {segments.map((seg, i) => (
+              {segments.map((seg) => (
                 <li
-                  key={i}
+                  key={`${seg.startKm}-${seg.endKm}`}
                   className="text-muted-foreground flex flex-wrap items-center gap-1.5 text-xs"
                 >
                   <span

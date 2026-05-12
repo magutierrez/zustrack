@@ -113,7 +113,7 @@ export function RouteHazards({
 
           return (
             <Card
-              key={idx}
+              key={`${seg.type}-${seg.startDist}`}
               className="border-border/50 bg-card hover:border-primary/50 cursor-pointer overflow-hidden transition-all hover:shadow-md active:scale-[0.98]"
               onClick={() => handleShowOnMap(seg)}
             >
@@ -169,7 +169,7 @@ export function RouteHazards({
                           {chartData.length > 1 &&
                             chartData.map((d, i) => (
                               <stop
-                                key={i}
+                                key={d.dist}
                                 offset={`${(i / (chartData.length - 1)) * 100}%`}
                                 stopColor={d.color}
                               />

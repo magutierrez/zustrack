@@ -9,19 +9,17 @@ import {
   ArrowLeft,
   ArrowRight,
   ArrowUp,
-  Check,
   Loader2,
-  Map as MapIcon,
   MapPinned,
   MessageSquare,
-  Pencil,
   Sun,
-  Trash2,
   X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useEffect, useState } from 'react';
+import { useReducer, useEffect } from 'react';
 import { WeatherIcon } from '@/components/weather-icon';
+import { StreetViewSection } from './street-view-section';
+import { NoteSection } from './note-section';
 
 interface MapPopupProps {
   popupInfo: MapPopupInfo;
@@ -33,6 +31,54 @@ interface MapPopupProps {
   savedRouteId?: string | null;
   currentAnnotation?: Annotation | null;
   hideNotes?: boolean;
+}
+
+type MapPopupState = {
+  showStreetView: boolean;
+  streetViewAvailable: boolean | null;
+  showNote: boolean;
+  isEditing: boolean;
+  noteText: string;
+  isSaving: boolean;
+};
+
+type MapPopupAction =
+  | { type: 'SET_STREET_VIEW'; payload: boolean }
+  | { type: 'SET_STREET_VIEW_AVAILABLE'; payload: boolean | null }
+  | { type: 'TOGGLE_NOTE'; payload?: boolean }
+  | { type: 'SET_EDITING'; payload: boolean }
+  | { type: 'SET_NOTE_TEXT'; payload: string }
+  | { type: 'SET_SAVING'; payload: boolean }
+  | { type: 'RESET_NOTE'; payload: { showNote: boolean; noteText: string } };
+
+function popupReducer(state: MapPopupState, action: MapPopupAction): MapPopupState {
+  switch (action.type) {
+    case 'SET_STREET_VIEW':
+      return { ...state, showStreetView: action.payload };
+    case 'SET_STREET_VIEW_AVAILABLE':
+      return { ...state, streetViewAvailable: action.payload };
+    case 'TOGGLE_NOTE':
+      return {
+        ...state,
+        showNote: action.payload ?? !state.showNote,
+        isEditing: action.payload === false ? false : state.isEditing,
+      };
+    case 'SET_EDITING':
+      return { ...state, isEditing: action.payload };
+    case 'SET_NOTE_TEXT':
+      return { ...state, noteText: action.payload };
+    case 'SET_SAVING':
+      return { ...state, isSaving: action.payload };
+    case 'RESET_NOTE':
+      return {
+        ...state,
+        showNote: action.payload.showNote,
+        noteText: action.payload.noteText,
+        isEditing: false,
+      };
+    default:
+      return state;
+  }
 }
 
 function getWindEffectIcon(effect: string) {
@@ -61,12 +107,15 @@ export function MapPopup({
   currentAnnotation,
   hideNotes = false,
 }: MapPopupProps) {
-  const [showStreetView, setShowStreetView] = useState(false);
-  const [streetViewAvailable, setStreetViewAvailable] = useState<boolean | null>(null);
-  const [showNote, setShowNote] = useState(!!currentAnnotation);
-  const [isEditing, setIsEditing] = useState(false);
-  const [noteText, setNoteText] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
+  const [state, dispatch] = useReducer(popupReducer, {
+    showStreetView: false,
+    streetViewAvailable: null,
+    showNote: !!currentAnnotation,
+    isEditing: false,
+    noteText: '',
+    isSaving: false,
+  });
+
   const t = useTranslations('RouteMap');
   const tw = useTranslations('WeatherCodes');
   const tt = useTranslations('WeatherTimeline');
@@ -75,68 +124,20 @@ export function MapPopup({
   const isWeatherPoint = popupInfo.index !== -1;
 
   useEffect(() => {
-    const checkStreetView = async () => {
-      try {
-        setStreetViewAvailable(true);
-      } catch (e) {
-        setStreetViewAvailable(true);
-      }
-    };
-    checkStreetView();
+    dispatch({ type: 'SET_STREET_VIEW_AVAILABLE', payload: true });
   }, [popupInfo.point]);
 
-  if (showStreetView) {
+  if (state.showStreetView) {
     return (
-      <div className="bg-background animate-in fade-in absolute inset-0 z-[170] flex flex-col duration-200">
-        <div className="border-border bg-card flex items-center justify-between border-b px-4 py-3 shadow-sm">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2 font-bold tracking-wider uppercase"
-              onClick={() => setShowStreetView(false)}
-            >
-              <MapIcon className="size-4" />
-              {t('backToMap')}
-            </Button>
-            <div className="bg-border h-6 w-px" />
-            <div className="text-muted-foreground flex items-center gap-4 text-xs font-medium tracking-wider uppercase">
-              <span className="flex items-center gap-1">
-                <span className="text-foreground font-bold">
-                  {popupInfo.point.distanceFromStart.toFixed(1)}
-                </span>{' '}
-                km
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="text-foreground font-bold">
-                  {Math.round(popupInfo.point.ele || 0)}
-                </span>{' '}
-                m
-              </span>
-            </div>
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="hover:bg-destructive/10 hover:text-destructive size-9 rounded-full transition-colors"
-            onClick={() => {
-              setShowStreetView(false);
-              onClose();
-            }}
-          >
-            <X className="size-5" />
-          </Button>
-        </div>
-        <div className="bg-muted relative flex-1">
-          <iframe
-            src={`https://www.google.com/maps?layer=c&cbll=${popupInfo.point.lat},${popupInfo.point.lon}&cbp=12,${popupInfo.bearing || 0},0,0,0&output=svembed`}
-            className="h-full w-full border-0"
-            allowFullScreen
-            loading="lazy"
-            title="Street View"
-          />
-        </div>
-      </div>
+      <StreetViewSection
+        popupInfo={popupInfo}
+        onBack={() => dispatch({ type: 'SET_STREET_VIEW', payload: false })}
+        onClose={() => {
+          dispatch({ type: 'SET_STREET_VIEW', payload: false });
+          onClose();
+        }}
+        t={t}
+      />
     );
   }
 
@@ -144,91 +145,6 @@ export function MapPopup({
   const weatherDescription = hasTranslation
     ? tw(popupInfo.weather.weatherCode.toString() as any)
     : WEATHER_CODES[popupInfo.weather.weatherCode]?.description || tt('unknownWeather');
-
-  const noteSection = !hideNotes && showNote ? (
-    currentAnnotation && !isEditing ? (
-      // Display existing note inline
-      <div className="bg-amber-500/10 mt-2 rounded-lg px-2.5 py-2">
-        <p className="text-foreground mb-1.5 text-xs leading-relaxed">{currentAnnotation.text}</p>
-        <div className="flex gap-1">
-          <button
-            className="text-muted-foreground hover:text-foreground flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium transition-colors"
-            onClick={() => {
-              setIsEditing(true);
-              setNoteText(currentAnnotation.text);
-            }}
-          >
-            <Pencil className="size-2.5" />
-            {ta('edit')}
-          </button>
-          <button
-            className="text-muted-foreground hover:text-destructive flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium transition-colors"
-            onClick={() => {
-              onDeleteAnnotation?.(currentAnnotation.id);
-              setShowNote(false);
-            }}
-          >
-            <Trash2 className="size-2.5" />
-            {ta('delete')}
-          </button>
-        </div>
-      </div>
-    ) : (
-      // Input for new note or editing existing
-      <div className="mt-2">
-        <textarea
-          className="border-border bg-background text-foreground placeholder:text-muted-foreground w-full resize-none rounded-lg border px-2.5 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-amber-500 disabled:opacity-50"
-          placeholder={ta('placeholder')}
-          maxLength={500}
-          rows={3}
-          value={noteText}
-          onChange={(e) => setNoteText(e.target.value)}
-          disabled={!savedRouteId}
-          // eslint-disable-next-line jsx-a11y/no-autofocus
-          autoFocus
-        />
-        {!savedRouteId && (
-          <p className="text-muted-foreground mt-0.5 text-[9px]">{ta('saveRouteFirst')}</p>
-        )}
-        <div className="mt-1.5 flex gap-1.5">
-          <Button
-            variant="secondary"
-            size="sm"
-            className="h-7 flex-1 gap-1 text-[10px] font-bold uppercase"
-            disabled={!savedRouteId || !noteText.trim() || isSaving}
-            onClick={async () => {
-              if (!noteText.trim()) return;
-              setIsSaving(true);
-              if (isEditing && currentAnnotation) {
-                onUpdateAnnotation?.(currentAnnotation.id, noteText.trim());
-                setIsEditing(false);
-              } else {
-                onSaveAnnotation?.(noteText.trim());
-              }
-              setNoteText('');
-              setIsSaving(false);
-              setShowNote(false);
-            }}
-          >
-            {isSaving ? <Loader2 className="size-3 animate-spin" /> : <Check className="size-3" />}
-            {ta('save')}
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 px-2 text-[10px]"
-            onClick={() => {
-              setIsEditing(false);
-              setNoteText('');
-              setShowNote(!!currentAnnotation);
-            }}
-          >
-            {ta('cancel')}
-          </Button>
-        </div>
-      </div>
-    )
-  ) : null;
 
   const content = (
     <div className="text-foreground text-xs leading-relaxed">
@@ -240,7 +156,7 @@ export function MapPopup({
           {isWeatherPoint && (
             <span className="text-foreground font-mono text-[11px] font-bold">
               {/* eslint-disable-next-line react-doctor/rendering-hydration-mismatch-time */}
-            {new Date(popupInfo.point.estimatedTime || popupInfo.weather.time).toLocaleTimeString(
+              {new Date(popupInfo.point.estimatedTime || popupInfo.weather.time).toLocaleTimeString(
                 'es-ES',
                 {
                   hour: '2-digit',
@@ -256,24 +172,24 @@ export function MapPopup({
               {Math.round(popupInfo.point.ele || 0)}m
             </span>
           )}
-          {/* Note toggle button */}
           {!hideNotes && (
             <button
+              type="button"
               className={`flex size-6 items-center justify-center rounded-full transition-colors ${
                 currentAnnotation
                   ? 'bg-amber-500 text-white'
-                  : showNote
+                  : state.showNote
                     ? 'bg-amber-500/20 text-amber-600'
                     : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
               }`}
               title={ta('addNote')}
+              aria-label={ta('addNote')}
               onClick={() => {
-                if (showNote && !currentAnnotation) {
-                  setShowNote(false);
-                  setNoteText('');
+                if (state.showNote && !currentAnnotation) {
+                  dispatch({ type: 'RESET_NOTE', payload: { showNote: false, noteText: '' } });
                 } else {
-                  setShowNote(true);
-                  if (!currentAnnotation) setIsEditing(false);
+                  dispatch({ type: 'TOGGLE_NOTE', payload: true });
+                  if (!currentAnnotation) dispatch({ type: 'SET_EDITING', payload: false });
                 }
               }}
             >
@@ -358,10 +274,10 @@ export function MapPopup({
         variant="default"
         size="sm"
         className="h-8 w-full gap-2 text-[10px] font-bold uppercase shadow-sm transition-all active:scale-[0.98]"
-        onClick={() => setShowStreetView(true)}
-        disabled={streetViewAvailable === false}
+        onClick={() => dispatch({ type: 'SET_STREET_VIEW', payload: true })}
+        disabled={state.streetViewAvailable === false}
       >
-        {streetViewAvailable === null ? (
+        {state.streetViewAvailable === null ? (
           <Loader2 className="size-3.5 animate-spin" />
         ) : (
           <MapPinned className="size-3.5" />
@@ -369,7 +285,41 @@ export function MapPopup({
         {t('streetView')}
       </Button>
 
-      {noteSection}
+      {!hideNotes && state.showNote && (
+        <NoteSection
+          currentAnnotation={currentAnnotation}
+          isEditing={state.isEditing}
+          noteText={state.noteText}
+          isSaving={state.isSaving}
+          savedRouteId={savedRouteId}
+          ta={ta}
+          onEdit={(text) => {
+            dispatch({ type: 'SET_EDITING', payload: true });
+            dispatch({ type: 'SET_NOTE_TEXT', payload: text });
+          }}
+          onDelete={() => {
+            if (currentAnnotation) onDeleteAnnotation?.(currentAnnotation.id);
+            dispatch({ type: 'TOGGLE_NOTE', payload: false });
+          }}
+          onSave={async (text) => {
+            dispatch({ type: 'SET_SAVING', payload: true });
+            if (state.isEditing && currentAnnotation) {
+              onUpdateAnnotation?.(currentAnnotation.id, text);
+            } else {
+              onSaveAnnotation?.(text);
+            }
+            dispatch({ type: 'SET_SAVING', payload: false });
+            dispatch({ type: 'RESET_NOTE', payload: { showNote: false, noteText: '' } });
+          }}
+          onCancel={() => {
+            dispatch({
+              type: 'RESET_NOTE',
+              payload: { showNote: !!currentAnnotation, noteText: '' },
+            });
+          }}
+          onChangeText={(text) => dispatch({ type: 'SET_NOTE_TEXT', payload: text })}
+        />
+      )}
     </div>
   );
 
@@ -383,6 +333,7 @@ export function MapPopup({
             size="icon"
             className="hover:bg-destructive/10 hover:text-destructive mt-0.5 size-7 shrink-0 rounded-full transition-colors"
             onClick={onClose}
+            aria-label={t('close')}
           >
             <X className="size-4" />
           </Button>
@@ -408,6 +359,7 @@ export function MapPopup({
           size="icon"
           className="bg-background border-border hover:bg-destructive hover:text-destructive-foreground hover:border-destructive absolute -top-3 -right-3 z-10 size-6 rounded-full border shadow-sm transition-all"
           onClick={onClose}
+          aria-label={t('close')}
         >
           <X className="size-3" />
         </Button>

@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { LayoutGrid, Map } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -8,10 +9,11 @@ interface ViewToggleProps {
   labels: { listView: string; mapView: string };
 }
 
-export function ViewToggle({ labels }: ViewToggleProps) {
-  const router = useRouter();
+function ViewToggleInner({ labels }: ViewToggleProps) {
+  const { push } = useRouter();
   const searchParams = useSearchParams();
-  const currentView = searchParams.get('view') ?? 'list';
+  const { get } = searchParams;
+  const currentView = get('view') ?? 'list';
 
   const switchTo = (view: 'list' | 'map') => {
     const params = new URLSearchParams(searchParams.toString());
@@ -22,7 +24,7 @@ export function ViewToggle({ labels }: ViewToggleProps) {
     }
     params.delete('page');
     const qs = params.toString();
-    router.push(qs ? `?${qs}` : '?');
+    push(qs ? `?${qs}` : '?');
   };
 
   return (
@@ -54,5 +56,13 @@ export function ViewToggle({ labels }: ViewToggleProps) {
         <span className="hidden sm:inline">{labels.mapView}</span>
       </button>
     </div>
+  );
+}
+
+export function ViewToggle(props: ViewToggleProps) {
+  return (
+    <Suspense fallback={null}>
+      <ViewToggleInner {...props} />
+    </Suspense>
   );
 }
