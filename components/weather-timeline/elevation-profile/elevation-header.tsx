@@ -4,10 +4,11 @@ import { TrendingUp, RefreshCcw } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { formatElevation, formatDistance } from '@/lib/utils';
+import { UnitSystem } from '@/hooks/use-settings';
 
 interface ElevationHeaderProps {
   distance: number;
-  unitSystem: 'metric' | 'imperial';
+  unitSystem: UnitSystem;
   isMobile: boolean;
   zoomRange: { start: number; end: number } | null;
   resetZoom: () => void;

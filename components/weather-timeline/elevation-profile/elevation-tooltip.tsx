@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { formatElevation, formatDistance } from '@/lib/utils';
+import { UnitSystem } from '@/hooks/use-settings';
 
 export type TooltipState = {
   svgX: number;
@@ -15,7 +16,7 @@ export type TooltipState = {
 interface ElevationTooltipProps {
   tooltip: TooltipState | null;
   isMobile: boolean;
-  unitSystem: 'metric' | 'imperial';
+  unitSystem: UnitSystem;
   vpWidth: number;
   marginLeft: number;
   scrollLeft: number;

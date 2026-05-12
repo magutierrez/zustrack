@@ -287,7 +287,7 @@ export function MapPopup({
 
       {!hideNotes && state.showNote && (
         <NoteSection
-          currentAnnotation={currentAnnotation}
+          currentAnnotation={currentAnnotation as Annotation | null}
           isEditing={state.isEditing}
           noteText={state.noteText}
           isSaving={state.isSaving}

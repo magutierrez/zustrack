@@ -82,7 +82,7 @@ export async function ImportSources() {
 
           <div className="relative w-full max-w-md lg:ml-auto">
             {/* Glow behind the mockup */}
-            <div className="absolute -inset-1 rounded-3xl bg-gradient-to-tr from-orange-500 to-pink-500 opacity-20 blur-2xl" />
+            <div className="absolute -inset-1 rounded-3xl bg-linear-to-tr from-orange-500 to-pink-500 opacity-20 blur-2xl" />
 
             <div className="relative overflow-hidden rounded-3xl border border-zinc-200 bg-white/80 p-2 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-zinc-900/80">
               <div className="flex items-center gap-3 border-b border-zinc-100 bg-zinc-50/50 px-6 py-4 dark:border-white/5 dark:bg-white/2">
@@ -91,9 +91,7 @@ export async function ImportSources() {
                 </div>
                 <div>
                   <div className="text-sm font-bold text-zinc-900 dark:text-white">Strava</div>
-                  <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                    {t('mockupTitle')}
-                  </div>
+                  <div className="text-xs text-zinc-500 dark:text-zinc-400">{t('mockupTitle')}</div>
                 </div>
               </div>
 

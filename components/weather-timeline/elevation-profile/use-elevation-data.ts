@@ -4,13 +4,15 @@ import { useMemo } from 'react';
 import * as d3 from 'd3';
 import { formatElevation, formatDistance } from '@/lib/utils';
 
+import { UnitSystem } from '@/hooks/use-settings';
+
 type ChartPoint = { distance: number; elevation: number; slope: number; color: string };
 
 interface UseElevationDataProps {
   chartData: ChartPoint[];
   innerW: number;
   innerH: number;
-  unitSystem: 'metric' | 'imperial';
+  unitSystem: UnitSystem;
   totalDist: number;
 }
 

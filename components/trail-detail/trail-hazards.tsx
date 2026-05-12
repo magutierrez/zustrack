@@ -411,8 +411,8 @@ export function TrailHazards({
                       <linearGradient id={`trail-grad-${idx}`} x1="0" y1="0" x2="1" y2="0">
                         {chartData.map((d) => (
                           <stop
-                            key={d.distance}
-                            offset={`${((d.distance - seg.startDist) / seg.lengthKm) * 100}%`}
+                            key={d.dist}
+                            offset={`${((d.dist - seg.startDist) / seg.lengthKm) * 100}%`}
                             stopColor={d.color}
                           />
                         ))}

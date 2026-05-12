@@ -25,7 +25,7 @@ function InfoRow({ label, value, action }: InfoRowProps) {
 interface TrailInfoTableProps {
   trail: Trail;
   locale: string;
-  regionName?: string;
+  regionName?: string | null;
 }
 
 export function TrailInfoTable({ trail, locale, regionName }: TrailInfoTableProps) {
