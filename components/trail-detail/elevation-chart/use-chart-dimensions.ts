@@ -2,7 +2,7 @@ import { useState, useEffect, RefObject } from 'react';
 import { Margin } from './types';
 
 export const MARGIN_DESKTOP: Margin = { top: 8, right: 16, bottom: 28, left: 50 };
-export const MARGIN_MOBILE: Margin = { top: 8, right: 8, bottom: 24, left: 6 };
+export const MARGIN_MOBILE: Margin = { top: 8, right: 16, bottom: 24, left: 16 };
 export const MARGIN_COMPACT: Margin = { top: 0, right: 0, bottom: 0, left: 0 };
 
 export function useChartDimensions(

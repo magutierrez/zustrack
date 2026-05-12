@@ -140,7 +140,7 @@ export function ChartAxes({
               key={t.v}
               x={t.x}
               dy="1.4em"
-              textAnchor="middle"
+              textAnchor={t.x < 20 ? 'start' : t.x > innerW - 20 ? 'end' : 'middle'}
               fontSize={10}
               fill="currentColor"
               fillOpacity={0.55}

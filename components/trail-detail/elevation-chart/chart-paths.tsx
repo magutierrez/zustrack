@@ -34,10 +34,6 @@ export function ChartPaths({
   const colorSegmentPaths = useMemo(() => {
     if (!xScale || !yScale || !chartData.length) return [];
 
-    const pts = zoomRange
-      ? chartData.filter((d) => d.distance >= zoomRange.start && d.distance <= zoomRange.end)
-      : chartData;
-
     const curve = isMobile ? d3.curveMonotoneX : d3.curveLinear;
     const areaGen = d3
       .area<ChartPoint>()
@@ -48,81 +44,45 @@ export function ChartPaths({
 
     const result: { color: string; path: string; startDist: number }[] = [];
     let i = 0;
-    while (i < pts.length) {
-      const color = pts[i].color;
-      const startDist = pts[i].distance;
+    while (i < chartData.length) {
+      const color = chartData[i].color;
+      const startDist = chartData[i].distance;
       const group: ChartPoint[] = [];
-      while (i < pts.length && pts[i].color === color) group.push(pts[i++]);
-      if (i < pts.length) group.push(pts[i]);
+      while (i < chartData.length && chartData[i].color === color) group.push(chartData[i++]);
+      if (i < chartData.length) group.push(chartData[i]);
       const path = areaGen(group);
       if (path) result.push({ color, path, startDist });
     }
     return result;
-  }, [chartData, xScale, yScale, innerH, zoomRange, isMobile]);
+  }, [chartData, xScale, yScale, innerH, isMobile]);
 
   // Single-color area path
   const singleAreaPath = useMemo(() => {
     if (!singleColor || !xScale || !yScale || !chartData.length) return '';
-    const pts = zoomRange
-      ? chartData.filter((d) => d.distance >= zoomRange.start && d.distance <= zoomRange.end)
-      : chartData;
     return (
       d3
         .area<ChartPoint>()
         .x((d) => xScale(d.distance))
         .y0(innerH)
         .y1((d) => yScale(d.elevation))
-        .curve(d3.curveMonotoneX)(pts) ?? ''
+        .curve(d3.curveMonotoneX)(chartData) ?? ''
     );
-  }, [singleColor, chartData, xScale, yScale, innerH, zoomRange]);
+  }, [singleColor, chartData, xScale, yScale, innerH]);
 
   // Gradient stroke line
   const linePath = useMemo(() => {
     if (!xScale || !yScale || !chartData.length) return '';
-    const pts = zoomRange
-      ? chartData.filter((d) => d.distance >= zoomRange.start && d.distance <= zoomRange.end)
-      : chartData;
     return (
       d3
         .line<ChartPoint>()
         .x((d) => xScale(d.distance))
         .y((d) => yScale(d.elevation))
-        .curve(isMobile ? d3.curveMonotoneX : d3.curveLinear)(pts) ?? ''
+        .curve(isMobile ? d3.curveMonotoneX : d3.curveLinear)(chartData) ?? ''
     );
-  }, [chartData, xScale, yScale, zoomRange, isMobile]);
-
-  const gradientStops = useMemo(() => {
-    if (!chartData.length) return [{ offset: 0, color: SLOPE_COLOR_FLAT }];
-    const pts = zoomRange
-      ? chartData.filter((d) => d.distance >= zoomRange.start && d.distance <= zoomRange.end)
-      : chartData;
-    const min = pts[0]?.distance ?? 0;
-    const range = (pts[pts.length - 1]?.distance ?? 0) - min;
-    return pts.map((d) => ({
-      offset: range > 0 ? ((d.distance - min) / range) * 100 : 0,
-      color: d.color,
-    }));
-  }, [chartData, zoomRange]);
+  }, [chartData, xScale, yScale, isMobile]);
 
   return (
     <>
-      <defs>
-        <linearGradient id={strokeGradientId} x1="0" y1="0" x2="1" y2="0">
-          {gradientStops.map((s) => (
-            <stop key={s.offset} offset={`${s.offset}%`} stopColor={s.color} />
-          ))}
-        </linearGradient>
-        {singleColor && (
-          <linearGradient id={`${strokeGradientId}-area`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--color-primary)" stopOpacity="0.75" />
-            <stop offset="100%" stopColor="var(--color-primary)" stopOpacity="0" />
-          </linearGradient>
-        )}
-        <clipPath id={clipPathId}>
-          <rect x={0} y={0} width={innerW} height={innerH} />
-        </clipPath>
-      </defs>
-
       {singleColor ? (
         <>
           <path

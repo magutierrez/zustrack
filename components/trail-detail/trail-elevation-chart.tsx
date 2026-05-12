@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useId } from 'react';
+import { useRef, useState, useId, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 
 import { TrackPoint, Labels } from './elevation-chart/types';
@@ -82,6 +82,19 @@ export function TrailElevationChart({
   const strokeGradientId = `elev-stroke-${uid}`;
   const clipPathId = `elev-clip-${uid}`;
 
+  const gradientStops = useMemo(() => {
+    if (!chartData.length) return [{ offset: 0, color: '#ccc' }];
+    const pts = zoomRange
+      ? chartData.filter((d) => d.distance >= zoomRange.start && d.distance <= zoomRange.end)
+      : chartData;
+    const min = pts[0]?.distance ?? 0;
+    const range = (pts[pts.length - 1]?.distance ?? 0) - min;
+    return pts.map((d) => ({
+      offset: range > 0 ? ((d.distance - min) / range) * 100 : 0,
+      color: d.color,
+    }));
+  }, [chartData, zoomRange]);
+
   if (chartData.length < 2) return null;
 
   return (
@@ -103,9 +116,7 @@ export function TrailElevationChart({
       )}
 
       {/* Title + reset — hidden in compact mode */}
-      {!compact && (
-        <ChartHeader labels={labels} zoomRange={zoomRange} onResetZoom={resetZoom} />
-      )}
+      {!compact && <ChartHeader labels={labels} zoomRange={zoomRange} onResetZoom={resetZoom} />}
 
       {/* Info bar — compact+showTooltip mode: touch point data + reset zoom button */}
       {compact && showTooltip && (
@@ -122,12 +133,7 @@ export function TrailElevationChart({
       <div ref={outerRef} className={`relative w-full select-none ${compact ? 'h-20' : 'h-44'}`}>
         {/* Tooltip — only in non-compact mode (compact uses the info bar above) */}
         {!compact && activeTooltip && !dragPreview && innerW > 0 && (
-          <ChartTooltip
-            activeTooltip={activeTooltip}
-            labels={labels}
-            margin={margin}
-            size={size}
-          />
+          <ChartTooltip activeTooltip={activeTooltip} labels={labels} margin={margin} size={size} />
         )}
 
         {innerW > 0 && innerH > 0 ? (
@@ -141,21 +147,38 @@ export function TrailElevationChart({
             onDoubleClick={resetZoom}
             className={zoomRange ? 'cursor-zoom-out' : 'cursor-crosshair'}
           >
-            <ChartPaths
-              chartData={chartData}
-              xScale={xScale}
-              yScale={yScale}
-              innerW={innerW}
-              innerH={innerH}
-              zoomRange={zoomRange}
-              isMobile={isMobile}
-              compact={compact}
-              singleColor={singleColor}
-              strokeGradientId={strokeGradientId}
-              clipPathId={clipPathId}
-            />
+            <defs>
+              <linearGradient id={strokeGradientId} x1="0" y1="0" x2="1" y2="0">
+                {gradientStops.map((s, i) => (
+                  <stop key={`${s.offset}-${i}`} offset={`${s.offset}%`} stopColor={s.color} />
+                ))}
+              </linearGradient>
+              {singleColor && (
+                <linearGradient id={`${strokeGradientId}-area`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="var(--color-primary)" stopOpacity="0.75" />
+                  <stop offset="100%" stopColor="var(--color-primary)" stopOpacity="0" />
+                </linearGradient>
+              )}
+              <clipPath id={clipPathId}>
+                <rect x={0} y={0} width={innerW} height={innerH} />
+              </clipPath>
+            </defs>
 
             <g transform={`translate(${margin.left},${margin.top})`}>
+              <ChartPaths
+                chartData={chartData}
+                xScale={xScale}
+                yScale={yScale}
+                innerW={innerW}
+                innerH={innerH}
+                zoomRange={zoomRange}
+                isMobile={isMobile}
+                compact={compact}
+                singleColor={singleColor}
+                strokeGradientId={strokeGradientId}
+                clipPathId={clipPathId}
+              />
+
               <ChartAxes
                 xScale={xScale}
                 yScale={yScale}
