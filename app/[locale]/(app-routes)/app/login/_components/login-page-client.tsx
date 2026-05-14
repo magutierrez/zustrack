@@ -31,8 +31,8 @@ interface LoginPageClientProps {
 function LoginPageInner({ providers }: LoginPageClientProps) {
   const t = useTranslations('Auth');
   const locale = useLocale();
-  const { get } = useSearchParams();
-  const rawCallback = get('callbackUrl');
+  const searchParams = useSearchParams();
+  const rawCallback = searchParams.get('callbackUrl');
   // Only allow relative URLs to prevent open redirect
   const redirectTo = rawCallback?.startsWith('/') ? rawCallback : `/${locale}/app/setup`;
 

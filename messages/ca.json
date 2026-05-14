@@ -489,7 +489,8 @@
     "slope": "Pendent",
     "streetView": "Street View",
     "evacuationPoint": "Evacuació",
-    "noElevationData": "Sense dades d'altitud"
+    "noElevationData": "Sense dades d'altitud",
+    "close": "Tancar"
   },
   "IBP": {
     "title": "Índex IBP",

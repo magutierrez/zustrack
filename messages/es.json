@@ -490,7 +490,8 @@
     "slope": "Pendiente",
     "streetView": "Street View",
     "evacuationPoint": "Evacuación",
-    "noElevationData": "Sin datos de altitud"
+    "noElevationData": "Sin datos de altitud",
+    "close": "Cerrar"
   },
   "IBP": {
     "title": "Índice IBP",

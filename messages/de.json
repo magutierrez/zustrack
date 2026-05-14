@@ -489,7 +489,8 @@
     "slope": "Steigung",
     "streetView": "Straßenansicht",
     "evacuationPoint": "Evakuierung",
-    "noElevationData": "Keine Höhendaten"
+    "noElevationData": "Keine Höhendaten",
+    "close": "Schließen"
   },
   "IBP": {
     "title": "IBP-Index",
