@@ -15,6 +15,7 @@ export function useChartInteractions({
   onRangeSelect,
   onHoverDist,
   externalHoverDist,
+  onMarkerUpdate,
 }: {
   svgRef: RefObject<SVGSVGElement | null>;
   xScale: d3.ScaleLinear<number, number> | null;
@@ -28,12 +29,14 @@ export function useChartInteractions({
   onRangeSelect?: (start: number, end: number) => void;
   onHoverDist?: (dist: number | null) => void;
   externalHoverDist?: number | null;
+  onMarkerUpdate?: (t: TooltipState | null) => void;
 }) {
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
   const [dragPreview, setDragPreview] = useState<{ start: number; end: number } | null>(null);
   const isDragging = useRef(false);
   const dragStartRef = useRef<number | null>(null);
   const dragEndRef = useRef<number | null>(null);
+  const rafRef = useRef<number | null>(null);
 
   // Compute tooltip state for a given distance value
   const tooltipFromDist = (dist: number): TooltipState | null => {
@@ -98,6 +101,7 @@ export function useChartInteractions({
       tooltipFromDist,
       onHoverDist,
       confirmSelection,
+      onMarkerUpdate,
     };
   });
 
@@ -122,11 +126,11 @@ export function useChartInteractions({
         isDragging.current = true;
         dragStartRef.current = dist;
         dragEndRef.current = dist;
-        setTooltip(null);
+        liveRef.current.onMarkerUpdate?.(null);
       } else {
         const t = liveRef.current.tooltipFromDist(dist);
         if (t) {
-          setTooltip(t);
+          liveRef.current.onMarkerUpdate?.(t);
           liveRef.current.onHoverDist?.(t.dist);
         }
       }
@@ -134,21 +138,33 @@ export function useChartInteractions({
 
     const onTouchMove = (e: TouchEvent) => {
       e.preventDefault();
-      const dist = getDistFromTouch(e.touches[0].clientX);
-      if (dist == null) return;
-      if (isDragging.current && dragStartRef.current !== null) {
-        dragEndRef.current = dist;
-        setDragPreview({ start: dragStartRef.current, end: dist });
-        return;
-      }
-      const t = liveRef.current.tooltipFromDist(dist);
-      if (t) {
-        setTooltip(t);
-        liveRef.current.onHoverDist?.(t.dist);
-      }
+      // Capture clientX synchronously — Touch objects may be pooled
+      const clientX = e.touches[0].clientX;
+
+      // Throttle state updates to one per animation frame
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+      rafRef.current = requestAnimationFrame(() => {
+        rafRef.current = null;
+        const dist = getDistFromTouch(clientX);
+        if (dist == null) return;
+        if (isDragging.current && dragStartRef.current !== null) {
+          dragEndRef.current = dist;
+          setDragPreview({ start: dragStartRef.current, end: dist });
+          return;
+        }
+        const t = liveRef.current.tooltipFromDist(dist);
+        if (t) {
+          liveRef.current.onMarkerUpdate?.(t);
+          liveRef.current.onHoverDist?.(t.dist);
+        }
+      });
     };
 
     const onTouchEnd = () => {
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
       if (isDragging.current) {
         isDragging.current = false;
         const start = dragStartRef.current;
@@ -161,7 +177,7 @@ export function useChartInteractions({
         dragStartRef.current = null;
         dragEndRef.current = null;
       } else {
-        setTooltip(null);
+        liveRef.current.onMarkerUpdate?.(null);
         liveRef.current.onHoverDist?.(null);
       }
     };
@@ -173,6 +189,10 @@ export function useChartInteractions({
       svg.removeEventListener('touchstart', onTouchStart);
       svg.removeEventListener('touchmove', onTouchMove);
       svg.removeEventListener('touchend', onTouchEnd);
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [svgRef]);

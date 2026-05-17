@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useId, useMemo } from 'react';
+import { useRef, useState, useId, useMemo, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 
 import { TrackPoint, Labels } from './elevation-chart/types';
@@ -10,11 +10,12 @@ import { useChartScales } from './elevation-chart/use-chart-scales';
 import { useChartInteractions } from './elevation-chart/use-chart-interactions';
 
 import { ChartHeader } from './elevation-chart/chart-header';
-import { CompactInfoBar } from './elevation-chart/compact-info-bar';
+import { CompactInfoBar, CompactInfoBarHandle } from './elevation-chart/compact-info-bar';
 import { ChartTooltip } from './elevation-chart/chart-tooltip';
 import { ChartAxes } from './elevation-chart/chart-axes';
 import { ChartPaths } from './elevation-chart/chart-paths';
 import { ChartLegend } from './elevation-chart/chart-legend';
+import type { TooltipState } from './elevation-chart/types';
 
 export function TrailElevationChart({
   trackProfile,
@@ -46,11 +47,47 @@ export function TrailElevationChart({
   const outerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
+  // Imperative refs for touch-driven elements — no React re-renders during touch
+  const crosshairLineRef = useRef<SVGLineElement>(null);
+  const touchDotRef = useRef<SVGCircleElement>(null);
+  const compactInfoBarRef = useRef<CompactInfoBarHandle>(null);
+  const innerHLive = useRef(0);
+
   const [zoomRange, setZoomRange] = useState<{ start: number; end: number } | null>(null);
 
   const { size, margin, innerW, innerH, isMobile } = useChartDimensions(outerRef, compact);
+  innerHLive.current = innerH;
+
   const chartData = useChartData(trackProfile, isMobile);
   const { xScale, yScale } = useChartScales(chartData, innerW, innerH, zoomRange);
+
+  // Imperative marker update — called directly from touch handlers, zero React re-renders
+  const handleMarkerUpdate = useCallback((t: TooltipState | null) => {
+    const line = crosshairLineRef.current;
+    const dot = touchDotRef.current;
+    const h = innerHLive.current;
+
+    if (!t) {
+      if (line) line.style.display = 'none';
+      if (dot) dot.style.display = 'none';
+      compactInfoBarRef.current?.update(null);
+      return;
+    }
+    if (line) {
+      line.style.display = '';
+      line.setAttribute('x1', String(t.x));
+      line.setAttribute('x2', String(t.x));
+      line.setAttribute('y1', '0');
+      line.setAttribute('y2', String(h));
+    }
+    if (dot) {
+      dot.style.display = '';
+      dot.setAttribute('cx', String(t.x));
+      dot.setAttribute('cy', String(t.y));
+      dot.setAttribute('fill', t.color);
+    }
+    compactInfoBarRef.current?.update(t);
+  }, []);
 
   const {
     activeTooltip,
@@ -72,6 +109,7 @@ export function TrailElevationChart({
     onRangeSelect,
     onHoverDist,
     externalHoverDist,
+    onMarkerUpdate: handleMarkerUpdate,
   });
 
   const resetZoom = () => {
@@ -118,11 +156,10 @@ export function TrailElevationChart({
       {/* Title + reset — hidden in compact mode */}
       {!compact && <ChartHeader labels={labels} zoomRange={zoomRange} onResetZoom={resetZoom} />}
 
-      {/* Info bar — compact+showTooltip mode: touch point data + reset zoom button */}
+      {/* Info bar — compact+showTooltip: always rendered, updated imperatively on touch */}
       {compact && showTooltip && (
         <CompactInfoBar
-          activeTooltip={activeTooltip}
-          dragPreview={dragPreview}
+          ref={compactInfoBarRef}
           labels={labels}
           zoomRange={zoomRange}
           onResetZoom={resetZoom}
@@ -131,7 +168,7 @@ export function TrailElevationChart({
 
       {/* Chart area */}
       <div ref={outerRef} className={`relative w-full select-none ${compact ? 'h-20' : 'h-44'}`}>
-        {/* Tooltip — only in non-compact mode (compact uses the info bar above) */}
+        {/* Tooltip — only in non-compact mode */}
         {!compact && activeTooltip && !dragPreview && innerW > 0 && (
           <ChartTooltip activeTooltip={activeTooltip} labels={labels} margin={margin} size={size} />
         )}
@@ -141,6 +178,7 @@ export function TrailElevationChart({
             ref={svgRef}
             width="100%"
             height="100%"
+            style={{ touchAction: 'none' }}
             onMouseMove={handleMouseMove}
             onMouseDown={handleMouseDown}
             onMouseLeave={handleMouseLeave}
@@ -208,7 +246,31 @@ export function TrailElevationChart({
                 />
               )}
 
-              {/* Hover crosshair + dot */}
+              {/* Touch-driven crosshair + dot — always mounted, updated imperatively */}
+              <line
+                ref={crosshairLineRef}
+                x1={0}
+                x2={0}
+                y1={0}
+                y2={innerH}
+                stroke="currentColor"
+                strokeOpacity={0.2}
+                strokeWidth={1}
+                strokeDasharray="3 3"
+                style={{ display: 'none' }}
+              />
+              <circle
+                ref={touchDotRef}
+                cx={0}
+                cy={0}
+                r={compact ? 3 : 4}
+                fill="transparent"
+                stroke="white"
+                strokeWidth={1.5}
+                style={{ display: 'none' }}
+              />
+
+              {/* External hover crosshair + dot — React state, for map hover sync */}
               {activeTooltip && !dragPreview && (
                 <>
                   <line

@@ -106,7 +106,7 @@ export function TrailMapSection({
 
       {/* Elevation chart in fullscreen — card, no gradient, touch-navigable */}
       {isMobile && trackProfile.length > 1 && mapExpanded && (
-        <div className="absolute inset-x-3 bottom-4 z-10 overflow-hidden rounded-xl bg-white/70 drop-shadow-[0_4px_16px_rgba(0,0,0,0.1)] backdrop-blur-[68px] lg:hidden dark:bg-zinc-900/60 dark:drop-shadow-[0_4px_16px_rgba(0,0,0,0.35)]">
+        <div className="absolute inset-x-3 bottom-4 z-10 w-[calc(100%-1.5rem)] overflow-hidden rounded-xl bg-white/70 drop-shadow-[0_4px_16px_rgba(0,0,0,0.1)] backdrop-blur-[68px] lg:hidden dark:bg-zinc-900/60 dark:drop-shadow-[0_4px_16px_rgba(0,0,0,0.35)]">
           <div className="pt-2">
             <TrailElevationChart
               compact

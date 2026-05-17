@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import * as d3 from 'd3';
 import { ChartPoint, Labels } from './types';
 
@@ -15,7 +15,7 @@ interface ChartAxesProps {
   chartData: ChartPoint[];
 }
 
-export function ChartAxes({
+export const ChartAxes = memo(function ChartAxes({
   xScale,
   yScale,
   innerW,
@@ -171,4 +171,4 @@ export function ChartAxes({
         ))}
     </>
   );
-}
+});

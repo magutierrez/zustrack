@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import * as d3 from 'd3';
 import { ChartPoint } from './types';
 import { SLOPE_COLOR_FLAT } from '@/lib/slope-colors';
@@ -17,7 +17,7 @@ interface ChartPathsProps {
   clipPathId: string;
 }
 
-export function ChartPaths({
+export const ChartPaths = memo(function ChartPaths({
   chartData,
   xScale,
   yScale,
@@ -122,4 +122,4 @@ export function ChartPaths({
       )}
     </>
   );
-}
+});
