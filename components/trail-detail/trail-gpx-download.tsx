@@ -31,6 +31,17 @@ ${trkpts}
 </gpx>`;
 }
 
+export function downloadGpxFile(name: string, trackProfile: TrackPoint[]): void {
+  const gpx = buildGpx(name, trackProfile);
+  const blob = new Blob([gpx], { type: 'application/gpx+xml' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${name.toLowerCase().replace(/\s+/g, '-')}.gpx`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export function TrailGpxDownload({
   name,
   trackProfile,

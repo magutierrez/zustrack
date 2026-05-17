@@ -23,6 +23,7 @@ import { TrailSimilarTrails } from './trail-similar-trails';
 import { TrailElevationHazardsTabs } from './trail-elevation-hazards-tabs';
 import { TrailDetailsStyles } from './trail-details-styles';
 import { TrailActionFooter } from './trail-action-footer';
+import { downloadGpxFile } from './trail-gpx-download';
 import { TrailDetailsSkeleton } from './trail-details-skeleton';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -418,7 +419,11 @@ function TrailDetailPageInner({
               <TrailInfoTable trail={trail} locale={locale} regionName={regionName} />
             </div>
 
-            <TrailActionFooter onAnalyze={handleAnalyze} mapExpanded={mapExpanded} />
+            <TrailActionFooter
+              onAnalyze={handleAnalyze}
+              mapExpanded={mapExpanded}
+              onDownloadGpx={trackProfile.length > 0 ? () => downloadGpxFile(trail.name, trackProfile) : undefined}
+            />
           </div>
 
           <TrailMapSection

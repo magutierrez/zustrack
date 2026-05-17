@@ -93,7 +93,7 @@ export function TrailHeader({
       </div>
 
       {trail.track_profile && trail.track_profile.length > 0 && (
-        <div className="pt-1">
+        <div className="hidden pt-1 lg:block">
           <TrailGpxDownload
             name={trail.name}
             trackProfile={trail.track_profile}
