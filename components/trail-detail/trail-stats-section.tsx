@@ -44,6 +44,8 @@ export function TrailStatsSection({
         showOnMap: t('showOnMap'),
         durationH: t('durationH'),
         durationMin: t('durationMin'),
+        moreData: t('moreData'),
+        lessData: t('lessData'),
       }}
     />
   );

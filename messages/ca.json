@@ -894,7 +894,9 @@
     "equipmentFirstAidFull": "Farmaciola bàsica + xiulet + manta tèrmica",
     "equipmentFirstAidBasic": "Farmaciola bàsica",
     "equipmentNavigationGps": "GPS o descàrrega offline de la ruta",
-    "equipmentNavigationOffline": "Descàrrega offline recomanada"
+    "equipmentNavigationOffline": "Descàrrega offline recomanada",
+    "moreData": "Més dades de la ruta",
+    "lessData": "Menys"
   },
   "TrailSearchPage": {
     "title": "Senders oficials",

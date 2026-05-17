@@ -104,7 +104,7 @@ export function TrailWeatherForecast({
           ))}
         </div>
       ) : (
-        <div className="flex gap-2 overflow-x-auto pt-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex [scrollbar-width:none] gap-2 overflow-x-auto pt-4 pb-1 [&::-webkit-scrollbar]:hidden">
           {forecast.map((day, i) => {
             const isBest = i === bestIdx;
             return (
@@ -118,7 +118,7 @@ export function TrailWeatherForecast({
                 )}
               >
                 {isBest && (
-                  <span className="absolute -top-2 left-1/2 z-50 w-[70px] -translate-x-1/2 rounded-full bg-emerald-500 px-1.5 py-0.5 text-[8px] font-bold tracking-wide text-white uppercase">
+                  <span className="absolute -top-2 left-1/2 z-20 w-17.5 -translate-x-1/2 rounded-full bg-emerald-500 px-1.5 py-0.5 text-[8px] font-bold tracking-wide text-white uppercase">
                     {labels.bestDay}
                   </span>
                 )}

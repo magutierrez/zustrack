@@ -894,7 +894,9 @@
     "equipmentFirstAidFull": "Basic first aid kit + whistle + thermal blanket",
     "equipmentFirstAidBasic": "Basic first aid kit",
     "equipmentNavigationGps": "GPS or offline route download",
-    "equipmentNavigationOffline": "Offline download recommended"
+    "equipmentNavigationOffline": "Offline download recommended",
+    "moreData": "More route data",
+    "lessData": "Less"
   },
   "TrailSearchPage": {
     "title": "Official trails",
