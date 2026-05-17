@@ -658,29 +658,10 @@ function TrailFiltersInner({
           )}
         </div>
 
-        {/* Desktop: clear all */}
-        {hasFilters && (
-          <button
-            onClick={clearAll}
-            className="hidden shrink-0 items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-600 transition hover:border-zinc-300 hover:text-zinc-900 md:flex dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:text-white"
-          >
-            <X className="size-3.5" />
-            {labels.clearFilters}
-            <span className="rounded-full bg-zinc-900 px-1.5 py-0.5 text-[10px] font-bold text-white dark:bg-white dark:text-zinc-900">
-              {activeCount}
-            </span>
-          </button>
-        )}
-      </div>
-
-      {/* ── Row 2 mobile: effort chips + "Filters" button ───────────────── */}
-      <div className="flex items-center gap-2 md:hidden">
-        <div className="flex [scrollbar-width:none] gap-1.5 overflow-x-auto pb-0.5 [&::-webkit-scrollbar]:hidden">
-          {effortChips}
-        </div>
+        {/* Mobile: Filters button inline with search */}
         <Sheet>
           <SheetTrigger asChild>
-            <button className="ml-auto flex shrink-0 items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 shadow-sm transition hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
+            <button className="md:hidden flex shrink-0 items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm font-medium text-zinc-700 shadow-sm transition hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
               <SlidersHorizontal className="size-4" />
               {labels.filterMore}
               {activeCount > 0 && (
@@ -730,6 +711,25 @@ function TrailFiltersInner({
             </div>
           </SheetContent>
         </Sheet>
+
+        {/* Desktop: clear all */}
+        {hasFilters && (
+          <button
+            onClick={clearAll}
+            className="hidden shrink-0 items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-600 transition hover:border-zinc-300 hover:text-zinc-900 md:flex dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+          >
+            <X className="size-3.5" />
+            {labels.clearFilters}
+            <span className="rounded-full bg-zinc-900 px-1.5 py-0.5 text-[10px] font-bold text-white dark:bg-white dark:text-zinc-900">
+              {activeCount}
+            </span>
+          </button>
+        )}
+      </div>
+
+      {/* ── Row 2 mobile: effort chips ───────────────────────────────────── */}
+      <div className="flex [scrollbar-width:none] gap-1.5 overflow-x-auto pb-0.5 md:hidden [&::-webkit-scrollbar]:hidden">
+        {effortChips}
       </div>
 
       {/* ── Row 2 desktop: sectioned filter groups ──────────────────────── */}
