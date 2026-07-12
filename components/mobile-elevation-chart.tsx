@@ -82,7 +82,7 @@ export function MobileElevationChart() {
             data={activeData}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
-            onClick={(e) => {
+            onClick={(e: any) => {
               if (e && e.activePayload && e.activePayload.length) {
                 setClickedChartPointDist(e.activePayload[0].payload.distance);
               }
