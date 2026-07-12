@@ -35,14 +35,14 @@ function getCoverageIconLabel(coverage: string | undefined, t: any) {
     case 'none':
       return (
         <div className="text-destructive flex items-center gap-1.5">
-          <PhoneOff className="h-4 w-4" />
+          <PhoneOff className="size-4" />
           <span className="text-xs font-bold">{t('safety.noCoverage')}</span>
         </div>
       );
     case 'low':
       return (
         <div className="flex items-center gap-1.5 text-orange-500">
-          <PhoneOff className="h-4 w-4" />
+          <PhoneOff className="size-4" />
           <span className="text-xs font-bold">{t('safety.lowCoverage')}</span>
         </div>
       );
@@ -54,11 +54,11 @@ function getCoverageIconLabel(coverage: string | undefined, t: any) {
 function getSolarIcon(exposure: string) {
   switch (exposure) {
     case 'sun':
-      return <Sun className="h-4 w-4 text-amber-500" />;
+      return <Sun className="size-4 text-amber-500" />;
     case 'shade':
-      return <Cloud className="h-4 w-4 text-slate-400" />;
+      return <Cloud className="size-4 text-zinc-400" />;
     case 'night':
-      return <Moon className="h-4 w-4 text-indigo-400" />;
+      return <Moon className="size-4 text-violet-400" />;
     default:
       return null;
   }
@@ -67,9 +67,9 @@ function getSolarIcon(exposure: string) {
 function getSolarIntensityColor(intensity: string) {
   switch (intensity) {
     case 'night':
-      return 'text-slate-900 dark:text-slate-400';
+      return 'text-zinc-900 dark:text-zinc-400';
     case 'shade':
-      return 'text-slate-500';
+      return 'text-zinc-500';
     case 'weak':
       return 'text-yellow-600';
     case 'moderate':
@@ -84,13 +84,13 @@ function getSolarIntensityColor(intensity: string) {
 function getWindEffectIcon(effect: string) {
   switch (effect) {
     case 'tailwind':
-      return <ArrowDown className="h-3.5 w-3.5 text-emerald-500" />;
+      return <ArrowDown className="size-3.5 text-emerald-500" />;
     case 'headwind':
-      return <ArrowUp className="h-3.5 w-3.5 text-red-500" />;
+      return <ArrowUp className="size-3.5 text-red-500" />;
     case 'crosswind-left':
-      return <ArrowLeft className="h-3.5 w-3.5 text-amber-500" />;
+      return <ArrowLeft className="size-3.5 text-amber-500" />;
     case 'crosswind-right':
-      return <ArrowRight className="h-3.5 w-3.5 text-amber-500" />;
+      return <ArrowRight className="size-3.5 text-amber-500" />;
     default:
       return null;
   }
@@ -141,7 +141,7 @@ export function WeatherPointDetail({
           )}
         </div>
         <div className="flex flex-col items-center gap-1">
-          <WeatherIcon code={weatherPoint.weather.weatherCode} className="h-10 w-10" />
+          <WeatherIcon code={weatherPoint.weather.weatherCode} className="size-10" />
           <span className="text-muted-foreground text-center text-xs">{weatherDescription}</span>
         </div>
       </div>
@@ -149,7 +149,7 @@ export function WeatherPointDetail({
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         {/* Temperature */}
         <div className="bg-secondary flex items-center gap-2 rounded-lg p-2.5">
-          <Thermometer className="text-destructive h-4 w-4 shrink-0" />
+          <Thermometer className="text-destructive size-4 shrink-0" />
           <div>
             <p className="text-muted-foreground text-xs">{t('detail.temperature')}</p>
             <p className="text-foreground font-mono text-sm font-bold">
@@ -208,7 +208,7 @@ export function WeatherPointDetail({
 
         {/* Precipitation */}
         <div className="bg-secondary flex items-center gap-2 rounded-lg p-2.5">
-          <Droplets className="text-chart-2 h-4 w-4 shrink-0" />
+          <Droplets className="text-chart-2 size-4 shrink-0" />
           <div>
             <p className="text-muted-foreground text-xs">{t('detail.rain')}</p>
             <p className="text-foreground font-mono text-sm font-bold">
@@ -222,7 +222,7 @@ export function WeatherPointDetail({
 
         {/* Visibility */}
         <div className="bg-secondary flex items-center gap-2 rounded-lg p-2.5">
-          <Eye className="text-muted-foreground h-4 w-4 shrink-0" />
+          <Eye className="text-muted-foreground size-4 shrink-0" />
           <div>
             <p className="text-muted-foreground text-xs">{t('detail.visibility')}</p>
             <p className="text-foreground font-mono text-sm font-bold">
@@ -238,16 +238,16 @@ export function WeatherPointDetail({
       {/* Safety & Escape info */}
       {(weatherPoint.escapePoint ||
         (weatherPoint.mobileCoverage && weatherPoint.mobileCoverage !== 'full')) && (
-        <div className="mt-3 flex flex-wrap gap-3 rounded-lg border border-indigo-500/20 bg-indigo-500/5 p-3">
+        <div className="mt-3 flex flex-wrap gap-3 rounded-lg border border-violet-500/20 bg-violet-500/5 p-3">
           {weatherPoint.escapePoint && (
             <div className="flex flex-1 items-start justify-between gap-3">
               <div className="flex items-start gap-3">
-                <Signpost className="mt-0.5 h-4 w-4 shrink-0 text-indigo-500" />
+                <Signpost className="mt-0.5 size-4 shrink-0 text-violet-500" />
                 <div>
                   <p className="text-foreground text-xs font-bold">{t('safety.evacuation')}</p>
                   <p className="text-muted-foreground text-[11px]">
                     {t('safety.escapeDesc', { dist: weatherPoint.escapePoint.distanceFromRoute })}:
-                    <span className="ml-1 font-semibold text-indigo-600 dark:text-indigo-400">
+                    <span className="ml-1 font-semibold text-violet-600 dark:text-violet-400">
                       {weatherPoint.escapePoint.name}
                     </span>
                   </p>
@@ -257,7 +257,7 @@ export function WeatherPointDetail({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-7 gap-1 px-2 text-[10px] font-bold text-indigo-600 uppercase hover:bg-indigo-500/10 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                  className="h-7 gap-1 px-2 text-[10px] font-bold text-violet-600 uppercase hover:bg-violet-500/10 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300"
                   onClick={() =>
                     onShowOnMap(
                       weatherPoint.escapePoint!.lat,
@@ -266,14 +266,14 @@ export function WeatherPointDetail({
                     )
                   }
                 >
-                  <MapPin className="h-3 w-3" />
+                  <MapPin className="size-3" />
                   {t('safety.viewOnMap')}
                 </Button>
               )}
             </div>
           )}
           {weatherPoint.mobileCoverage && weatherPoint.mobileCoverage !== 'full' && (
-            <div className="flex shrink-0 items-center border-l border-indigo-500/20 pl-3">
+            <div className="flex shrink-0 items-center border-l border-violet-500/20 pl-3">
               {getCoverageIconLabel(weatherPoint.mobileCoverage, t)}
             </div>
           )}

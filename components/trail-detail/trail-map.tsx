@@ -373,6 +373,9 @@ export default function TrailMap({
           const map = e.target as maplibregl.Map;
           addArrowImage(map);
           map.on('style.load', () => addArrowImage(map));
+          map.on('styleimagemissing', (ev) => {
+            if (ev.id === 'route-arrow') addArrowImage(map);
+          });
           map.fitBounds(
             [
               [minLng, minLat],
@@ -399,7 +402,7 @@ export default function TrailMap({
             <Button
               variant={enable3D ? 'default' : 'secondary'}
               size="icon"
-              className="h-10 w-10 text-xs font-bold shadow-md"
+              className="size-10 text-xs font-bold shadow-md"
               onClick={() => setEnable3D((v) => !v)}
               disabled={terrainLoading}
               title={enable3D ? '2D' : '3D'}
@@ -490,21 +493,21 @@ export default function TrailMap({
         )}
 
         {/* Escape point marker — only shown when selected via "Show on map" */}
-        {escapePoints?.map((ep, i) => {
+        {escapePoints?.map((ep) => {
           if (!isActivePOI(activePOI, ep.lat, ep.lng)) return null;
           const color = ESCAPE_COLORS[ep.type];
           return (
-            <Marker key={`ep-${i}`} latitude={ep.lat} longitude={ep.lng} anchor="bottom">
+            <Marker key={`ep-${ep.lat}-${ep.lng}`} latitude={ep.lat} longitude={ep.lng} anchor="bottom">
               <div className="flex flex-col items-center">
                 <div
                   style={{ backgroundColor: color }}
-                  className="flex h-7 w-7 items-center justify-center rounded-full text-[9px] font-black text-white shadow-lg ring-2 ring-white ring-offset-1"
+                  className="flex size-7 items-center justify-center rounded-full text-[9px] font-black text-white shadow-lg ring-2 ring-white ring-offset-1"
                 >
                   {ep.type === 'town' ? 'T' : ep.type === 'road' ? 'R' : 'S'}
                 </div>
                 <div
                   style={{ borderTopColor: color }}
-                  className="h-0 w-0 border-t-[6px] border-r-[5px] border-l-[5px] border-r-transparent border-l-transparent"
+                  className="size-0 border-t-[6px] border-r-[5px] border-l-[5px] border-r-transparent border-l-transparent"
                 />
               </div>
             </Marker>
@@ -512,15 +515,15 @@ export default function TrailMap({
         })}
 
         {/* Water source marker — only shown when selected via "Show on map" */}
-        {waterSources?.map((ws, i) => {
+        {waterSources?.map((ws) => {
           if (!isActivePOI(activePOI, ws.lat, ws.lng)) return null;
           return (
-            <Marker key={`ws-${i}`} latitude={ws.lat} longitude={ws.lng} anchor="bottom">
+            <Marker key={`ws-${ws.lat}-${ws.lng}`} latitude={ws.lat} longitude={ws.lng} anchor="bottom">
               <div className="flex flex-col items-center">
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-sky-500 text-[9px] font-black text-white shadow-lg ring-2 ring-white ring-offset-1">
+                <div className="flex size-7 items-center justify-center rounded-full bg-sky-500 text-[9px] font-black text-white shadow-lg ring-2 ring-white ring-offset-1">
                   💧
                 </div>
-                <div className="h-0 w-0 border-t-[6px] border-r-[5px] border-l-[5px] border-t-sky-500 border-r-transparent border-l-transparent" />
+                <div className="size-0 border-t-[6px] border-r-[5px] border-l-[5px] border-t-sky-500 border-r-transparent border-l-transparent" />
               </div>
             </Marker>
           );
@@ -532,10 +535,10 @@ export default function TrailMap({
           !waterSources?.some((ws) => isActivePOI(activePOI, ws.lat, ws.lng)) && (
             <Marker latitude={activePOI.lat} longitude={activePOI.lng} anchor="bottom">
               <div className="flex flex-col items-center">
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-violet-500 text-[11px] font-black text-white shadow-lg ring-2 ring-white ring-offset-1">
+                <div className="flex size-7 items-center justify-center rounded-full bg-violet-500 text-[11px] font-black text-white shadow-lg ring-2 ring-white ring-offset-1">
                   ▲
                 </div>
-                <div className="h-0 w-0 border-t-[6px] border-r-[5px] border-l-[5px] border-t-violet-500 border-r-transparent border-l-transparent" />
+                <div className="size-0 border-t-[6px] border-r-[5px] border-l-[5px] border-t-violet-500 border-r-transparent border-l-transparent" />
               </div>
             </Marker>
           )}
@@ -563,7 +566,7 @@ export default function TrailMap({
         {/* Hover dot — synced with elevation chart */}
         {hoverPoint && (
           <Marker latitude={hoverPoint.lat} longitude={hoverPoint.lng} anchor="center">
-            <div className="h-3.5 w-3.5 rounded-full border-2 border-white bg-amber-400 shadow-md" />
+            <div className="size-3.5 rounded-full border-2 border-white bg-amber-400 shadow-md" />
           </Marker>
         )}
 
@@ -599,7 +602,7 @@ function StartEndMarker({
     <Marker latitude={lat} longitude={lng} anchor="center">
       <div
         style={{ backgroundColor: color }}
-        className="flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-black text-white shadow-md ring-2 ring-white"
+        className="flex size-6 items-center justify-center rounded-full text-[10px] font-black text-white shadow-md ring-2 ring-white"
       >
         {label}
       </div>

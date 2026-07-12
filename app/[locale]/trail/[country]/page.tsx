@@ -54,8 +54,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function TrailSearchCountryPage({ params, searchParams }: PageProps) {
-  const { locale, country } = await params;
-  const sp = await searchParams;
+  const [{ locale, country }, sp] = await Promise.all([params, searchParams]);
   setRequestLocale(locale);
 
   const t = await getTranslations({ locale, namespace: 'TrailSearchPage' });

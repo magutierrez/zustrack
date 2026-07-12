@@ -20,6 +20,7 @@ interface ImportedRoute {
 export function WikilocImport({ onRouteLoaded }: WikilocImportProps) {
   const t = useTranslations('SetupPage');
   const [url, setUrl] = useState('');
+  // eslint-disable-next-line react-doctor/rendering-usetransition-loading
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [importedRoute, setImportedRoute] = useState<ImportedRoute | null>(null);
@@ -61,7 +62,7 @@ export function WikilocImport({ onRouteLoaded }: WikilocImportProps) {
         <p className="text-muted-foreground text-xs">{t('wikilocDescription')}</p>
         <div className="flex flex-col gap-2 lg:flex-row">
           <div className="relative flex-1">
-            <Search className="text-muted-foreground absolute top-2.5 left-3 h-4 w-4" />
+            <Search className="text-muted-foreground absolute top-2.5 left-3 size-4" />
             <Input
               placeholder={t('wikilocPlaceholder')}
               value={url}
@@ -81,7 +82,7 @@ export function WikilocImport({ onRouteLoaded }: WikilocImportProps) {
             className="shrink-0"
             variant="outline"
           >
-            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : t('importWikiloc')}
+            {isLoading ? <Loader2 className="size-4 animate-spin" /> : t('importWikiloc')}
           </Button>
         </div>
 
@@ -89,16 +90,16 @@ export function WikilocImport({ onRouteLoaded }: WikilocImportProps) {
 
         {importedRoute && (
           <div className="border-border bg-muted/40 flex items-start gap-3 rounded-lg border p-3">
-            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
+            <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-green-500" />
             <div className="min-w-0 flex-1">
               <p className="text-foreground truncate text-sm font-medium">{importedRoute.name}</p>
               <div className="text-muted-foreground mt-1 flex items-center gap-3 text-xs">
                 <span className="flex items-center gap-1">
-                  <MapPin className="h-3 w-3" />
+                  <MapPin className="size-3" />
                   {t('wikilocPoints', { count: importedRoute.pointCount })}
                 </span>
                 <span className="flex items-center gap-1">
-                  <Route className="h-3 w-3" />
+                  <Route className="size-3" />
                   wikiloc.com
                 </span>
               </div>

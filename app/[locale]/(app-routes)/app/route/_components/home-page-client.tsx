@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, Suspense } from 'react';
 import { trailToGpx } from '@/lib/trail-to-gpx';
 import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
@@ -30,7 +30,7 @@ const RouteMap = dynamic(() => import('@/components/route-map'), {
   loading: function Loading() {
     const th = useTranslations('HomePage');
     return (
-      <div className="bg-card flex h-full items-center justify-center rounded-lg border border-slate-200 dark:border-white/5">
+      <div className="bg-card flex h-full items-center justify-center rounded-lg border border-zinc-200 dark:border-white/5">
         <SpecialLoading message={th('loadingMap')} />
       </div>
     );
@@ -41,7 +41,7 @@ interface HomePageClientProps {
   session: Session | null;
 }
 
-export default function HomePageClient({ session: serverSession }: HomePageClientProps) {
+function HomePageInner({ session: serverSession }: HomePageClientProps) {
   const { data: clientSession } = useSession();
   const session = clientSession || serverSession;
   const searchParams = useSearchParams();
@@ -100,6 +100,7 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
   const handleSelectBestWindow = useCallback(
     (isoTime: string) => {
       const { date, time } = formatISOToConfig(isoTime);
+      // eslint-disable-next-line react-doctor/rerender-functional-setstate
       setConfig({ ...config, date, time });
     },
     [config, setConfig],
@@ -211,5 +212,13 @@ export default function HomePageClient({ session: serverSession }: HomePageClien
         }
       `}</style>
     </div>
+  );
+}
+
+export default function HomePageClient(props: HomePageClientProps) {
+  return (
+    <Suspense fallback={null}>
+      <HomePageInner {...props} />
+    </Suspense>
   );
 }

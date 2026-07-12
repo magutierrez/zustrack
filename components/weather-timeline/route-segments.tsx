@@ -37,14 +37,14 @@ const SegmentBar = ({
     ) : (
       <>
         <div className="bg-secondary ring-border flex h-3 w-full overflow-hidden rounded-full ring-1">
-          {data.map((item, idx) => {
+          {data.map((item) => {
             const isActive = activeFilter?.key === typeKey && activeFilter.value === item.name;
             const isFilteringOther =
               activeFilter && (activeFilter.key !== typeKey || activeFilter.value !== item.name);
 
             return (
               <button
-                key={idx}
+                key={item.name}
                 onClick={() => handleSegmentClick(typeKey, item.name)}
                 style={{
                   width: `${item.percent}%`,
@@ -58,11 +58,11 @@ const SegmentBar = ({
           })}
         </div>
         <div className="flex flex-wrap gap-x-4 gap-y-1">
-          {data.map((item, idx) => {
+          {data.map((item) => {
             const isActive = activeFilter?.key === typeKey && activeFilter.value === item.name;
             return (
               <button
-                key={idx}
+                key={item.name}
                 onClick={() => handleSegmentClick(typeKey, item.name)}
                 className={`flex items-center gap-1.5 rounded border px-1.5 py-0.5 transition-all ${
                   isActive
@@ -70,7 +70,7 @@ const SegmentBar = ({
                     : 'bg-secondary/50 text-foreground hover:border-border border-transparent'
                 }`}
               >
-                <div className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />
+                <div className="size-2 rounded-full" style={{ backgroundColor: item.color }} />
                 <span className="text-[10px] font-medium">
                   {t(`${translationNamespace}.${item.name}` as any)}
                 </span>
@@ -93,7 +93,7 @@ export function RouteSegments() {
   return (
     <div className="border-border bg-card rounded-xl border p-4">
       <div className="mb-4 flex items-center gap-2">
-        <MapIcon className="text-primary h-4 w-4" />
+        <MapIcon className="text-primary size-4" />
         <h3 className="text-foreground text-sm font-semibold">{t('segmentsTitle')}</h3>
       </div>
 

@@ -44,10 +44,10 @@ export function SlopeBreakdownBar({
       </div>
       <div className="flex flex-wrap gap-x-4 gap-y-1">
         {SEGMENTS.map(({ key, color, label }) => (
-          <span key={key} className="inline-flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400">
-            <span className={`inline-block h-2.5 w-2.5 rounded-sm ${color}`} />
+          <span key={key} className="inline-flex items-center gap-1.5 text-sm text-zinc-500 dark:text-zinc-400">
+            <span className={`inline-block size-2.5 rounded-sm ${color}`} />
             {labels[label]}
-            <span className="font-medium text-slate-700 dark:text-slate-200">{breakdown[key]}%</span>
+            <span className="font-medium text-zinc-700 dark:text-zinc-200">{breakdown[key]}%</span>
           </span>
         ))}
       </div>

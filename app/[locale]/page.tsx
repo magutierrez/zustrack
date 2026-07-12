@@ -1,6 +1,11 @@
+import type { Metadata } from 'next';
 import { use } from 'react';
 
 export const revalidate = false;
+export const metadata: Metadata = {
+  title: 'zustrack — Weather & Terrain Analysis for Cyclists & Hikers',
+  description: 'Plan your cycling or hiking route with point-by-point weather, terrain, and hazard analysis.',
+};
 
 import { setRequestLocale } from 'next-intl/server';
 import { Nav } from './landing/_components/nav';
@@ -17,7 +22,7 @@ export default function LandingPage({ params }: { params: Promise<{ locale: stri
   setRequestLocale(locale);
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 dark:bg-[#08090f] dark:text-white">
+    <div className="min-h-screen bg-white text-zinc-900 dark:bg-[#08090f] dark:text-white">
       <Nav />
       <main>
         <Hero />

@@ -22,6 +22,51 @@ import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { parseGPX, sampleRoutePoints } from '@/lib/gpx-parser';
 
+function RouteElevationSparkline({ route }: { route: SavedRoute }) {
+  try {
+    let points = route.elevation_points;
+    if (!points || points.length === 0) {
+      const parsed = parseGPX(route.gpx_content);
+      points = sampleRoutePoints(parsed.points, 30).map((p) => p.ele || 0);
+    }
+    if (points.length < 2) return null;
+
+    const min = Math.min(...points);
+    const max = Math.max(...points);
+    const range = max - min || 1;
+    const pathData = points
+      .map((p, i) => {
+        const x = (i / (points.length - 1)) * 64;
+        const y = 30 - ((p - min) / range) * 28;
+        return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
+      })
+      .join(' ');
+
+    return (
+      <div className="h-8 w-16 shrink-0 overflow-visible opacity-60 transition-opacity group-hover:opacity-100">
+        <svg
+          width="64"
+          height="32"
+          viewBox="0 0 64 32"
+          className="text-primary"
+          preserveAspectRatio="none"
+        >
+          <path
+            d={pathData}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </div>
+    );
+  } catch (_) {
+    return null;
+  }
+}
+
 interface SavedRoutesListProps {
   onLoadRoute: (content: string, fileName: string, id?: string) => void;
   selectedRouteId?: string | null;
@@ -63,7 +108,7 @@ export function SavedRoutesList({ onLoadRoute, selectedRouteId }: SavedRoutesLis
   if (routes.length === 0) {
     return (
       <div className="bg-secondary/20 border-border flex flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center">
-        <Route className="text-muted-foreground mb-3 h-8 w-8 opacity-20" />
+        <Route className="text-muted-foreground mb-3 size-8 opacity-20" />
         <p className="text-muted-foreground text-xs">{t('noSavedRoutes')}</p>
       </div>
     );
@@ -72,8 +117,8 @@ export function SavedRoutesList({ onLoadRoute, selectedRouteId }: SavedRoutesLis
   return (
     <div className="flex min-h-0 w-full flex-col gap-3">
       <div className="flex items-center gap-2 px-1">
-        <Route className="text-primary h-4 w-4" />
-        <h3 className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
+        <Route className="text-primary size-4" />
+        <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
           {t('title')}
         </h3>
       </div>
@@ -99,6 +144,7 @@ export function SavedRoutesList({ onLoadRoute, selectedRouteId }: SavedRoutesLis
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
                     className="border-primary/50 bg-background h-8 min-w-0 flex-1 text-xs focus-visible:ring-1"
+                    // eslint-disable-next-line jsx-a11y/no-autofocus
                     autoFocus
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') handleSaveEdit(e as any, route.id);
@@ -109,18 +155,18 @@ export function SavedRoutesList({ onLoadRoute, selectedRouteId }: SavedRoutesLis
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="text-primary hover:bg-primary/10 h-8 w-8"
+                      className="text-primary hover:bg-primary/10 size-8"
                       onClick={(e) => handleSaveEdit(e, route.id)}
                     >
-                      <Check className="h-4 w-4" />
+                      <Check className="size-4" />
                     </Button>
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="text-muted-foreground hover:bg-muted h-8 w-8"
+                      className="text-muted-foreground hover:bg-muted size-8"
                       onClick={handleCancelEdit}
                     >
-                      <X className="h-4 w-4" />
+                      <X className="size-4" />
                     </Button>
                   </div>
                 </div>
@@ -135,101 +181,59 @@ export function SavedRoutesList({ onLoadRoute, selectedRouteId }: SavedRoutesLis
                         {stripExtension(route.name)}
                       </p>
                       {selectedRouteId === route.id && (
-                        <Check className="text-primary mt-0.5 h-3.5 w-3.5 shrink-0" />
+                        <Check className="text-primary mt-0.5 size-3.5 shrink-0" />
                       )}
                     </div>
                     <div className="text-muted-foreground mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] font-medium tracking-wider uppercase">
                       <span className="flex shrink-0 items-center gap-1">
-                        <MapPin className="h-3 w-3" />
+                        <MapPin className="size-3" />
                         {Number(route.distance).toFixed(1)} km
                       </span>
                       <span className="flex shrink-0 items-center gap-1">
-                        <ArrowUp className="h-3 w-3 text-emerald-500" />
+                        <ArrowUp className="size-3 text-emerald-500" />
                         {Math.round(route.elevation_gain)}m
                       </span>
                       <span className="flex shrink-0 items-center gap-1">
-                        <ArrowDown className="h-3 w-3 text-rose-500" />
+                        <ArrowDown className="size-3 text-rose-500" />
                         {Math.round(route.elevation_loss || 0)}m
                       </span>
                       <span className="flex shrink-0 items-center gap-1">
                         {route.activity_type === 'walking' ? (
-                          <Footprints className="h-3 w-3" />
+                          <Footprints className="size-3" />
                         ) : (
-                          <Bike className="h-3 w-3" />
+                          <Bike className="size-3" />
                         )}
                         {route.activity_type === 'walking' ? 'Hiking' : 'Bicicleta'}
                       </span>
                       <span className="flex shrink-0 items-center gap-1">
-                        <Calendar className="h-3 w-3" />
+                        <Calendar className="size-3" />
+                        {/* eslint-disable-next-line react-doctor/rendering-hydration-mismatch-time */}
                         {new Date(route.created_at).toLocaleDateString()}
                       </span>
                     </div>
                   </button>
 
                   <div className="flex w-full shrink-0 items-center justify-between gap-3 lg:w-auto lg:justify-normal">
-                    {(() => {
-                      try {
-                        let points = route.elevation_points;
-                        if (!points || points.length === 0) {
-                          const parsed = parseGPX(route.gpx_content);
-                          points = sampleRoutePoints(parsed.points, 30).map((p) => p.ele || 0);
-                        }
-                        if (points.length < 2) return null;
-
-                        const min = Math.min(...points);
-                        const max = Math.max(...points);
-                        const range = max - min || 1;
-                        const pathData = points
-                          .map((p, i) => {
-                            const x = (i / (points.length - 1)) * 64;
-                            const y = 30 - ((p - min) / range) * 28; // Leave a 2px margin
-                            return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
-                          })
-                          .join(' ');
-
-                        return (
-                          <div className="h-8 w-16 shrink-0 overflow-visible opacity-60 transition-opacity group-hover:opacity-100">
-                            <svg
-                              width="64"
-                              height="32"
-                              viewBox="0 0 64 32"
-                              className="text-primary"
-                              preserveAspectRatio="none"
-                            >
-                              <path
-                                d={pathData}
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                            </svg>
-                          </div>
-                        );
-                      } catch (_) {
-                        return null;
-                      }
-                    })()}
+                    <RouteElevationSparkline route={route} />
                     <div className="flex items-center gap-0.5">
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="text-muted-foreground hover:bg-primary/5 hover:text-primary h-8 w-8 transition-colors"
+                        className="text-muted-foreground hover:bg-primary/5 hover:text-primary size-8 transition-colors"
                         onClick={(e) => handleStartEdit(e, route)}
                       >
-                        <Pencil className="h-3.5 w-3.5" />
+                        <Pencil className="size-3.5" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="text-muted-foreground hover:bg-destructive/5 hover:text-destructive h-8 w-8 transition-colors"
+                        className="text-muted-foreground hover:bg-destructive/5 hover:text-destructive size-8 transition-colors"
                         onClick={(e) => {
                           e.stopPropagation();
                           deleteRoute(route.id);
                         }}
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className="size-3.5" />
                       </Button>
                     </div>
                   </div>

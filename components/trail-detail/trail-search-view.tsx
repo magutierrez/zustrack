@@ -137,16 +137,16 @@ export async function TrailSearchView({
 
   if (isMapView) {
     return (
-      <div className="flex h-screen flex-col overflow-hidden bg-slate-50 dark:bg-[#08090f]">
+      <div className="flex h-screen flex-col overflow-hidden bg-zinc-50 dark:bg-[#08090f]">
         <Header session={null} />
 
         <div className="flex flex-1 overflow-hidden">
           {/* Sidebar – desktop only (lg+) */}
-          <aside className="hidden shrink-0 flex-col gap-4 overflow-y-auto border-r border-slate-200 bg-white p-4 lg:flex lg:w-90 dark:border-slate-800 dark:bg-slate-950">
+          <aside className="hidden shrink-0 flex-col gap-4 overflow-y-auto border-r border-zinc-200 bg-white p-4 lg:flex lg:w-90 dark:border-zinc-800 dark:bg-zinc-950">
             <div>
-              <h1 className="text-xl font-bold text-slate-900 dark:text-white">{pageTitle}</h1>
+              <h1 className="text-xl font-semibold text-zinc-900 dark:text-white">{pageTitle}</h1>
               <div className="mt-2 flex items-center justify-between">
-                <p className="text-sm text-slate-500 dark:text-slate-400">
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">
                   {t('results', { count })}
                 </p>
                 <ViewToggle labels={{ listView: t('listView'), mapView: t('mapView') }} />
@@ -165,9 +165,9 @@ export async function TrailSearchView({
           {/* Main: mobile bar + map */}
           <div className="flex flex-1 flex-col overflow-hidden">
             {/* Mobile filter bar (< lg) */}
-            <div className="border-b border-slate-200 bg-white px-4 py-3 lg:hidden dark:border-slate-800 dark:bg-slate-950">
+            <div className="border-b border-zinc-200 bg-white px-4 py-3 lg:hidden dark:border-zinc-800 dark:bg-zinc-950">
               <div className="mb-2 flex items-center justify-between">
-                <h1 className="text-lg font-bold text-slate-900 dark:text-white">{pageTitle}</h1>
+                <h1 className="text-lg font-semibold text-zinc-900 dark:text-white">{pageTitle}</h1>
                 <ViewToggle labels={{ listView: t('listView'), mapView: t('mapView') }} />
               </div>
               <TrailFilters
@@ -178,7 +178,7 @@ export async function TrailSearchView({
                 regions={regions}
                 routeTypes={routeTypes}
               />
-              <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+              <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
                 {t('results', { count })}
               </p>
             </div>
@@ -201,11 +201,11 @@ export async function TrailSearchView({
   // ── List view: original layout ────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#08090f]">
+    <div className="min-h-screen bg-zinc-50 dark:bg-[#08090f]">
       <Header session={null} />
-      <div className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
-        <div className="mx-auto max-w-6xl px-4 py-4">
-          <h1 className="mb-4 text-2xl font-bold text-slate-900 dark:text-white">{pageTitle}</h1>
+      <div className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
+        <div className="mx-auto max-w-6xl p-4">
+          <h1 className="mb-4 text-2xl font-semibold text-zinc-900 dark:text-white">{pageTitle}</h1>
           <TrailFilters
             initial={initialFilters}
             labels={filterLabels}
@@ -218,12 +218,12 @@ export async function TrailSearchView({
 
       <main className="mx-auto max-w-6xl space-y-6 px-4 py-6">
         <div className="flex items-center justify-between">
-          <p className="text-sm text-slate-500 dark:text-slate-400">{t('results', { count })}</p>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">{t('results', { count })}</p>
           <ViewToggle labels={{ listView: t('listView'), mapView: t('mapView') }} />
         </div>
 
         {trails.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+          <div className="flex flex-col items-center justify-center py-20 text-zinc-400">
             <p className="text-lg font-medium">{t('noResults')}</p>
           </div>
         ) : (
@@ -241,38 +241,38 @@ export async function TrailSearchView({
         )}
 
         {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-3 border-t border-slate-200 pt-6 dark:border-slate-800">
+          <div className="flex items-center justify-center gap-3 border-t border-zinc-200 pt-6 dark:border-zinc-800">
             {page > 1 ? (
               <Link
                 href={buildPageUrl(page - 1)}
-                className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+                className="flex items-center gap-1 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
               >
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="size-4" />
                 {t('previous')}
               </Link>
             ) : (
-              <span className="flex items-center gap-1 rounded-lg border border-slate-100 px-3 py-2 text-sm text-slate-300 dark:border-slate-800 dark:text-slate-600">
-                <ChevronLeft className="h-4 w-4" />
+              <span className="flex items-center gap-1 rounded-lg border border-zinc-100 px-3 py-2 text-sm text-zinc-300 dark:border-zinc-800 dark:text-zinc-600">
+                <ChevronLeft className="size-4" />
                 {t('previous')}
               </span>
             )}
 
-            <span className="text-sm text-slate-500 dark:text-slate-400">
+            <span className="text-sm text-zinc-500 dark:text-zinc-400">
               {t('page', { page, total: totalPages })}
             </span>
 
             {page < totalPages ? (
               <Link
                 href={buildPageUrl(page + 1)}
-                className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+                className="flex items-center gap-1 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
               >
                 {t('next')}
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="size-4" />
               </Link>
             ) : (
-              <span className="flex items-center gap-1 rounded-lg border border-slate-100 px-3 py-2 text-sm text-slate-300 dark:border-slate-800 dark:text-slate-600">
+              <span className="flex items-center gap-1 rounded-lg border border-zinc-100 px-3 py-2 text-sm text-zinc-300 dark:border-zinc-800 dark:text-zinc-600">
                 {t('next')}
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="size-4" />
               </span>
             )}
           </div>

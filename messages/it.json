@@ -490,7 +490,8 @@
     "slope": "Pendenza",
     "streetView": "Street View",
     "evacuationPoint": "Evacuazione",
-    "noElevationData": "Nessun dato di altitudine"
+    "noElevationData": "Nessun dato di altitudine",
+    "close": "Chiudi"
   },
   "IBP": {
     "title": "Indice IBP",
@@ -788,6 +789,7 @@
     },
     "backToTrails": "Tutti i sentieri",
     "analyzeWithZustrack": "Analizza il percorso",
+    "expandMap": "Ingrandisci mappa",
     "metaDescription": "Sentiero di {distance} km con {elevationGain}m di dislivello. Livello: {effort}.",
     "km": "km",
     "meters": "m",

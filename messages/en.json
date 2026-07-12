@@ -489,7 +489,8 @@
     "slope": "Slope",
     "streetView": "Street View",
     "evacuationPoint": "Evacuation",
-    "noElevationData": "No elevation data"
+    "noElevationData": "No elevation data",
+    "close": "Close"
   },
   "IBP": {
     "title": "IBP Index",
@@ -787,6 +788,7 @@
     },
     "backToTrails": "All trails",
     "analyzeWithZustrack": "Analyze route",
+    "expandMap": "Expand map",
     "metaDescription": "{distance} km trail with {elevationGain}m elevation gain. Effort: {effort}.",
     "km": "km",
     "meters": "m",
@@ -892,7 +894,9 @@
     "equipmentFirstAidFull": "Basic first aid kit + whistle + thermal blanket",
     "equipmentFirstAidBasic": "Basic first aid kit",
     "equipmentNavigationGps": "GPS or offline route download",
-    "equipmentNavigationOffline": "Offline download recommended"
+    "equipmentNavigationOffline": "Offline download recommended",
+    "moreData": "More route data",
+    "lessData": "Less"
   },
   "TrailSearchPage": {
     "title": "Official trails",

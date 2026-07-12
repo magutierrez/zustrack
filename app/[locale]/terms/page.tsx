@@ -48,11 +48,11 @@ export default async function TermsPage({ params }: { params: Promise<{ locale: 
         <div className="flex items-center justify-between">
           <Link href="/app/login">
             <Button variant="ghost" size="sm" className="gap-2">
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="size-4" />
             </Button>
           </Link>
           <div className="flex items-center gap-2">
-            <Mountain className="text-primary h-6 w-6" />
+            <Mountain className="text-primary size-6" />
             <span className="text-xl font-bold">zustrack</span>
           </div>
           <div className="w-20" /> {/* Spacer */}
@@ -66,28 +66,29 @@ export default async function TermsPage({ params }: { params: Promise<{ locale: 
             <p className="text-muted-foreground text-lg">{t('acceptance')}</p>
 
             <section className="space-y-3">
-              <h2 className="text-xl font-bold">{t('noResponsibilityTitle')}</h2>
+              <h2 className="text-xl font-semibold">{t('noResponsibilityTitle')}</h2>
               <p className="text-muted-foreground">{t('noResponsibilityContent')}</p>
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-xl font-bold">{t('userResponsibilityTitle')}</h2>
+              <h2 className="text-xl font-semibold">{t('userResponsibilityTitle')}</h2>
               <p className="text-muted-foreground">{t('userResponsibilityContent')}</p>
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-xl font-bold">{t('openSourceTitle')}</h2>
+              <h2 className="text-xl font-semibold">{t('openSourceTitle')}</h2>
               <p className="text-muted-foreground">{t('openSourceContent')}</p>
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-xl font-bold">{t('dataLossTitle')}</h2>
+              <h2 className="text-xl font-semibold">{t('dataLossTitle')}</h2>
               <p className="text-muted-foreground">{t('dataLossContent')}</p>
             </section>
           </CardContent>
         </Card>
 
-        <footer className="text-muted-foreground py-8 text-center text-sm">
+        <footer className="text-muted-foreground py-8 text-center text-sm" suppressHydrationWarning>
+          {/* eslint-disable-next-line react-doctor/rendering-hydration-mismatch-time */}
           {new Date().getFullYear()} zustrack.
         </footer>
       </div>

@@ -78,7 +78,7 @@ export function TrailInfoTabs({
         {hasEscape && (
           <TabsTrigger value="escape" className="h-8 w-full min-w-fit">
             {labels.escapePoints}
-            <span className="ml-1.5 rounded-full bg-slate-200 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+            <span className="ml-1.5 rounded-full bg-zinc-200 px-1.5 py-0.5 text-[10px] font-semibold text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
               {trail.escape_points!.length}
             </span>
           </TabsTrigger>
@@ -86,7 +86,7 @@ export function TrailInfoTabs({
         {hasWater && (
           <TabsTrigger value="water" className="h-8 w-full min-w-fit">
             {labels.waterSources}
-            <span className="ml-1.5 rounded-full bg-slate-200 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+            <span className="ml-1.5 rounded-full bg-zinc-200 px-1.5 py-0.5 text-[10px] font-semibold text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
               {trail.water_sources!.length}
             </span>
           </TabsTrigger>

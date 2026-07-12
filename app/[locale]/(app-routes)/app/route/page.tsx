@@ -1,5 +1,7 @@
 // Static: auth is handled by middleware. Session is read client-side via useSession().
 export const revalidate = false;
+import type { Metadata } from 'next';
+export const metadata: Metadata = { title: 'Route Analysis | zustrack' };
 
 import { Suspense } from 'react';
 import { setRequestLocale } from 'next-intl/server';
@@ -11,7 +13,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
   // Suspense is required because HomePageClient uses useSearchParams()
   return (
-    <Suspense>
+    <Suspense fallback={<div className="flex h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-950" />}>
       <HomePageClient session={null} />
     </Suspense>
   );

@@ -72,14 +72,14 @@ export function ShareButton() {
           <Button
             variant="ghost"
             size="icon"
-            className="h-9 w-9"
+            className="size-9"
             onClick={handleShare}
             aria-label={t('share')}
           >
             {copied ? (
-              <Check className="h-5 w-5 text-green-500" />
+              <Check className="size-5 text-green-500" />
             ) : (
-              <Share2 className="h-5 w-5" />
+              <Share2 className="size-5" />
             )}
           </Button>
         </TooltipTrigger>

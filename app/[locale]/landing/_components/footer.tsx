@@ -5,11 +5,11 @@ import { Link } from '@/i18n/navigation';
 export async function Footer() {
   const t = await getTranslations('Landing.footer');
   return (
-    <footer className="border-t border-slate-200 py-10 dark:border-white/5">
+    <footer className="border-t border-zinc-200 py-10 dark:border-white/5">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 md:flex-row">
         <div className="flex items-center gap-2.5">
-          <LogoIcon className="h-6 w-6 text-[#3b82f6]" />
-          <span className="font-heading text-sm font-bold text-slate-600 dark:text-white/80">
+          <LogoIcon className="size-6 text-[#3b82f6]" />
+          <span className="font-heading text-sm font-bold text-zinc-600 dark:text-white/80">
             zustrack
           </span>
         </div>
@@ -22,15 +22,16 @@ export async function Footer() {
             <Link
               key={l.href}
               href={l.href}
-              className="text-xs text-slate-500 transition-colors hover:text-slate-700 dark:text-white/55 dark:hover:text-white/80"
+              className="text-xs text-zinc-500 transition-colors hover:text-zinc-700 dark:text-white/55 dark:hover:text-white/80"
             >
               {l.label}
             </Link>
           ))}
         </div>
 
-        <p className="flex flex-col gap-y-3 text-xs text-slate-500 dark:text-white/50">
-          <span> {new Date().getFullYear()} zustrack</span>
+        <p className="flex flex-col gap-y-3 text-xs text-zinc-500 dark:text-white/50">
+          {/* eslint-disable-next-line react-doctor/rendering-hydration-mismatch-time */}
+          <span suppressHydrationWarning> {new Date().getFullYear()} zustrack</span>
           <a
             href="https://github.com/magutierrez/zustrack"
             target="_blank"
@@ -38,7 +39,7 @@ export async function Footer() {
             aria-label="GitHub"
           >
             <svg
-              className="h-5 w-5"
+              className="size-5"
               viewBox="0 0 24 24"
               fill="currentColor"
               aria-hidden="true"

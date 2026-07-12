@@ -490,7 +490,8 @@
     "slope": "Pendiente",
     "streetView": "Street View",
     "evacuationPoint": "Evacuación",
-    "noElevationData": "Sin datos de altitud"
+    "noElevationData": "Sin datos de altitud",
+    "close": "Cerrar"
   },
   "IBP": {
     "title": "Índice IBP",
@@ -788,6 +789,7 @@
     },
     "backToTrails": "Todos los senderos",
     "analyzeWithZustrack": "Analizar ruta",
+    "expandMap": "Ampliar mapa",
     "metaDescription": "Sendero de {distance} km con {elevationGain}m de desnivel. Nivel: {effort}.",
     "km": "km",
     "meters": "m",
@@ -893,7 +895,9 @@
     "equipmentFirstAidFull": "Botiquín básico + silbato + manta térmica",
     "equipmentFirstAidBasic": "Botiquín básico",
     "equipmentNavigationGps": "GPS o descarga offline de la ruta",
-    "equipmentNavigationOffline": "Descarga offline recomendada"
+    "equipmentNavigationOffline": "Descarga offline recomendada",
+    "moreData": "Más datos de la ruta",
+    "lessData": "Menos"
   },
   "TrailSearchPage": {
     "title": "Senderos oficiales",

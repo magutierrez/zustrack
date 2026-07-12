@@ -19,7 +19,7 @@ type Locale = (typeof routing.locales)[number];
 
 function LocaleSwitcherContent() {
   const locale = useLocale();
-  const router = useRouter();
+  const { replace, refresh } = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
@@ -39,12 +39,12 @@ function LocaleSwitcherContent() {
     const params = new URLSearchParams(searchParams.toString());
 
     startTransition(() => {
-      router.replace(
+      replace(
         { pathname, query: Object.fromEntries(params.entries()) },
         { locale: nextLocale },
       );
 
-      router.refresh();
+      refresh();
     });
   };
 
@@ -54,10 +54,10 @@ function LocaleSwitcherContent() {
         <Button
           variant="ghost"
           size="icon"
-          className={cn('relative h-9 w-9', isPending && 'opacity-50')}
+          className={cn('relative size-9', isPending && 'opacity-50')}
           disabled={isPending}
         >
-          <Globe className={cn('h-5 w-5', isPending && 'animate-spin')} />
+          <Globe className={cn('size-5', isPending && 'animate-spin')} />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-40" align="end">
@@ -77,7 +77,7 @@ function LocaleSwitcherContent() {
 
 export function LocaleSwitcher() {
   return (
-    <Suspense fallback={<div className="h-9 w-9" />}>
+    <Suspense fallback={<div className="size-9" />}>
       <LocaleSwitcherContent />
     </Suspense>
   );

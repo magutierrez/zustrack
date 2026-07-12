@@ -29,6 +29,9 @@ interface MapMarkersProps {
   onAnnotationDelete?: (id: string) => void;
 }
 
+const EMPTY_MOUNTAIN_PEAKS: MountainPeak[] = [];
+const EMPTY_ANNOTATIONS: Annotation[] = [];
+
 export function MapMarkers({
   points,
   weatherPoints,
@@ -42,10 +45,10 @@ export function MapMarkers({
   showWaterSources,
   showEscapePoints,
   showMountainPeaks,
-  mountainPeaks = [],
+  mountainPeaks = EMPTY_MOUNTAIN_PEAKS,
   focusPoint,
   nightPointIndex = null,
-  annotations = [],
+  annotations = EMPTY_ANNOTATIONS,
   onAnnotationEdit,
   onAnnotationDelete,
 }: MapMarkersProps) {
@@ -84,8 +87,8 @@ export function MapMarkers({
   return (
     <>
       {/* Water Sources */}
-      {waterSources.map((ws, i) => (
-        <Marker key={`water-${i}`} longitude={ws.lon} latitude={ws.lat} anchor="bottom">
+      {waterSources.map((ws) => (
+        <Marker key={`water-${ws.lat}-${ws.lon}`} longitude={ws.lon} latitude={ws.lat} anchor="bottom">
           <div className="group flex flex-col items-center">
             <div className="border-border bg-card invisible absolute -top-8 z-50 rounded-lg border px-2 py-1 text-[9px] font-bold whitespace-nowrap shadow-sm group-hover:visible">
               {ws.name} ({t(`reliability.${ws.reliability}` as any)})
@@ -99,7 +102,7 @@ export function MapMarkers({
                     : 'bg-red-500'
               }`}
             >
-              <Droplets className="h-3 w-3 fill-white/20 text-white" />
+              <Droplets className="size-3 fill-white/20 text-white" />
             </div>
           </div>
         </Marker>
@@ -107,19 +110,19 @@ export function MapMarkers({
 
       {/* Escape Points */}
       {escapePoints.map(
-        (ep, i) =>
+        (ep) =>
           ep && (
-            <Marker key={`escape-${i}`} longitude={ep.lon} latitude={ep.lat} anchor="bottom">
+            <Marker key={`escape-${ep.lat}-${ep.lon}`} longitude={ep.lon} latitude={ep.lat} anchor="bottom">
               <div className="flex flex-col items-center">
                 <div className="border-border bg-card rounded-lg border px-2 py-1 text-[9px] font-bold whitespace-nowrap shadow-sm">
                   {ep.name}
                 </div>
                 {ep.type === 'shelter' ? (
                   <div className="rounded-full border-2 border-white bg-amber-500 p-1 shadow-md">
-                    <House className="h-3 w-3 text-white" />
+                    <House className="size-3 text-white" />
                   </div>
                 ) : (
-                  <MapPin className="h-5 w-5 fill-indigo-500/20 text-indigo-500" />
+                  <MapPin className="size-5 fill-violet-500/20 text-violet-500" />
                 )}
               </div>
             </Marker>
@@ -133,14 +136,14 @@ export function MapMarkers({
           anchor="bottom"
           offset={[0, -5]}
         >
-          <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-green-600 font-bold text-white shadow-lg transition-transform hover:scale-110">
+          <div className="flex size-8 items-center justify-center rounded-full border-2 border-white bg-green-600 font-bold text-white shadow-lg transition-transform hover:scale-110">
             A
           </div>
         </Marker>
       )}
       {endPoint && endPoint !== startPoint && (
         <Marker longitude={endPoint.lon} latitude={endPoint.lat} anchor="bottom" offset={[0, -5]}>
-          <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-red-600 font-bold text-white shadow-lg transition-transform hover:scale-110">
+          <div className="flex size-8 items-center justify-center rounded-full border-2 border-white bg-red-600 font-bold text-white shadow-lg transition-transform hover:scale-110">
             B
           </div>
         </Marker>
@@ -154,7 +157,7 @@ export function MapMarkers({
           anchor="center"
           z-index={100}
         >
-          <div className="h-4 w-4 rounded-full border-2 border-blue-500 bg-white shadow-md" />
+          <div className="size-4 rounded-full border-2 border-blue-500 bg-white shadow-md" />
         </Marker>
       )}
 
@@ -169,7 +172,7 @@ export function MapMarkers({
 
         return (
           <Marker
-            key={idx}
+            key={`wp-${wp.point.distanceFromStart}`}
             longitude={wp.point.lon}
             latitude={wp.point.lat}
             anchor="center"
@@ -179,6 +182,8 @@ export function MapMarkers({
             }}
           >
             <button
+              type="button"
+              onClick={() => onPointSelect?.(idx)}
               className={`group relative flex items-center justify-center transition-all hover:scale-125 ${isSelected ? 'z-10 scale-125' : 'z-0'}`}
             >
               <WindArrow
@@ -199,6 +204,7 @@ export function MapMarkers({
         weatherPoints?.[nightPointIndex] &&
         (() => {
           const np = weatherPoints[nightPointIndex];
+          // eslint-disable-next-line react-doctor/rendering-hydration-mismatch-time
           const nightTime = new Date(np.weather.time).toLocaleTimeString([], {
             hour: '2-digit',
             minute: '2-digit',
@@ -208,22 +214,23 @@ export function MapMarkers({
               longitude={np.point.lon}
               latitude={np.point.lat}
               anchor="bottom"
-              style={{ zIndex: 150 }}
+              style={{ zIndex: 30 }}
             >
               <div
                 className="animate-in fade-in slide-in-from-bottom-1 flex flex-col items-center"
+                role="presentation"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="rounded-lg bg-slate-900/95 px-2 py-1 text-[10px] font-bold whitespace-nowrap text-indigo-200 shadow-xl ring-1 ring-indigo-500/50">
+                <div className="rounded-lg bg-zinc-900/95 px-2 py-1 text-[10px] font-bold whitespace-nowrap text-violet-200 shadow-xl ring-1 ring-violet-500/50">
                   🌙 {nightTime} · km {np.point.distanceFromStart.toFixed(1)}
                 </div>
                 <div className="relative mt-0.5">
-                  <div className="absolute inset-0 animate-ping rounded-full bg-indigo-500 opacity-30" />
-                  <div className="relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-indigo-400/60 bg-slate-900 shadow-lg">
-                    <Moon className="h-4 w-4 text-indigo-300" />
+                  <div className="absolute inset-0 animate-ping rounded-full bg-violet-500 opacity-30" />
+                  <div className="relative flex size-8 items-center justify-center rounded-full border-2 border-violet-400/60 bg-zinc-900 shadow-lg">
+                    <Moon className="size-4 text-violet-300" />
                   </div>
                 </div>
-                <div className="h-2 w-1 rounded-full bg-slate-700" />
+                <div className="h-2 w-1 rounded-full bg-zinc-700" />
               </div>
             </Marker>
           );
@@ -233,16 +240,16 @@ export function MapMarkers({
       {focusPoint && !focusPoint.silent && (
         <Marker longitude={focusPoint.lon} latitude={focusPoint.lat} anchor="bottom" z-index={200}>
           <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-col items-center">
-            <div className="rounded-lg bg-indigo-600 px-2.5 py-1.5 text-[10px] font-black tracking-wider text-white uppercase shadow-xl ring-2 ring-white">
+            <div className="rounded-lg bg-violet-600 px-2.5 py-1.5 text-[10px] font-black tracking-wider text-white uppercase shadow-xl ring-2 ring-white">
               {focusPoint.name || tMap('evacuationPoint')}
             </div>
             <div className="relative mt-1">
-              <div className="absolute inset-0 animate-ping rounded-full bg-indigo-500 opacity-40" />
-              <div className="relative flex h-10 w-10 items-center justify-center rounded-full border-4 border-white bg-indigo-600 shadow-2xl">
-                <Signpost className="h-5 w-5 text-white" />
+              <div className="absolute inset-0 animate-ping rounded-full bg-violet-500 opacity-40" />
+              <div className="relative flex size-10 items-center justify-center rounded-full border-4 border-white bg-violet-600 shadow-2xl">
+                <Signpost className="size-5 text-white" />
               </div>
             </div>
-            <div className="h-3 w-1.5 rounded-full bg-indigo-600" />
+            <div className="h-3 w-1.5 rounded-full bg-violet-600" />
           </div>
         </Marker>
       )}
@@ -256,7 +263,8 @@ export function MapMarkers({
             latitude={peak.lat}
             anchor="bottom"
           >
-            <div
+            <button
+              type="button"
               className="flex cursor-pointer flex-col items-center gap-0.5"
               onClick={(e) => {
                 e.stopPropagation();
@@ -269,8 +277,8 @@ export function MapMarkers({
                 {peak.name}
                 {peak.elevation ? ` ${peak.elevation}m` : ''}
               </div>
-              <Mountain className="h-4 w-4 text-slate-600 drop-shadow" />
-            </div>
+              <Mountain className="size-4 text-zinc-600 drop-shadow" />
+            </button>
           </Marker>
         ))}
 
@@ -281,9 +289,10 @@ export function MapMarkers({
           longitude={annotation.lon}
           latitude={annotation.lat}
           anchor="bottom"
-          style={{ zIndex: 120 }}
+          style={{ zIndex: 20 }}
         >
-          <div
+          <button
+            type="button"
             className="flex cursor-pointer flex-col items-center gap-0.5"
             onClick={(e) => {
               e.stopPropagation();
@@ -295,9 +304,9 @@ export function MapMarkers({
               {annotation.text.length > 20 ? annotation.text.slice(0, 20) + '…' : annotation.text}
             </div>
             <div className="rounded-full border-2 border-white bg-amber-500 p-1.5 shadow-md">
-              <MessageSquare className="h-3 w-3 text-white" />
+              <MessageSquare className="size-3 text-white" />
             </div>
-          </div>
+          </button>
         </Marker>
       ))}
 
@@ -326,6 +335,7 @@ export function MapMarkers({
                   maxLength={500}
                   value={editingText}
                   onChange={(e) => setEditingText(e.target.value)}
+                  // eslint-disable-next-line jsx-a11y/no-autofocus
                   autoFocus
                 />
                 <div className="flex gap-1">
@@ -334,19 +344,19 @@ export function MapMarkers({
                     onClick={() => {
                       if (editingText.trim()) {
                         onAnnotationEdit?.(selectedAnnotation.id, editingText.trim());
-                        setSelectedAnnotation({ ...selectedAnnotation, text: editingText.trim() });
+                        setSelectedAnnotation((prev) => prev ? { ...prev, text: editingText.trim() } : prev);
                       }
                       setEditingAnnotationId(null);
                     }}
                   >
-                    <Check className="h-3 w-3" />
+                    <Check className="size-3" />
                     {ta('save')}
                   </button>
                   <button
                     className="flex items-center justify-center rounded px-2 py-1 text-[10px] font-bold"
                     onClick={() => setEditingAnnotationId(null)}
                   >
-                    <X className="h-3 w-3" />
+                    <X className="size-3" />
                   </button>
                 </div>
               </>
@@ -361,7 +371,7 @@ export function MapMarkers({
                       setEditingText(selectedAnnotation.text);
                     }}
                   >
-                    <Pencil className="h-3 w-3" />
+                    <Pencil className="size-3" />
                     {ta('edit')}
                   </button>
                   <button
@@ -371,7 +381,7 @@ export function MapMarkers({
                       setSelectedAnnotation(null);
                     }}
                   >
-                    <Trash2 className="h-3 w-3" />
+                    <Trash2 className="size-3" />
                     {ta('delete')}
                   </button>
                 </div>
@@ -397,7 +407,7 @@ export function MapMarkers({
             <span className="text-sm font-bold">{selectedPeak.name}</span>
             {selectedPeak.elevation ? (
               <div className="flex items-center gap-1.5">
-                <Mountain className="text-muted-foreground h-3.5 w-3.5" />
+                <Mountain className="text-muted-foreground size-3.5" />
                 <span className="text-foreground text-sm font-semibold">
                   {selectedPeak.elevation} m
                 </span>

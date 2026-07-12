@@ -107,12 +107,12 @@ export function TrailPaceCard({
   const maxPace = Math.max(...splits.map((s) => s.minutes));
 
   return (
-    <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+    <section className="space-y-4 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-lg font-semibold">{labels.paceEstimator}</h2>
-        <span className="text-sm text-slate-500 dark:text-slate-400">
-          {labels.duration}: <strong className="text-slate-900 dark:text-white">{formatTime(totalMinutes)}</strong>
+        <span className="text-sm text-zinc-500 dark:text-zinc-400">
+          {labels.duration}: <strong className="text-zinc-900 dark:text-white">{formatTime(totalMinutes)}</strong>
         </span>
       </div>
 
@@ -128,19 +128,19 @@ export function TrailPaceCard({
                 : 'bg-rose-500';
           return (
             <div key={split.km} className="flex items-center gap-2">
-              <span className="w-10 shrink-0 text-right text-[11px] text-slate-400">
+              <span className="w-10 shrink-0 text-right text-[11px] text-zinc-400">
                 km {split.km}
               </span>
-              <div className="h-4 flex-1 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+              <div className="h-4 flex-1 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
                 <div
                   className={cn('h-full rounded-full transition-all', color)}
                   style={{ width: `${Math.max(10, pct)}%` }}
                 />
               </div>
-              <span className="w-14 shrink-0 text-[11px] font-medium text-slate-700 dark:text-slate-300">
+              <span className="w-14 shrink-0 text-[11px] font-medium text-zinc-700 dark:text-zinc-300">
                 {split.minutes}min
               </span>
-              <span className="hidden w-16 shrink-0 text-[11px] text-slate-400 sm:block">
+              <span className="hidden w-16 shrink-0 text-[11px] text-zinc-400 sm:block">
                 {split.avgSpeedKmh} km/h
               </span>
             </div>
@@ -149,17 +149,17 @@ export function TrailPaceCard({
       </div>
 
       {/* Calorie estimator */}
-      <div className="border-t border-slate-100 pt-4 dark:border-slate-800">
+      <div className="border-t border-zinc-100 pt-4 dark:border-zinc-800">
         <div className="mb-3 flex items-center justify-between">
-          <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+          <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
             {labels.calorieEstimator}
           </span>
-          <span className="text-sm font-bold text-slate-900 dark:text-white">
+          <span className="text-sm font-bold text-zinc-900 dark:text-white">
             ~{calories.toLocaleString()} kcal
           </span>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-xs text-slate-500 dark:text-slate-400 shrink-0">
+          <span className="text-xs text-zinc-500 dark:text-zinc-400 shrink-0">
             {labels.bodyWeight}: <strong>{weight} {labels.kg}</strong>
           </span>
           <Slider

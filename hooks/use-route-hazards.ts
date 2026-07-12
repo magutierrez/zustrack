@@ -13,8 +13,8 @@ export function useRouteHazards(weatherPoints: RouteWeatherPoint[]) {
 
   const sortedSegments = useMemo(() => {
     const segments = analyzeRouteSegments(weatherPoints);
-    return [...segments]
-      .sort((a, b) => {
+    return segments
+      .toSorted((a, b) => {
         const levels = ['low', 'medium', 'high'];
         return (
           levels.indexOf(b.dangerLevel) - levels.indexOf(a.dangerLevel) || b.maxSlope - a.maxSlope

@@ -42,7 +42,7 @@ export function SettingsModal({ isOpen, onOpenChange }: SettingsModalProps) {
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Settings className="h-5 w-5" /> {t('settingsTitle')}
+            <Settings className="size-5" /> {t('settingsTitle')}
           </DialogTitle>
           <DialogDescription>{t('settingsDescription')}</DialogDescription>
         </DialogHeader>

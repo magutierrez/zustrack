@@ -1,6 +1,9 @@
+import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { setRequestLocale } from 'next-intl/server';
 import { LoginPageClient } from './_components/login-page-client';
+
+export const metadata: Metadata = { title: 'Login | zustrack' };
 
 export const revalidate = false;
 

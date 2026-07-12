@@ -490,7 +490,8 @@
     "slope": "Pente",
     "streetView": "Vue street",
     "evacuationPoint": "Évacuation",
-    "noElevationData": "Pas de données d'altitude"
+    "noElevationData": "Pas de données d'altitude",
+    "close": "Fermer"
   },
   "IBP": {
     "title": "Indice IBP",
@@ -788,6 +789,7 @@
     },
     "backToTrails": "Tous les sentiers",
     "analyzeWithZustrack": "Analyser l'itinéraire",
+    "expandMap": "Agrandir la carte",
     "metaDescription": "Sentier de {distance} km avec {elevationGain}m de dénivelé. Niveau : {effort}.",
     "km": "km",
     "meters": "m",

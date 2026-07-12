@@ -212,8 +212,8 @@ export function RoutePlayer({ points, onStop, mapRef }: RoutePlayerProps) {
         <div className="bg-background/95 border-border rounded-2xl border p-4 shadow-2xl backdrop-blur-md">
           <div className="mb-4 flex items-center justify-between px-1">
             <div className="flex items-center gap-2">
-              <div className="bg-primary h-2 w-2 animate-pulse rounded-full" />
-              <h4 className="text-foreground/70 text-[10px] font-black tracking-widest uppercase">
+              <div className="bg-primary size-2 animate-pulse rounded-full" />
+              <h4 className="text-foreground/70 text-[10px] font-semibold tracking-widest uppercase">
                 {t('title')}
               </h4>
             </div>
@@ -251,10 +251,10 @@ export function RoutePlayer({ points, onStop, mapRef }: RoutePlayerProps) {
               <Button
                 size="icon"
                 variant="ghost"
-                className="text-muted-foreground hover:text-destructive hover:bg-destructive/5 h-7 w-7 rounded-full"
+                className="text-muted-foreground hover:text-destructive hover:bg-destructive/5 size-7 rounded-full"
                 onClick={stopPlayback}
               >
-                <X className="h-4 w-4" />
+                <X className="size-4" />
               </Button>
             </div>
           </div>
@@ -265,19 +265,19 @@ export function RoutePlayer({ points, onStop, mapRef }: RoutePlayerProps) {
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="hover:bg-primary/10 hover:text-primary h-9 w-9 rounded-full transition-colors"
+                  className="hover:bg-primary/10 hover:text-primary size-9 rounded-full transition-colors"
                   onClick={startPlayback}
                 >
-                  <Play className="h-5 w-5 fill-current" />
+                  <Play className="size-5 fill-current" />
                 </Button>
               ) : (
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="text-primary bg-primary/5 hover:bg-primary/20 h-9 w-9 rounded-full"
+                  className="text-primary bg-primary/5 hover:bg-primary/20 size-9 rounded-full"
                   onClick={pausePlayback}
                 >
-                  <Pause className="h-5 w-5 fill-current" />
+                  <Pause className="size-5 fill-current" />
                 </Button>
               )}
             </div>

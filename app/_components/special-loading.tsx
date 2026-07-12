@@ -12,14 +12,14 @@ export function SpecialLoading({ message, className }: SpecialLoadingProps) {
     <div className={cn("flex flex-col items-center justify-center gap-10 p-12", className)}>
       <div className="relative flex items-center justify-center">
         {/* Soft, sophisticated ambient glow */}
-        <div className="absolute h-32 w-32 animate-[pulse_4s_cubic-bezier(0.4,0,0.6,1)_infinite] rounded-full bg-blue-500/10 blur-[40px] dark:bg-blue-400/10" />
+        <div className="absolute size-32 animate-[pulse_4s_cubic-bezier(0.4,0,0.6,1)_infinite] rounded-full bg-blue-500/10 blur-[40px] dark:bg-blue-400/10" />
         
         {/* Floating Logo Container */}
         <div className="relative animate-[float_4s_ease-in-out_infinite]">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="310.8 429.5 593 593"
-            className="h-16 w-16 drop-shadow-[0_8px_16px_rgba(37,99,235,0.15)] md:h-20 md:w-20 dark:drop-shadow-[0_8px_16px_rgba(255,255,255,0.05)]"
+            className="size-16 drop-shadow-[0_8px_16px_rgba(37,99,235,0.15)] md:h-20 md:w-20 dark:drop-shadow-[0_8px_16px_rgba(255,255,255,0.05)]"
           >
             <defs>
               {/* Snake Gradient for Dark Mode: Base White -> Shine Blue -> Base White */}

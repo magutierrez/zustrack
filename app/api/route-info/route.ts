@@ -58,6 +58,7 @@ export async function POST(request: NextRequest) {
       try {
         const response = await fetch('https://overpass-api.de/api/interpreter', {
           method: 'POST',
+          cache: 'no-store',
           body: `data=${encodeURIComponent(overpassQuery)}`,
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -78,6 +79,7 @@ export async function POST(request: NextRequest) {
 
         try {
           const response = await fetch(ohsomeUrl, {
+            cache: 'no-store',
             headers: { 'User-Agent': 'zustrackapp/1.0' },
           });
 
@@ -129,6 +131,7 @@ export async function POST(request: NextRequest) {
           };
           return fetch(
             `https://opencellid.org/cell/getInArea?key=${process.env.OPENCELLID_API_KEY}&BBOX=${b.minLat.toFixed(4)},${b.minLon.toFixed(4)},${b.maxLat.toFixed(4)},${b.maxLon.toFixed(4)}&format=json`,
+            { cache: 'no-store' },
           )
             .then((r) => (r.ok ? r.json() : { cells: [] }))
             .catch(() => ({ cells: [] }));
@@ -139,6 +142,7 @@ export async function POST(request: NextRequest) {
       fetchOsmData(),
       fetch(
         `https://api.open-meteo.com/v1/elevation?latitude=${points.map((p) => p.lat).join(',')}&longitude=${points.map((p) => p.lon).join(',')}`,
+        { cache: 'no-store' },
       ),
       ...cellTowersPromises,
     ]);

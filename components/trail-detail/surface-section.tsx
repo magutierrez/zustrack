@@ -6,9 +6,9 @@ interface Labels {
 }
 
 const SURFACE_COLORS: Record<string, string> = {
-  asphalt: 'bg-slate-500',
-  concrete: 'bg-slate-400',
-  paved: 'bg-slate-400',
+  asphalt: 'bg-zinc-500',
+  concrete: 'bg-zinc-400',
+  paved: 'bg-zinc-400',
   gravel: 'bg-amber-500',
   fine_gravel: 'bg-amber-400',
   pebblestone: 'bg-amber-300',
@@ -22,11 +22,11 @@ const SURFACE_COLORS: Record<string, string> = {
   sand: 'bg-yellow-300',
   mud: 'bg-brown-700',
   clay: 'bg-orange-800',
-  unknown: 'bg-slate-300',
+  unknown: 'bg-zinc-300',
 };
 
 function surfaceColor(surface: string) {
-  return SURFACE_COLORS[surface] ?? 'bg-slate-300';
+  return SURFACE_COLORS[surface] ?? 'bg-zinc-300';
 }
 
 export function SurfaceSection({
@@ -67,11 +67,11 @@ export function SurfaceSection({
               ? Object.entries(surfaceBreakdown).map(([surface, pct]) => (
                   <span
                     key={surface}
-                    className="inline-flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400"
+                    className="inline-flex items-center gap-1.5 text-sm text-zinc-500 dark:text-zinc-400"
                   >
-                    <span className={`inline-block h-2.5 w-2.5 rounded-sm ${surfaceColor(surface)}`} />
+                    <span className={`inline-block size-2.5 rounded-sm ${surfaceColor(surface)}`} />
                     {labels.surface[surface] ?? surface}
-                    <span className="font-medium text-slate-700 dark:text-slate-200">{pct}%</span>
+                    <span className="font-medium text-zinc-700 dark:text-zinc-200">{pct}%</span>
                   </span>
                 ))
               : null}
@@ -87,10 +87,10 @@ export function SurfaceSection({
             {Object.entries(pathTypeBreakdown).map(([type, pct]) => (
               <span
                 key={type}
-                className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                className="inline-flex items-center gap-1 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-sm text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
               >
                 {labels.pathType[type] ?? type}
-                <span className="text-slate-400 dark:text-slate-500">{pct}%</span>
+                <span className="text-zinc-400 dark:text-zinc-500">{pct}%</span>
               </span>
             ))}
           </div>
