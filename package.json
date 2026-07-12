@@ -11,6 +11,7 @@
     "format": "prettier --write .",
     "db:backup": "export $(grep -v '^#' .env.local | xargs) && node scripts/backup-db.mjs"
   },
+  "packageManager": "pnpm@11.12.0",
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
     "@mapbox/polyline": "^1.2.1",
