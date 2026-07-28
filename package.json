@@ -60,7 +60,7 @@
     "lz-string": "^1.5.0",
     "maplibre-gl": "^5.24.0",
     "motion": "^12.34.4",
-    "next": "^16.2.6",
+    "next": "^16.2.11",
     "next-auth": "5.0.0-beta.31",
     "next-intl": "^4.9.2",
     "next-themes": "^0.4.6",
